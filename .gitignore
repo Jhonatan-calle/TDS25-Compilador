@@ -1,0 +1,13 @@
+ejemplo/
+*.swp
+*.out
+*.yy.c
+*.pdf
+
+parser
+
+*.o
+
+#opcional
+*.tab.c
+*tab.h
