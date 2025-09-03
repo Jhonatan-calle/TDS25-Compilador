@@ -1,28 +1,37 @@
 %{
+    #include <stdio.h>
     #include <stdlib.h>
  
 %}
 
-
 %type program var_decl_list method_decl_list 
 %type var_decl method_decl type id param_list block 
-%type statement_list statement method_call expr bin_op literal
-%token T_EOS R_VOID R_EXTERN R_INTEGER R_BOOL ID R_ELSE R_IF 
-%token R_THEN R_WHILE R_RETURN V_FALSE V_NUM V_TRUE
+%type statement_list statement method_call expr literal
+%token T_EOS R_VOID R_EXTERN R_INTEGER R_BOOL ID R_ELSE R_IF R_PROGRAM
+%token R_THEN R_WHILE R_RETURN V_FALSE V_NUM V_TRUE OP_AND OP_EQ OP_OR
+
+%precedence '!' UMINUS  // Precedencia para negación y resta unaria
+%left OP_OR
+%left OP_AND
+%left OP_EQ
+%left '<' '>'
+%left '+' '-'
+%left '*' '/' '%'
+
 
 %%
 
 program
-    : '{' var_decl_list method_decl_list '}'  {printf("todo good")}
+    : R_PROGRAM '{' method_decl_list var_decl_list  '}'  {printf("todo good");}
     ;
 
 var_decl_list
-    : /* empty */
+    : 
     | var_decl_list var_decl
     ;
 
 method_decl_list
-    : /* empty */
+    : 
     | method_decl_list method_decl
     ;
 
@@ -57,7 +66,7 @@ type
     ;
 
 statement_list
-    : /* empty */
+    : 
     | statement_list statement
     ;
 
@@ -90,16 +99,19 @@ expr
     : id
     | method_call
     | literal
-    | expr bin_op expr
-    | '-' expr
+    | '-' expr %prec UMINUS
     | '!' expr
+    | expr '+' expr
+    | expr '-' expr
+    | expr '*' expr
+    | expr '/' expr
+    | expr '%' expr
+    | expr '<' expr
+    | expr '>' expr
+    | expr OP_EQ expr
+    | expr OP_AND expr
+    | expr OP_OR expr
     | '(' expr ')'
-    ;
-
-bin_op
-    : '+' | '-' | '*' | '/' | '%'
-    | '<' | '>' | '=''='
-    | '&''&' | '|''|'
     ;
 
 literal
@@ -114,3 +126,14 @@ id
 
 %%
 
+
+int main(int argc,char *argv[]){
+    FILE  *yyin = NULL;
+	++argv,--argc;
+	if (argc > 0)
+		yyin = fopen(argv[0],"r");
+	else
+		yyin = stdin;
+
+	yyparse();
+}
