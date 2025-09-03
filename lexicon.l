@@ -16,6 +16,7 @@ literals              [-]?{number}
 ID 			              {letter}({letter}|{number}|_)*
 endOfStatement        ;
 operator              [+*<]
+opEquals              "=="
 opAnd                 "&&"
 opOr                  "||"
 delimiter             [(){}]
@@ -60,6 +61,7 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 {thenStatement}         { return R_THEN; }
 {elseStatement}         { return R_ELSE; }
 
+{opEquals}              { return OP_EQ; }
 {opAnd}                 { return OP_AND; }
 {opOr}                  { return OP_OR; }
 
