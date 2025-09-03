@@ -16,6 +16,8 @@ literals              [-]?{number}
 ID 			              {letter}({letter}|{number}|_)*
 endOfStatement        ;
 operator              [+*<]
+opAnd                 "&&"
+opOr                  "||"
 delimiter             [(){}]
 
 /* reserved keywords */
@@ -43,22 +45,25 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 
 {endOfStatement}        { return T_EOS; }
 
-{literals}              { yylval.num = atoi(yytext); return V_NUM; }
-{trueValue}             { yylval.num = 1; return V_TRUE; }
-{falseValue}            { yylval.num = 0; return V_FALSE; }
+{literals}              { return V_NUM; }
+{trueValue}             { return V_TRUE; }
+{falseValue}            { return V_FALSE; }
 
-{extern}                { yylval.str = strdup(yytext); return R_EXTERN; }
-{boolType}              { yylval.str = strdup(yytext); return R_BOOL; }
-{intType}               { yylval.str = strdup(yytext); return R_INT; }
-{voidType}              { yylval.str = strdup(yytext); return R_VOID; }
-{returnStatement}       { yylval.str = strdup(yytext); return R_RETURN; }
-{whileLoop}             { yylval.str = strdup(yytext); return R_WHILE; }
-{beginProgram}          { yylval.str = strdup(yytext); return R_PROGRAM; }
-{ifStatement}           { yylval.str = strdup(yytext); return R_IF; }
-{thenStatement}         { yylval.str = strdup(yytext); return R_THEN; }
-{elseStatement}         { yylval.str = strdup(yytext); return R_ELSE; }
+{extern}                { return R_EXTERN; }
+{boolType}              { return R_BOOL; }
+{intType}               { return R_INTEGER; }
+{voidType}              { return R_VOID; }
+{returnStatement}       { return R_RETURN; }
+{whileLoop}             { return R_WHILE; }
+{beginProgram}          { return R_PROGRAM; }
+{ifStatement}           { return R_IF; }
+{thenStatement}         { return R_THEN; }
+{elseStatement}         { return R_ELSE; }
 
-{ID}                    { yylval.str = strdup(yytext); return ID; }
+{opAnd}                 { return OP_AND; }
+{opOr}                  { return OP_OR; }
+
+{ID}                    { return ID; }
 
 {operator}|{delimiter}  { return *yytext; }
 
