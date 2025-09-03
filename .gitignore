@@ -5,7 +5,6 @@ ejemplo/
 *.pdf
 
 parser
-
 *.o
 
 #opcional

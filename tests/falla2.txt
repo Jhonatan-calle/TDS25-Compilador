@@ -1,0 +1,5 @@
+Program
+{
+    void main(){}
+    integer hola = 0;
+}

@@ -8,8 +8,8 @@
     extern FILE *yyin;
 %}
 
-%type program var_decl_list method_decl_list
-%type var_decl method_decl type ID param_list block
+%type program  declaration_list
+%type type param_list block declaration
 %type statement_list statement method_call expr literal
 %token T_EOS
 %token V_FALSE V_NUM V_TRUE
@@ -31,28 +31,23 @@
 %%
 
 program
-    : R_PROGRAM '{' method_decl_list var_decl_list  '}'  {printf("todo good");}
+    : R_PROGRAM '{' declaration_list '}'  {printf("todo good\n");}
     ;
 
-var_decl_list
+declaration_list
     : %empty /* Lambda */
-    | var_decl_list var_decl
+    | declaration_list declaration
     ;
 
-method_decl_list
-    : %empty /* Lambda */
-    | method_decl_list method_decl
+declaration
+    : type ID decl_rest
+    | R_VOID ID decl_rest
     ;
 
-var_decl
-    : type ID '=' expr T_EOS
-    ;
-
-method_decl
-    : type ID '(' param_list ')' block
-    | R_VOID ID '(' param_list ')' block
-    | type ID '(' param_list ')' R_EXTERN T_EOS
-    | R_VOID ID '(' param_list ')' R_EXTERN T_EOS
+decl_rest
+    : '=' expr T_EOS           // variable declaration
+    | '(' param_list ')' block // method declaration
+    | '(' param_list ')' R_EXTERN T_EOS // extern method
     ;
 
 param_list
@@ -66,7 +61,7 @@ param_list_nonempty
     ;
 
 block
-    : '{' var_decl_list statement_list '}'
+    : '{' declaration_list statement_list '}'
     ;
 
 type
