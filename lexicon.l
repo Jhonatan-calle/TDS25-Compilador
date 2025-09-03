@@ -15,11 +15,10 @@ number                [0-9]+
 literals              [-]?{number}
 ID 			              {letter}({letter}|{number}|_)*
 endOfStatement        ;
-operator              [+*<]
+operatorDelimiter     [+*<(){}=]
 opEquals              "=="
 opAnd                 "&&"
 opOr                  "||"
-delimiter             [(){}]
 
 /* reserved keywords */
 extern                extern
@@ -67,7 +66,7 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 
 {ID}                    { return ID; }
 
-{operator}|{delimiter}  { return *yytext; }
+{operatorDelimiter}     { return *yytext; }
 
 {ignoredRegex}          { /* comments, spaces, newlines and tabs */ }
 
@@ -76,6 +75,6 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 %%
 
 void yyerror(char* msg) {
-  printf("Syntax error: %s -- ", msg);
+  printf("Error: %s -- ", msg);
   printf("At line: %d\n", yylineno);
 }
