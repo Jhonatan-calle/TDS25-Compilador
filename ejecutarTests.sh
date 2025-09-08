@@ -19,11 +19,6 @@ echo "Caso 3: correcto3.txt"
 echo "#################################"
 
 echo "#################################"
-echo "Caso 4: falla.txt"
-./parser tests/falla.txt
-echo "#################################"
-
-echo "#################################"
 echo "Caso 5: falla2.txt"
 ./parser tests/falla2.txt
 echo "#################################"

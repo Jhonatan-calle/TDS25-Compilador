@@ -9,4 +9,4 @@ parser
 
 #opcional
 *.tab.c
-*tab.h
+*tab.h  
