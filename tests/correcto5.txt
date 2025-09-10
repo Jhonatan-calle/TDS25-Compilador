@@ -1,0 +1,20 @@
+program
+{
+  integer whiletrue = 1;
+  void main()
+  {
+    bool ifelse = true;
+    if (ifelse) then
+    {
+      return;
+    }
+    else
+    {
+      integer x = -2;
+      integer y = --3;
+
+      integer elsethen = -x - -y;
+      return;
+    }
+  }
+}
