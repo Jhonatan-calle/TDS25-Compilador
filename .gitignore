@@ -4,9 +4,9 @@ ejemplo/
 *.yy.c
 *.pdf
 
-parser
+c-tds
 *.o
 
 #opcional
 *.tab.c
-*tab.h  
+*tab.h
