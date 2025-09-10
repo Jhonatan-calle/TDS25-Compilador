@@ -22,7 +22,7 @@ proyecto), un ejecutable (para correr los casos de test), los casos de test util
 correspondiente a la etapa.
 
 
-### 1: Análizador Sintáctico y Léxico (Scanner y Parser)
+### 1: Analizador Sintáctico y Léxico (Scanner y Parser)
 El Analizador Léxico toma como entrada un archivo con código fuente TDS25 y retorna tokens.
 Un token representa a una clase de símbolos del lenguaje.
 Por ejemplo, operadores (*,+,<), delimitadores ((,{), palabras reservadas (while, else), literales (342, 3.5) o identificadores (var1, cant).
@@ -32,28 +32,27 @@ Aquellos símbolos que no son permitidos en el lenguaje deben ser reportados, po
 
 El Analizador Sintáctico, toma como entrada la secuencia de tokens y verifica que esta secuencia sea
 una secuencia válida, es decir, que cumpla con la especificación sintáctica del lenguaje. 
-La verificación controla que, por ejemplo, los paréntesis y llaves esten balanceados, la presencia de operadores, etc.
+La verificación controla que, por ejemplo, los paréntesis y llaves estén balanceados, la presencia de operadores, etc.
 Verificaciones de tipado, nombres de variables y funciones no son realizadas en esta etapa. 
 La salida de esta etapa puede ser el árbol sintáctico (o de parsing) o simplemente si la entrada es correcta o no (sintácticamente).
 La gramática (especificación sintáctica) del lenguaje TDS25 se presenta en otro documento. 
 Es necesario separar la especificación del Analizador Léxico de la especificación del Analizador Sintáctico.
 
-**Las herramientas usadas para realizar estas actividades son:
-lex/flex y yacc/bison.**
+**Las herramientas usadas para realizar estas actividades son: lex/flex y yacc/bison.**
 
 
-### 2: Análizador Semántico
+### 2: Analizador Semántico
 Esta etapa verifica las reglas semánticas del lenguaje, por ejemplo, compatibilidad de tipos, visibilidad
 y alcance de los identificadores, etc. 
 En esta etapa es necesario implementar una tabla de símbolos para mantener la información de los símbolos (identificadores) de un programa. 
-El análisis semántico se realizá sobre el árbol de parsing utilizando la información almacenada en la tabla de símbolos.
+El análisis semántico se realizará sobre el árbol de parsing utilizando la información almacenada en la tabla de símbolos.
 Recomendamos no subestimar la complejidad ni el trabajo requerido para esta etapa para obtener el analizador semántico completo.
 
 
 ### 3: Generador Código Intermedio
 Esta etapa del compilador retorna una representación intermedia (IR) del código. 
 A partir de esta representación intermedia se generará el código objeto. También, cabe aclarar, que algunas optimizaciones y análisis de código pueden ser realizadas sobre el IR.
-En esta etapa se utilizará como código intermedio: Código de Tres Direcciones para las operaciones con tipos enteros y ĺogicos y para las operaciones de control de flujo.
+En esta etapa se utilizará como código intermedio: Código de Tres Direcciones para las operaciones con tipos enteros y lógicos y para las operaciones de control de flujo.
 En esta etapa se concluye con la construcción del front-end del compilador.
 
 
