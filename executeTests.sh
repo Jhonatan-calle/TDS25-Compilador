@@ -3,12 +3,14 @@
 echo "___________________________"
 echo "Starting parsing execution!"
 
+echo "#################################"
 for file in tests/*.ctds; do
-    echo "#################################"
+    echo ""
     echo "Case: $file"
-    ./c-tds "$file"
-    echo "#################################"
+    ./c-tds -d "$file"
+    echo ""
 done
+echo "#################################"
 
 echo "End of execution"
 echo "___________________________"
