@@ -15,7 +15,7 @@ number                [0-9]+
 literals              [-]?{number}
 ID 			              {letter}({letter}|{number}|_)*
 endOfStatement        ;
-operatorDelimiter     [+*<(){}=]
+operatorDelimiter     [-+*<(){}=]
 opEquals              "=="
 opAnd                 "&&"
 opOr                  "||"
