@@ -3,10 +3,10 @@
 echo "___________________________"
 echo "Starting parsing execution!"
 
-for file in tests/*.txt; do
+for file in tests/*.ctds; do
     echo "#################################"
     echo "Case: $file"
-    ./parser "$file"
+    ./c-tds "$file"
     echo "#################################"
 done
 
