@@ -1,4 +1,4 @@
-Proyecto primera entrega para la materia Compiladores, del segundo cuatrimestre del 2025.
+Proyecto para la materia Compiladores, del segundo cuatrimestre del 2025.
 
 Integrantes: **Jhonatan Calle Galeano** y **Joaquín Pablo Tissera**
 
