@@ -1,0 +1,5 @@
+program
+{
+  bool v = true;
+  integer void(){}
+}
