@@ -1,14 +1,15 @@
 %{
-    #include <stdio.h>
     #include <stdlib.h>
+    #include <stdio.h>
+    #include <stdarg.h>
+    #include <string.h>
+    #include "headers/main.h"
 
     void yyerror(char* msg);
-    int yylex(void);
-
-    extern FILE *yyin;
 %}
 
-%type program  declaration_list
+
+%type program declaration_list
 %type type param_list block declaration
 %type statement_list statement method_call expr literal
 %token T_EOS
@@ -127,13 +128,7 @@ literal
 
 %%
 
-
-int main(int argc,char *argv[]){
-	++argv,--argc;
-	if (argc > 0)
-		yyin = fopen(argv[0],"r");
-	else
-		yyin = stdin;
-
-	yyparse();
+int main(int argc, char *argv[])
+{
+	return compiler_main(argc, argv);
 }
