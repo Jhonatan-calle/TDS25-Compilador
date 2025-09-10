@@ -10,8 +10,7 @@ Si es necesario permisos de administrador, hacer **chmod +x compile.sh**
 Correr el script **./executeTests.sh** ubicado en la raíz del repositorio.
 Si es necesario permisos de administrador, hacer **chmod +x executeTests.sh**
 
-Si se quiere añadir más casos, se debe agregar el .txt de prueba correspondiente a la carpeta test/
-y luego añadir al script de ejecución de tests la ejecución del parser sobre el caso de prueba añadido.
+Si se quiere añadir más casos, se debe agregar el .ctds de prueba correspondiente a la carpeta _test/_.
 
 # Entregas
 
