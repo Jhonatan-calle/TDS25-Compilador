@@ -31,7 +31,7 @@
 %%
 
 program
-    : R_PROGRAM '{' declaration_list '}'  {printf("todo good\n");}
+    : R_PROGRAM '{' declaration_list '}'  { printf("todo good\n"); }
     ;
 
 declaration_list
@@ -81,6 +81,7 @@ statement
     | R_IF '(' expr ')' R_THEN block R_ELSE block
     | R_WHILE expr block
     | R_RETURN expr T_EOS
+    | R_RETURN T_EOS
     | T_EOS
     | block
     ;
