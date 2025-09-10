@@ -19,13 +19,13 @@
 %token R_IF R_THEN R_ELSE R_WHILE
 %token OP_AND OP_OR OP_EQ
 
-%precedence '!' UMINUS  // Precedencia para negación y resta unaria
 %left OP_AND
 %left OP_OR
 %left OP_EQ
 %left '<' '>'
 %left '+' '-'
 %left '*' '/' '%'
+%precedence '!' UMINUS  // Precedence for negation and unary substract
 
 
 %%
