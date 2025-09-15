@@ -1,12 +1,16 @@
+#include "../headers/utils.h"
 #include "../headers/main.h"
 #include "../syntax.tab.h"
+
+extern char *yytext;
+
+int debug = 0;
 
 int compiler_main(int argc, char *argv[])
 {
   char *outfile = NULL;
   char *target = NULL;
   char *opt = NULL;
-  int debug = 0;
 
   char *inputfile = NULL;
 
@@ -89,7 +93,62 @@ int compiler_main(int argc, char *argv[])
   {
     // Lexical analysis
     printf("Stage: Scan\n");
-    yylex();
+    int token;
+    while ((token = yylex()) != 0) {
+        switch (token) {
+            case V_NUM:
+                printf("TOKEN V_NUM: '%s'\n", yytext);
+                break;
+            case V_TRUE:
+                printf("TOKEN V_TRUE: '%s'\n", yytext);
+                break;
+            case V_FALSE:
+                printf("TOKEN V_FALSE: '%s'\n", yytext);
+                break;
+            case R_EXTERN:
+                printf("TOKEN R_EXTERN: '%s'\n", yytext);
+                break;
+            case R_BOOL:
+                printf("TOKEN R_BOOL: '%s'\n", yytext);
+                break;
+            case R_INTEGER:
+                printf("TOKEN R_INTEGER: '%s'\n", yytext);
+                break;
+            case R_VOID:
+                printf("TOKEN R_VOID: '%s'\n", yytext);
+                break;
+            case R_RETURN:
+                printf("TOKEN R_RETURN: '%s'\n", yytext);
+                break;
+            case R_WHILE:
+                printf("TOKEN R_WHILE: '%s'\n", yytext);
+                break;
+            case R_PROGRAM:
+                printf("TOKEN R_PROGRAM: '%s'\n", yytext);
+                break;
+            case R_IF:
+                printf("TOKEN R_IF: '%s'\n", yytext);
+                break;
+            case R_THEN:
+                printf("TOKEN R_THEN: '%s'\n", yytext);
+                break;
+            case OP_EQ:
+                printf("TOKEN OP_EQ: '%s'\n", yytext);
+                break;
+            case OP_AND:
+                printf("TOKEN OP_AND: '%s'\n", yytext);
+                break;
+            case OP_OR:
+                printf("TOKEN OP_OR: '%s'\n", yytext);
+                break;
+            case ID:
+                printf("TOKEN ID: '%s'\n", yytext);
+                break;
+            default:
+                printf("operatorDelimiter %d: '%s'\n", token, yytext);
+        }
+    }
+    printf("EOF\n");
   }
   else if (target && strcmp(target, "parse") == 0)
   {
