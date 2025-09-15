@@ -1,9 +1,13 @@
+%code requires {
+    #include "headers/main.h"
+    #include "headers/utils.h"
+}
+
 %{
     #include <stdlib.h>
     #include <stdio.h>
     #include <stdarg.h>
     #include <string.h>
-    #include "headers/main.h"
 
     void yyerror(char* msg);
 %}
@@ -32,7 +36,7 @@
 %%
 
 program
-    : R_PROGRAM '{' declaration_list '}'  { printf("todo good\n"); }
+    : R_PROGRAM '{' declaration_list '}'  { print_if_debug("todo good\n"); }
     ;
 
 declaration_list

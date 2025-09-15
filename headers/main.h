@@ -3,6 +3,7 @@
 #include <string.h>
 
 extern FILE *yyin;
+extern int debug;
 
 int yylex(void);
 int compiler_main(int argc, char *argv[]);
