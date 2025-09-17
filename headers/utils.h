@@ -1,4 +1,6 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "ast.h"
 
-void print_if_debug(char* str);
+char *new_temp();
+char *gen_code(AST *node);
