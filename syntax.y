@@ -44,7 +44,7 @@
 %left '<' '>'
 %left '+' '-'
 %left '*' '/' '%'
-%preceence for negation and unary substract
+%precedence for negation and unary substract
 
 
 %%
@@ -77,24 +77,25 @@ decl_rest
     : '=' expr T_EOS           // variable declaration
         { $$ = new_node(TR_EXPRESION,1, $1); }  /* un nodo */ 
     | '(' param_list ')' block // method declaration
-        { $$ = new_node(TR_PERFIL,2, $2, $4); }  /* un nodo */ 
+        { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
     | '(' param_list ')' R_EXTERN T_EOS // extern method
-        { $$ = new_node(TR_PERFIL_EXTERN, $1); }  /* un nodo */ 
+        { $$ = new_node(TR_METHOD_EXTERN, $1); }  /* un nodo */ 
     ;
 
 param_list
     : %empty /* Lambda */
         { $$ = NULL; }  /* lista vacía */
-    | param_list_nonempty
-        { $$ = $1; }  /* lista vacía */
+    | param 
+        { $$ = new_node(TR_PARAM_LIST,1,$1);}
+    | param_list',' param
+        { $$ = append_child($1,$2);}
     ;
 
-param_list_nonempty
+param 
     : type ID
-    { $$ = new_node(TR_DECLARATION_LIST, 1, $1); }  /* un nodo */
-    | param_list_nonempty ',' type ID
-    { $$ = new_node(TR_DECLARATION_LIST, 1, $1); }  /* un nodo */
-    ;
+      { $$ = new_node(TR_PARAM, 2, $1, $2); }  /* un nodo */
+
+
 
 block
     : '{' declaration_list statement_list '}'
@@ -108,7 +109,7 @@ type
 
 statement_list
     : %empty /* Lambda */
-    { $$ = NULL}
+        { $$ = NULL}
     | statement
         { $$ = new_node(TR_LISTA_SENTENCIAS, 1, $1); }  /* un nodo */
     | statement_list statement
@@ -118,8 +119,8 @@ statement_list
 statement
     : ID '=' expr T_EOS
       {$$ = new_node(TR_ASIGNACION,2,$1,$3);}
-    | method_call T_EOS
-      {$$ = new_node(TR_INVOCATION,1,$1);}
+    | ID '(' arg_list ')'
+        {$$ = new_node(TR_INVOCATION,1,$1);}
     | R_IF '(' expr ')' R_THEN block
       {$$ = new_node(TR_IF_STATEMENT,2,$1,$2);}
     | R_IF '(' expr ')' R_THEN block R_ELSE block
@@ -136,37 +137,40 @@ statement
        { $$ = $1}
     ;
 
-method_call
-    : ID '(' arg_list ')'
-    ;
 
 arg_list
     : %empty /* Lambda */
-    | arg_list_nonempty
-    ;
-
-arg_list_nonempty
-    : expr
-    | arg_list_nonempty ',' expr
+        { $$ = NULL; }  /* lista vacía */
+    | expr 
+        { $$ = new_node(TR_ARG_LIST, 1, $1); }  /* un nodo */
+    | arg_list',' expr
+        { $$ = append_child($1, $2); }  /* agregar al árbol existente */
     ;
 
 expr
     : ID
+        { $$ = new_node(TR_IDENTIFICADOR, 1, $1); }
     | method_call
     | literal
+        { $$ = $1;}
     | '-' expr %prec UMINUS
     | '!' expr
     | expr '+' expr
+        { $$ = new_node(TR_SUMA, 2, $1, $3); }
     | expr '-' expr
     | expr '*' expr
+        { $$ = new_node(TR_MULTIPLICACION, 2, $1, $3); }
     | expr '/' expr
     | expr '%' expr
     | expr '<' expr
     | expr '>' expr
     | expr OP_EQ expr
     | expr OP_AND expr
+        { $$ = new_node(TR_AND, 2, $1, $3); }
     | expr OP_OR expr
+        { $$ = new_node(TR_OR, 2, $1, $3); }
     | '(' expr ')'
+        { $$ = $2; }
     ;
 
 literal
