@@ -1,42 +1,42 @@
-|#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
 #include "../headers/ast.h"
 #include "../headers/simbolos.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void print_indent(int level)
-{
+void print_indent(int level) {
   for (int i = 0; i < level; i++)
     printf("  "); // 2 espacios por nivel
 }
 
-void print_ast(AST *node, int level)
-{
+void print_ast(AST *node, int level) {
   if (!node)
     return;
 
   print_indent(level);
   printf("%s", tipoNodoToStr(node->type));
 
-  switch (node->type)
-  {
+  switch (node->type) {
   case TR_PROGRAMA:
     printf(" [tipo retorno: %s]", tipoDatoToStr(node->info->tVar));
     break;
   case TR_DECLARACION:
-    printf(" [tipo: %s, id: %s]", tipoDatoToStr(node->info->tVar), node->info->nombre);
+    printf(" [tipo: %s, id: %s]", tipoDatoToStr(node->info->tVar),
+           node->info->nombre);
     break;
   case TR_ASIGNACION:
     if (node->childs && node->childs[0] && node->childs[0]->info)
       printf(" [asigna a id: %s]", node->childs[0]->info->nombre);
     break;
   case TR_VALOR:
-    printf(" [valor: %d, tipo: %s]", node->info->valor, tipoDatoToStr(node->info->tVar));
+    printf(" [valor: %d, tipo: %s]", node->info->valor,
+           tipoDatoToStr(node->info->tVar));
     break;
   case TR_IDENTIFICADOR:
     if (node->info)
-      printf(" [id: %s, tipo: %s]", node->info->nombre, tipoDatoToStr(node->info->tVar));
+      printf(" [id: %s, tipo: %s]", node->info->nombre,
+             tipoDatoToStr(node->info->tVar));
     break;
   case TR_SUMA:
     printf(" [+], valor: %d]", node->info->valor);
@@ -68,11 +68,9 @@ void print_ast(AST *node, int level)
     print_ast(node->childs[i], level + 1);
 }
 
-AST *init_node(TipoNodo type, int child_count)
-{
+AST *init_node(TipoNodo type, int child_count) {
   AST *node = malloc(sizeof(AST));
-  if (!node)
-  {
+  if (!node) {
     fprintf(stderr, "<<<<<Error: no se pudo reservar memoria para AST>>>>>\n");
     exit(EXIT_FAILURE);
   }
@@ -84,24 +82,24 @@ AST *init_node(TipoNodo type, int child_count)
   return node;
 }
 
-void module_switch_case_programa(AST *node, va_list args)
-{
+void module_switch_case_programa(AST *node, va_list args) {
   node->info = malloc(sizeof(Simbolo));
   node->info->nombre = strdup("programa");
-  node->info->tVar = va_arg(args, int); // $1: tiposF, tipo de retorno del programa/funcion
+  node->info->tVar =
+      va_arg(args, int); // $1: tiposF, tipo de retorno del programa/funcion
   node->child_count = 1;
   node->childs = malloc(sizeof(AST *));
   node->childs[0] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
 }
 
-void module_switch_case_declaracion(AST *node, va_list args)
-{
-  int tipoIdentificador = va_arg(args, int); // $1: tipos, el enum de los tipos (internamente un int)
-  char *nombre = va_arg(args, char *);       // $2: ID, el nombre de la var declarada
+void module_switch_case_declaracion(AST *node, va_list args) {
+  int tipoIdentificador = va_arg(
+      args, int); // $1: tipos, el enum de los tipos (internamente un int)
+  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
   Simbolo *id = buscar_simbolo(nombre);
-  if (id)
-  {
-    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n", nombre);
+  if (id) {
+    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n",
+            nombre);
     exit(EXIT_FAILURE);
   }
   node->info = malloc(sizeof(Simbolo));
@@ -111,25 +109,24 @@ void module_switch_case_declaracion(AST *node, va_list args)
   node->child_count = 0;
 }
 
-void module_switch_case_asignacion(AST *node, va_list args)
-{
+void module_switch_case_asignacion(AST *node, va_list args) {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
   Simbolo *id = buscar_simbolo(nombre);
-  if (!id)
-  {
-    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n", nombre);
+  if (!id) {
+    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
+            nombre);
     exit(EXIT_FAILURE);
   }
 
-  AST *exp = va_arg(args, AST *); // $3: expr, lo que se le va asignar a la variable, de tipo AST*
+  AST *exp = va_arg(
+      args,
+      AST *); // $3: expr, lo que se le va asignar a la variable, de tipo AST*
 
-  if (exp->info->tVar != id->tVar)
-  {
+  if (exp->info->tVar != id->tVar) {
     fprintf(stderr,
             "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
             "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
-            id->nombre,
-            tipoDatoToStr(id->tVar),
+            id->nombre, tipoDatoToStr(id->tVar),
             tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
   }
@@ -147,22 +144,22 @@ void module_switch_case_asignacion(AST *node, va_list args)
   node->childs[1] = exp;
 }
 
-void module_switch_case_valor(AST *node, va_list args)
-{
+void module_switch_case_valor(AST *node, va_list args) {
   node->info = malloc(sizeof(Simbolo));
-  node->info->tVar = va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
+  node->info->tVar =
+      va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
   node->info->nombre = strdup("TR_VALOR");
-  node->info->valor = va_arg(args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
+  node->info->valor = va_arg(
+      args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
   node->child_count = 0;
 }
 
-void module_switch_case_identificador(AST *node, va_list args)
-{
+void module_switch_case_identificador(AST *node, va_list args) {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la variable
   Simbolo *id = buscar_simbolo(nombre);
-  if (!id)
-  {
-    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n", nombre);
+  if (!id) {
+    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
+            nombre);
     exit(EXIT_FAILURE);
   }
   node->info = id;
@@ -170,12 +167,10 @@ void module_switch_case_identificador(AST *node, va_list args)
   node->childs = NULL;
 }
 
-void module_switch_case_suma(AST *node, va_list args)
-{
+void module_switch_case_suma(AST *node, va_list args) {
   AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
   AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_INT || op2->info->tVar != T_INT)
-  {
+  if (op1->info->tVar != T_INT || op2->info->tVar != T_INT) {
     fprintf(stderr, "operacion con tipos invalidos\n");
     exit(EXIT_FAILURE);
   }
@@ -193,12 +188,10 @@ void module_switch_case_suma(AST *node, va_list args)
   node->childs[1] = op2;
 }
 
-void module_switch_case_multiplicacion(AST *node, va_list args)
-{
+void module_switch_case_multiplicacion(AST *node, va_list args) {
   AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
   AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_INT || op2->info->tVar != T_INT)
-  {
+  if (op1->info->tVar != T_INT || op2->info->tVar != T_INT) {
     fprintf(stderr, "operacion con tipos invalidos\n");
     exit(EXIT_FAILURE);
   }
@@ -216,12 +209,10 @@ void module_switch_case_multiplicacion(AST *node, va_list args)
   node->childs[1] = op2;
 }
 
-void module_switch_case_and(AST *node, va_list args)
-{
+void module_switch_case_and(AST *node, va_list args) {
   AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
   AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_BOOL || op2->info->tVar != T_BOOL)
-  {
+  if (op1->info->tVar != T_BOOL || op2->info->tVar != T_BOOL) {
     fprintf(stderr, "operacion con tipos invalidos\n");
     exit(EXIT_FAILURE);
   }
@@ -239,12 +230,10 @@ void module_switch_case_and(AST *node, va_list args)
   node->childs[1] = op2;
 }
 
-void module_switch_case_or(AST *node, va_list args)
-{
+void module_switch_case_or(AST *node, va_list args) {
   AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
   AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_BOOL || op2->info->tVar != T_BOOL)
-  {
+  if (op1->info->tVar != T_BOOL || op2->info->tVar != T_BOOL) {
     fprintf(stderr, "operacion con tipos invalidos\n");
     exit(EXIT_FAILURE);
   }
@@ -262,22 +251,20 @@ void module_switch_case_or(AST *node, va_list args)
   node->childs[1] = op2;
 }
 
-void module_switch_case_return(AST *node, int child_count, va_list args)
-{
+void module_switch_case_return(AST *node, int child_count, va_list args) {
   node->childs = malloc(sizeof(AST *) * child_count);
   for (int i = 0; i < child_count; i++)
-    node->childs[i] = va_arg(args, AST *); // $2: expr, AST* que se retorna de la funcion
+    node->childs[i] =
+        va_arg(args, AST *); // $2: expr, AST* que se retorna de la funcion
 }
 
-AST *new_node(TipoNodo type, int child_count, ...)
-{
+AST *new_node(TipoNodo type, int child_count, ...) {
   AST *node = init_node(type, child_count);
 
   va_list args;
   va_start(args, child_count);
 
-  switch (type)
-  {
+  switch (type) {
   case TR_PROGRAMA:
     module_switch_case_programa(node, args);
     break;
@@ -317,14 +304,12 @@ AST *new_node(TipoNodo type, int child_count, ...)
   return node;
 }
 
-AST *append_child(AST *list, AST *child)
-{
+AST *append_child(AST *list, AST *child) {
   if (!list)
     return new_node(TR_LISTA_SENTENCIAS, 1, child);
 
   list->childs = realloc(list->childs, sizeof(AST *) * (list->child_count + 1));
-  if (!list->childs)
-  {
+  if (!list->childs) {
     fprintf(stderr, "Error realloc en append_child\n");
     exit(EXIT_FAILURE);
   }
@@ -334,8 +319,7 @@ AST *append_child(AST *list, AST *child)
   return list;
 }
 
-void free_ast(AST *node)
-{
+void free_ast(AST *node) {
   if (!node)
     return;
 
@@ -345,13 +329,11 @@ void free_ast(AST *node)
   free(node);
 }
 
-const char *tipoNodoToStr(TipoNodo type)
-{
-  switch (type)
-  {
+const char *tipoNodoToStr(TipoNodo type) {
+  switch (type) {
   case TR_PROGRAMA:
     return "PROGRAMA";
-  case TR_PERFIL:
+  case TR_METHOD:
     return "PERFIL";
   case TR_DECLARACION:
     return "DECLARACION";
@@ -378,10 +360,8 @@ const char *tipoNodoToStr(TipoNodo type)
   }
 }
 
-const char *tipoDatoToStr(Tipos type)
-{
-  switch (type)
-  {
+const char *tipoDatoToStr(Tipos type) {
+  switch (type) {
   case T_INT:
     return "INT";
   case T_BOOL:
