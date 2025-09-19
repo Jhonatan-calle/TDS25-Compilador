@@ -9,7 +9,6 @@ gcc -Wall -c src/main.c -o build/main.o
 gcc -Wall -c src/utils.c -o build/utils.o
 gcc -Wall -c src/ast.c -o build/ast.o
 gcc -Wall -c src/simbolos.c -o build/simbolos.o
-gcc -Wall -c src/compiler.c -o build/compiler.o
 
 echo "Linking"
 gcc -Wall -Wno-unused-function syntax.tab.c lex.yy.c \

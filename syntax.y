@@ -78,7 +78,7 @@ decl_rest
     | '(' param_list ')' block // method declaration
         { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
     | '(' param_list ')' R_EXTERN T_EOS // extern method
-        { $$ = new_node(TR_METHOD_EXTERN,1,, $2); }  /* un nodo */ 
+        { $$ = new_node(TR_METHOD_EXTERN,1,$2); }  /* un nodo */ 
     ;
 
 param_list
