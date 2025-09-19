@@ -25,4 +25,4 @@ void insertar_simbolo(Simbolo *e);
 Simbolo *buscar_simbolo(char *nombre);
 void liberar_tabla();
 
-#
+#endif // SIMBOLOS_H
