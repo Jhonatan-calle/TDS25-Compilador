@@ -3,7 +3,6 @@
     #include "headers/simbolos.h"
     #include "headers/ast.h"
     #include "headers/utils.h"
-
 }
 %{
     #include <stdlib.h>
@@ -26,17 +25,19 @@
 }
 
 
-%type <node> program declaration_list declaration expr literal block
+%type <node> program declaration_list declaration expr literal param  
+%type <node> block statement_list arg_list decl_rest statement param_list
+%token <id> ID 
 %type <tipo> type 
 %type param_list 
-%type statement_list statement method_call 
 %token T_EOS
-%token V_FALSE V_NUM V_TRUE
+%token V_FALSE V_TRUE
+%token <val> V_NUM
 %token R_VOID R_INTEGER R_BOOL
 %token R_EXTERN R_RETURN R_PROGRAM
-%token ID
 %token R_IF R_THEN R_ELSE R_WHILE
 %token OP_AND OP_OR OP_EQ
+
 
 %left OP_AND
 %left OP_OR
@@ -44,8 +45,7 @@
 %left '<' '>'
 %left '+' '-'
 %left '*' '/' '%'
-%precedence for negation and unary substract
-
+%right UMINUS
 
 %%
 
@@ -54,7 +54,6 @@ program
     { 
       $$ = new_node(TR_PROGRAMA,1,$3);
       root = $$;
-      print_ast($$,0);
       free_ast($$);
     }
     ;
@@ -75,11 +74,11 @@ declaration
 
 decl_rest
     : '=' expr T_EOS           // variable declaration
-        { $$ = new_node(TR_EXPRESION,1, $1); }  /* un nodo */ 
+        { $$ = new_node(TR_EXPRESION,1, $2); }  /* un nodo */ 
     | '(' param_list ')' block // method declaration
         { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
     | '(' param_list ')' R_EXTERN T_EOS // extern method
-        { $$ = new_node(TR_METHOD_EXTERN, $1); }  /* un nodo */ 
+        { $$ = new_node(TR_METHOD_EXTERN,1,, $2); }  /* un nodo */ 
     ;
 
 param_list
@@ -88,28 +87,30 @@ param_list
     | param 
         { $$ = new_node(TR_PARAM_LIST,1,$1);}
     | param_list',' param
-        { $$ = append_child($1,$2);}
+        { $$ = append_child($1,$3);}
     ;
 
 param 
     : type ID
-      { $$ = new_node(TR_PARAM, 2, $1, $2); }  /* un nodo */
+      { $$ = new_node(TR_PARAM, 2, $1, $2); }  /* un nodo */ 
+    ;
 
 
 
 block
     : '{' declaration_list statement_list '}'
-        { $$ = new_node(TR_BLOCK, 2, $1, $2);}
+        { $$ = new_node(TR_BLOCK, 2, $2, $3);}
+    ;
 
 type
-    : R_INTEGER { $$ = T_INT}
-    | R_BOOL { $$ = T_BOOL }
-    | R_VOID { $$ = T_VOID }
+    : R_INTEGER { $$ = T_INT;}
+    | R_BOOL { $$ = T_BOOL ;}
+    | R_VOID { $$ = T_VOID ;}
     ;
 
 statement_list
     : %empty /* Lambda */
-        { $$ = NULL}
+        { $$ = NULL;}
     | statement
         { $$ = new_node(TR_LISTA_SENTENCIAS, 1, $1); }  /* un nodo */
     | statement_list statement
@@ -120,21 +121,21 @@ statement
     : ID '=' expr T_EOS
       {$$ = new_node(TR_ASIGNACION,2,$1,$3);}
     | ID '(' arg_list ')'
-        {$$ = new_node(TR_INVOCATION,1,$1);}
+        {$$ = new_node(TR_INVOCATION,2,$1,$3);}
     | R_IF '(' expr ')' R_THEN block
-      {$$ = new_node(TR_IF_STATEMENT,2,$1,$2);}
+      {$$ = new_node(TR_IF_STATEMENT,2,$3,$6);}
     | R_IF '(' expr ')' R_THEN block R_ELSE block
-      {$$ = new_node(TR_IF_ELSE_STATEMENT,2,$1,$2,$3);}
+      {$$ = new_node(TR_IF_ELSE_STATEMENT,3,$3,$6,$8);}
     | R_WHILE expr block
-      {$$ = new_node(TR_WHILE_STATEMENT,1,$1,$2);}
+      {$$ = new_node(TR_WHILE_STATEMENT,2,$2,$3);}
     | R_RETURN expr T_EOS
-      {$$ = new_node(TR_RETURN,1,$1);}
+      {$$ = new_node(TR_RETURN,1,$2);}
     | R_RETURN T_EOS
       {$$ = new_node(TR_RETURN,0);}
     | T_EOS
-       { $$ = NULL}
+       { $$ = NULL;}
     | block
-       { $$ = $1}
+       { $$ = $1;}
     ;
 
 
@@ -144,27 +145,36 @@ arg_list
     | expr 
         { $$ = new_node(TR_ARG_LIST, 1, $1); }  /* un nodo */
     | arg_list',' expr
-        { $$ = append_child($1, $2); }  /* agregar al árbol existente */
+        { $$ = append_child($1, $3); }  /* agregar al árbol existente */
     ;
 
 expr
     : ID
-        { $$ = new_node(TR_IDENTIFICADOR, 1, $1); }
-    | method_call
+       { $$ = new_node(TR_IDENTIFICADOR, 1, $1); }
+    | ID '(' arg_list ')'
+        {$$ = new_node(TR_INVOCATION,1,$1,$3);}
     | literal
         { $$ = $1;}
     | '-' expr %prec UMINUS
+        {$$ = new_node(TR_NEGACION_ARITMETICA,1,$2);}
     | '!' expr
+        {$$ = new_node(TR_NEGACION_LOGICA,1,$2);}
     | expr '+' expr
         { $$ = new_node(TR_SUMA, 2, $1, $3); }
     | expr '-' expr
+        { $$ = new_node(TR_RESTA, 2, $1, $3); }
     | expr '*' expr
         { $$ = new_node(TR_MULTIPLICACION, 2, $1, $3); }
     | expr '/' expr
+        { $$ = new_node(TR_DIVICION, 2, $1, $3); }
     | expr '%' expr
-    | expr '<' expr
+        { $$ = new_node(TR_MODULO, 2, $1, $3); }
+    | expr '<' expr             //---------------que pasa con menor igual o mayor igual
+        { $$ = new_node(TR_MENOR, 2, $1, $3); }
     | expr '>' expr
+        { $$ = new_node(TR_MAYOR, 2, $1, $3); }
     | expr OP_EQ expr
+        { $$ = new_node(TR_IGUAL_LOGICO, 2, $1, $3); }
     | expr OP_AND expr
         { $$ = new_node(TR_AND, 2, $1, $3); }
     | expr OP_OR expr
@@ -175,8 +185,11 @@ expr
 
 literal
     : V_NUM
+      {$$ = new_node(TR_VALOR,0,T_INT, $1);}
     | V_TRUE
+      {$$ = new_node(TR_VALOR,0,T_BOOL, 0);}
     | V_FALSE
+      {$$ = new_node(TR_VALOR,0,T_BOOL, 1);}
     ;
 
 %%
