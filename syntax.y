@@ -3,6 +3,7 @@
     #include "headers/simbolos.h"
     #include "headers/ast.h"
     #include "headers/utils.h"
+    #include "headers/main.h"
 }
 %{
     #include <stdlib.h>
@@ -45,7 +46,7 @@
 %left '<' '>'
 %left '+' '-'
 %left '*' '/' '%'
-%right UMINUS
+%precedence UMINUS
 
 %%
 
