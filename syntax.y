@@ -46,6 +46,7 @@
 %left '<' '>'
 %left '+' '-'
 %left '*' '/' '%'
+%precedence NOT
 %precedence UMINUS
 
 %%
@@ -62,8 +63,6 @@ program
 declaration_list
     : %empty
         { $$ = NULL; }  /* lista vacía */
-    | declaration
-        { $$ = new_node(TR_DECLARATION_LIST, 1, $1); }  /* un nodo */
     | declaration_list declaration
         { $$ = append_child($1, $2); }  /* agregar al árbol existente */
     ;
@@ -84,9 +83,7 @@ decl_rest
 
 param_list
     : %empty /* Lambda */
-        { $$ = NULL; }  /* lista vacía */
-    | param 
-        { $$ = new_node(TR_PARAM_LIST,1,$1);}
+        { $$ = new_node(TR_PARAM_LIST,0);}
     | param_list',' param
         { $$ = append_child($1,$3);}
     ;
@@ -111,9 +108,7 @@ type
 
 statement_list
     : %empty /* Lambda */
-        { $$ = NULL;}
-    | statement
-        { $$ = new_node(TR_LISTA_SENTENCIAS, 1, $1); }  /* un nodo */
+        { $$ = new_node(TR_LISTA_SENTENCIAS, 0); }  /* un nodo */
     | statement_list statement
         { $$ = append_child($1, $2); }  /* agregar al árbol existente */
     ;
@@ -156,10 +151,10 @@ expr
         {$$ = new_node(TR_INVOCATION,1,$1,$3);}
     | literal
         { $$ = $1;}
+    | '!' expr %prec NOT
+        {$$ = new_node(TR_NEGACION_LOGICA,1,$2);}
     | '-' expr %prec UMINUS
         {$$ = new_node(TR_NEGACION_ARITMETICA,1,$2);}
-    | '!' expr
-        {$$ = new_node(TR_NEGACION_LOGICA,1,$2);}
     | expr '+' expr
         { $$ = new_node(TR_SUMA, 2, $1, $3); }
     | expr '-' expr
