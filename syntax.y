@@ -62,7 +62,7 @@ program
 
 declaration_list
     : %empty
-        { $$ = NULL; }  /* lista vacía */
+        { $$ = new_node(TR_DECLARATION_LIST,0); }  /* un nodo */ 
     | declaration_list declaration
         { $$ = append_child($1, $2); }  /* agregar al árbol existente */
     ;
@@ -137,9 +137,7 @@ statement
 
 arg_list
     : %empty /* Lambda */
-        { $$ = NULL; }  /* lista vacía */
-    | expr 
-        { $$ = new_node(TR_ARG_LIST, 1, $1); }  /* un nodo */
+        { $$ = new_node(TR_ARG_LIST, 0); }  /* un nodo */
     | arg_list',' expr
         { $$ = append_child($1, $3); }  /* agregar al árbol existente */
     ;
