@@ -5,69 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void print_indent(int level) {
-  for (int i = 0; i < level; i++)
-    printf("  "); // 2 espacios por nivel
-}
-
-void print_ast(AST *node, int level) {
-  if (!node)
-    return;
-
-  print_indent(level);
-  printf("%s", tipoNodoToStr(node->type));
-
-  switch (node->type) {
-  case TR_PROGRAMA:
-    printf(" [tipo retorno: %s]", tipoDatoToStr(node->info->tVar));
-    break;
-  case TR_DECLARATION:
-    printf(" [tipo: %s, id: %s]", tipoDatoToStr(node->info->tVar),
-           node->info->nombre);
-    break;
-  case TR_ASIGNACION:
-    if (node->childs && node->childs[0] && node->childs[0]->info)
-      printf(" [asigna a id: %s]", node->childs[0]->info->nombre);
-    break;
-  case TR_VALOR:
-    printf(" [valor: %d, tipo: %s]", node->info->valor,
-           tipoDatoToStr(node->info->tVar));
-    break;
-  case TR_IDENTIFICADOR:
-    if (node->info)
-      printf(" [id: %s, tipo: %s]", node->info->nombre,
-             tipoDatoToStr(node->info->tVar));
-    break;
-  case TR_SUMA:
-    printf(" [+], valor: %d]", node->info->valor);
-    break;
-  case TR_MULTIPLICACION:
-    printf(" [*], valor: %d]", node->info->valor);
-    break;
-  case TR_LISTA_SENTENCIAS:
-    printf(" [lista de sentencias]");
-    break;
-  case TR_RETURN:
-    printf(" [return]");
-    break;
-  case TR_AND:
-    printf(" [&&], valor: %d]", node->info->valor);
-    break;
-  case TR_OR:
-    printf(" [||], valor: %d]", node->info->valor);
-    break;
-  default:
-    printf(" [?]");
-    break;
-  }
-
-  printf("\n");
-
-  // Recursión en hijos
-  for (int i = 0; i < node->child_count; i++)
-    print_ast(node->childs[i], level + 1);
-}
-
 AST *init_node(TipoNodo type, int child_count) {
   AST *node = malloc(sizeof(AST));
   if (!node) {
@@ -304,11 +241,11 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   case TR_PARAM_LIST:
     module_switch_case_param_list(node, child_count, args); // TODO
     break;
-  // TR_PARAM, TR_BLOCK, TR_LISTA_SENTENCIAS, TR_INVOCATION, 
-  // TR_IF_STATEMENT, TR_IF_ELSE_STATEMENT, TR_WHILE_STATEMENT, 
-  //TR_ARG_LIST, TR_INVOCATION, TR_NEGACION_LOGICA, 
+  // TR_PARAM, TR_BLOCK, TR_LISTA_SENTENCIAS, TR_INVOCATION,
+  // TR_IF_STATEMENT, TR_IF_ELSE_STATEMENT, TR_WHILE_STATEMENT,
+  // TR_ARG_LIST, TR_INVOCATION, TR_NEGACION_LOGICA,
   // TR_NEGACION_ARITMETICA, TR_RESTA, TR_DIVICION, TR_MODULO
-  //TR_MENOR, TR_MAYOR, TR_IGUAL_LOGICOl, 
+  // TR_MENOR, TR_MAYOR, TR_IGUAL_LOGICOl,
   default:
     break;
   }
@@ -340,36 +277,6 @@ void free_ast(AST *node) {
   free(node);
 }
 
-const char *tipoNodoToStr(TipoNodo type) {
-  switch (type) {
-  case TR_PROGRAMA:
-    return "PROGRAMA";
-  case TR_METHOD:
-    return "PERFIL";
-  case TR_DECLARATION:
-    return "DECLARACION";
-  case TR_ASIGNACION:
-    return "ASIGNACION";
-  case TR_RETURN:
-    return "RETURN";
-  case TR_VALOR:
-    return "VALOR";
-  case TR_IDENTIFICADOR:
-    return "IDENTIFICADOR";
-  case TR_SUMA:
-    return "SUMA";
-  case TR_MULTIPLICACION:
-    return "MULTIPLICACION";
-  case TR_LISTA_SENTENCIAS:
-    return "LISTA_SENTENCIAS";
-  case TR_AND:
-    return "CONJUNCION";
-  case TR_OR:
-    return "DISYUNCION";
-  default:
-    return "DESCONOCIDO";
-  }
-}
 
 const char *tipoDatoToStr(Tipos type) {
   switch (type) {
