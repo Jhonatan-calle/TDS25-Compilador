@@ -69,13 +69,13 @@ declaration_list
 
 declaration
     : type ID decl_rest
-        { $$ = new_node(TR_DECLARACION,3, $1,$2,$3); }  /* un nodo */ 
+        { $$ = new_node(TR_DECLARATION,3, $1,$2,$3); }  /* un nodo */ 
     ;
 
 decl_rest
     : '=' expr T_EOS           // variable declaration
         { $$ = new_node(TR_EXPRESION,1, $2); }  /* un nodo */ 
-    | '(' param_list ')' block // method declaration
+    | '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
         { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
     | '(' param_list ')' R_EXTERN T_EOS // extern method
         { $$ = new_node(TR_METHOD_EXTERN,1,$2); }  /* un nodo */ 
@@ -137,7 +137,7 @@ statement
 
 arg_list
     : %empty /* Lambda */
-        { $$ = new_node(TR_ARG_LIST, 0); }  /* un nodo */
+        { $$ = new_node(TR_ARG_LIST, 0); }
     | arg_list',' expr
         { $$ = append_child($1, $3); }  /* agregar al árbol existente */
     ;
