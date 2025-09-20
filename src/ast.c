@@ -21,7 +21,7 @@ void print_ast(AST *node, int level) {
   case TR_PROGRAMA:
     printf(" [tipo retorno: %s]", tipoDatoToStr(node->info->tVar));
     break;
-  case TR_DECLARACION:
+  case TR_DECLARATION:
     printf(" [tipo: %s, id: %s]", tipoDatoToStr(node->info->tVar),
            node->info->nombre);
     break;
@@ -268,7 +268,7 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   case TR_PROGRAMA:
     module_switch_case_programa(node, args);
     break;
-  case TR_DECLARACION:
+  case TR_DECLARATION:
     module_switch_case_declaracion(node, args);
     break;
   case TR_ASIGNACION:
@@ -295,7 +295,20 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   case TR_RETURN:
     module_switch_case_return(node, child_count, args);
     break;
-  // TR_PERFIL, TR_EXPRESION
+  case TR_EXPRESION:
+    module_switch_case_expresion(node, child_count, args); // TODO
+    break;
+  case TR_METHOD_EXTERN:
+    module_switch_case_method_extern(node, child_count, args); // TODO
+    break;
+  case TR_PARAM_LIST:
+    module_switch_case_param_list(node, child_count, args); // TODO
+    break;
+  // TR_PARAM, TR_BLOCK, TR_LISTA_SENTENCIAS, TR_INVOCATION, 
+  // TR_IF_STATEMENT, TR_IF_ELSE_STATEMENT, TR_WHILE_STATEMENT, 
+  //TR_ARG_LIST, TR_INVOCATION, TR_NEGACION_LOGICA, 
+  // TR_NEGACION_ARITMETICA, TR_RESTA, TR_DIVICION, TR_MODULO
+  //TR_MENOR, TR_MAYOR, TR_IGUAL_LOGICOl, 
   default:
     break;
   }
@@ -305,8 +318,6 @@ AST *new_node(TipoNodo type, int child_count, ...) {
 }
 
 AST *append_child(AST *list, AST *child) {
-  if (!list)
-    return new_node(TR_LISTA_SENTENCIAS, 1, child);
 
   list->childs = realloc(list->childs, sizeof(AST *) * (list->child_count + 1));
   if (!list->childs) {
@@ -335,7 +346,7 @@ const char *tipoNodoToStr(TipoNodo type) {
     return "PROGRAMA";
   case TR_METHOD:
     return "PERFIL";
-  case TR_DECLARACION:
+  case TR_DECLARATION:
     return "DECLARACION";
   case TR_ASIGNACION:
     return "ASIGNACION";
