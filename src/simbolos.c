@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-TablaSimbolos *t = NULL;
+TablaSimbolos *global = NULL;
+TablaSimbolos *secundary_scope = NULL;
 
 TablaSimbolos *crear_tabla(size_t capacidad_inicial) {
   TablaSimbolos *t = malloc(sizeof(TablaSimbolos));
@@ -14,14 +15,6 @@ TablaSimbolos *crear_tabla(size_t capacidad_inicial) {
 }
 
 void insertar_simbolo(Simbolo *e) {
-  // buscar si ya existe
-  // for (size_t i = 0; i < t->usados; i++) {
-  //     if (strcmp(t->tabla[i].nombre, nombre) == 0) {
-  //         free(t->tabla[i].valor);
-  //         t->tabla[i].valor = strdup(valor);
-  //         return;
-  //     }
-  // }
   if (t->usados >= t->capacidad) {
     t->capacidad *= 2;
     t->tabla = realloc(t->tabla, t->capacidad * sizeof(Simbolo *));

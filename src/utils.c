@@ -21,14 +21,14 @@ char *gen_code(AST *node)
   case TR_VALOR:
   {
     char *t = new_temp();
-    printf("LOAD %s, %d\n", t, node->info->valor);
+    printf("LOAD %s, %d\n", t, simbol->valor);
     return t;
   }
 
   case TR_IDENTIFICADOR:
   {
     char *t = new_temp();
-    printf("LOAD %s, %s\n", t, node->info->nombre);
+    printf("LOAD %s, %s\n", t, simbol->nombre);
     return t;
   }
 

@@ -1,18 +1,24 @@
 #ifndef SIMBOLOS_H
 #define SIMBOLOS_H
 
-#include <stdlib.h>
 #include "tipos.h"
+#include <stdlib.h>
 
-typedef struct
-{
+typedef struct AST AST;
+
+
+typedef struct {
+  Categoria categoria;
   char *nombre; // identificador
-  Tipos tVar;   // tipo de variable
-  int valor;    // valor
+  Tipos tVar;   // tipo
+  int valor;    // valor ---SOLO VARIABLES
+  //-----SOLO METODOS
+  int num_params;
+  Tipos *param_tipos;
+  AST *cuerpo;
 } Simbolo;
 
-typedef struct
-{
+typedef struct {
   Simbolo **tabla;
   size_t capacidad;
   size_t usados;

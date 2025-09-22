@@ -20,16 +20,13 @@ AST *init_node(TipoNodo type, int child_count) {
 }
 
 void module_switch_case_programa(AST *node, va_list args) {
-  node->info = malloc(sizeof(Simbolo));
-  node->info->nombre = strdup("programa");
-  node->info->tVar =
-      va_arg(args, int); // $1: tiposF, tipo de retorno del programa/funcion
-  node->child_count = 1;
-  node->childs = malloc(sizeof(AST *));
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
+  node->childs[1] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
 }
 
-void module_switch_case_declaracion(AST *node, va_list args) {
+void module_switch_case_var_declaration(AST *node, va_list args) {
   int tipoIdentificador = va_arg(
       args, int); // $1: tipos, el enum de los tipos (internamente un int)
   char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
@@ -39,11 +36,120 @@ void module_switch_case_declaracion(AST *node, va_list args) {
             nombre);
     exit(EXIT_FAILURE);
   }
-  node->info = malloc(sizeof(Simbolo));
-  node->info->tVar = tipoIdentificador; // tipo (enum Tipos)
-  node->info->nombre = nombre;          // identificador
-  insertar_simbolo(node->info);
+  AST *exp = va_arg(args, AST *);
+  if (exp->info->tVar != id->tVar) {
+    fprintf(stderr,
+            "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
+            "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
+            id->nombre, tipoDatoToStr(id->tVar),
+            tipoDatoToStr(exp->info->tVar));
+    exit(EXIT_FAILURE);
+  }
+  Simbolo *simbol = malloc(sizeof(Simbolo));
+  simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
+  simbol->nombre = nombre;          // identificador
+  simbol->categoria = S_VAR;
+  simbol->valor = exp->info->valor;
+  insertar_simbolo(simbol);
+  node->info = simbol;
   node->child_count = 0;
+}
+
+void module_switch_case_method_declaration(AST *node, va_list args) {
+  int tipoIdentificador = va_arg(
+      args, int); // $1: tipos, el enum de los tipos (internamente un int)
+  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
+  Simbolo *id = buscar_simbolo(nombre);
+  if (id) {
+    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
+            nombre);
+    exit(EXIT_FAILURE);
+  }
+  AST *params = va_arg(args, AST *);
+  Simbolo *simbol = malloc(sizeof(Simbolo));
+  simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
+  simbol->nombre = nombre;          // identificador
+  simbol->categoria = S_FUNC;
+  simbol->num_params = params->child_count;
+  simbol->param_tipos = malloc(sizeof(Tipos) * simbol->num_params);
+  for (int i = 0; i < simbol->num_params; i++) {
+    simbol->param_tipos[i] = params->childs[i]->info->tVar;
+  }
+  if (node->type == TR_METHOD_DECLARATION) {
+    AST *cuerpo = va_arg(args, AST *);
+    if (tipoIdentificador != T_VOID) {
+      //accedo a la parte de sentencias en el bloque
+      //la cual es el segundo hijo de un bloque
+      AST *sentencias = cuerpo->childs[1];
+
+      int sentencesCount = sentencias->child_count;
+      int returnFound = 0;
+
+      for (int i = 0; i < sentencesCount; i++) {
+        AST *sentencia = sentencias->childs[i];
+
+        if (sentencia->type == TR_RETURN) {
+          returnFound = 1;
+
+          // Validar tipo del return
+          if (!sentencia->info) {
+            fprintf(stderr,
+                    "[Error semántico] 'return' en '%s' no tiene expresión.\n",
+                    nombre);
+            exit(EXIT_FAILURE);
+          }
+
+          if (sentencia->info->tVar != tipoIdentificador) {
+            fprintf(stderr,
+                    "[Error semántico] En método '%s': el 'return' #%d tiene "
+                    "tipo '%s', "
+                    "se esperaba '%s'.\n",
+                    nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
+                    tipoDatoToStr(tipoIdentificador));
+            exit(EXIT_FAILURE);
+          }
+
+          // Warning de código inalcanzable
+          if (i < sentencesCount - 1) {
+            fprintf(stderr,
+                    "[Warning semántico] En método '%s': código después del "
+                    "'return' #%d es inalcanzable.\n",
+                    nombre, i + 1);
+          }
+        }
+      }
+
+      // Warning si no hay return en método no-void
+      if (!returnFound) {
+        fprintf(stderr,
+                "[Warning semántico] Método '%s' no tiene un 'return' y es de "
+                "tipo no-void.\n",
+                nombre);
+      }
+    }
+  }
+  insertar_simbolo(simbol);
+  node->info = simbol;
+  node->child_count = 0;
+}
+
+
+
+void module_switch_case_param(AST *node, va_list args) {
+  int tipoIdentificador = va_arg(
+      args, int); // $1: tipos, el enum de los tipos (internamente un int)
+  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
+  Simbolo *simbol = malloc(sizeof(Simbolo));
+  simbol->tVar = tipoIdentificador;
+  simbol->nombre = nombre;
+  node->info = simbol;
+}
+
+void module_switch_case_block(AST *node, va_list args) {
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
+  node->childs[1] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
 }
 
 void module_switch_case_asignacion(AST *node, va_list args) {
@@ -81,118 +187,100 @@ void module_switch_case_asignacion(AST *node, va_list args) {
   node->childs[1] = exp;
 }
 
-void module_switch_case_valor(AST *node, va_list args) {
-  node->info = malloc(sizeof(Simbolo));
-  node->info->tVar =
-      va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
-  node->info->nombre = strdup("TR_VALOR");
-  node->info->valor = va_arg(
-      args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
-  node->child_count = 0;
-}
-
-void module_switch_case_identificador(AST *node, va_list args) {
-  char *nombre = va_arg(args, char *); // $1: ID, el nombre de la variable
+void module_switch_case_invocation(AST *node, va_list args) {
+  char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
   Simbolo *id = buscar_simbolo(nombre);
   if (!id) {
-    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
+    fprintf(stderr, "[Error semántico] El método '%s' no está declarado.\n",
             nombre);
     exit(EXIT_FAILURE);
   }
+  AST *params = va_arg(args, AST *);
+  if (params->child_count != id->num_params) {
+    fprintf(stderr,
+            "[Error semántico] El método '%s' espera %d parámetro(s), "
+            "pero se recibieron %d.\n",
+            nombre, id->num_params, params->child_count);
+    exit(EXIT_FAILURE);
+  }
+  for (int i = 0; i < id->num_params; i++) {
+    if (id->param_tipos[i] == params->childs[i]->info->tVar) {
+      fprintf(stderr,
+              "[Error semántico] En la llamada a '%s': "
+              "el parámetro #%d debería ser de tipo '%s', "
+              "pero se encontró '%s'.\n",
+              nombre, i + 1,
+              tipoDatoToStr(id->param_tipos[i]), // convierte enum Tipo a string
+              tipoDatoToStr(params->childs[i]->info->tVar));
+      exit(EXIT_FAILURE);
+    }
+  }
+  node->child_count = 1;
   node->info = id;
-  node->child_count = 0;
-  node->childs = NULL;
+  node->childs = malloc(sizeof(AST *));
+  node->childs[0] = params;
 }
 
-void module_switch_case_suma(AST *node, va_list args) {
-  AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
-  AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_INT || op2->info->tVar != T_INT) {
-    fprintf(stderr, "operacion con tipos invalidos\n");
+void module_switch_case_if(AST *node, va_list args) {
+  AST *condition = va_arg(args, AST *);
+  if (condition->info->tVar != T_BOOL) {
+    fprintf(stderr,
+            "[Error semántico] La condición del 'if' debe ser de tipo "
+            "'booleano', pero se encontró '%s'.\n",
+            tipoDatoToStr(condition->info->tVar));
     exit(EXIT_FAILURE);
   }
-  node->info = malloc(sizeof(Simbolo));
-  node->info->tVar = T_INT;
-  node->info->nombre = strdup("SUMA");
-
-  // operacion principal: SUMA
-  node->info->valor = op1->info->valor + op2->info->valor;
+  AST *cuerpo = va_arg(args, AST *);
 
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-
-  node->childs[0] = op1;
-  node->childs[1] = op2;
+  node->childs[0] = condition;
+  node->childs[1] = cuerpo;
 }
 
-void module_switch_case_multiplicacion(AST *node, va_list args) {
-  AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
-  AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_INT || op2->info->tVar != T_INT) {
-    fprintf(stderr, "operacion con tipos invalidos\n");
+void module_switch_case_if_else(AST *node, va_list args) {
+  AST *condition = va_arg(args, AST *);
+  if (condition->info->tVar != T_BOOL) {
+    fprintf(stderr,
+            "[Error semántico] La condición del 'if' debe ser de tipo "
+            "'booleano', pero se encontró '%s'.\n",
+            tipoDatoToStr(condition->info->tVar));
     exit(EXIT_FAILURE);
   }
-  node->info = malloc(sizeof(Simbolo));
-  node->info->tVar = T_INT;
-  node->info->nombre = strdup("MULTIPLICACION");
+  AST *cuerpo1 = va_arg(args, AST *);
+  AST *cuerpo2 = va_arg(args, AST *);
 
-  // operacion principal: MULTIPLICACION
-  node->info->valor = op1->info->valor * op2->info->valor;
+  node->child_count = 3;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = condition;
+  node->childs[1] = cuerpo1;
+  node->childs[2] = cuerpo2;
+}
+
+void module_switch_case_while(AST *node, va_list args) {
+  AST *condition = va_arg(args, AST *);
+  if (condition->info->tVar != T_BOOL) {
+    fprintf(stderr,
+            "[Error semántico] La condición del 'while' debe ser de tipo "
+            "'booleano', pero se encontró '%s'.\n",
+            tipoDatoToStr(condition->info->tVar));
+    exit(EXIT_FAILURE);
+  }
+  AST *cuerpo = va_arg(args, AST *);
 
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-
-  node->childs[0] = op1;
-  node->childs[1] = op2;
+  node->childs[0] = condition;
+  node->childs[1] = cuerpo;
 }
 
-void module_switch_case_and(AST *node, va_list args) {
-  AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
-  AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_BOOL || op2->info->tVar != T_BOOL) {
-    fprintf(stderr, "operacion con tipos invalidos\n");
-    exit(EXIT_FAILURE);
+void module_switch_case_return(AST *node, va_list args) {
+  // que tenga un hijo quiere decir que tiene una expresion a retornar
+  if (node->child_count != 1) {
+    return;
   }
-  node->info = malloc(sizeof(Simbolo));
-  node->info->tVar = T_BOOL;
-  node->info->nombre = strdup("CONJUNCION");
-
-  // operacion principal: AND
-  node->info->valor = (op1->info->valor != 0) && (op2->info->valor != 0);
-
-  node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
-
-  node->childs[0] = op1;
-  node->childs[1] = op2;
-}
-
-void module_switch_case_or(AST *node, va_list args) {
-  AST *op1 = va_arg(args, AST *); // $1: expr, el primer operando
-  AST *op2 = va_arg(args, AST *); // $3: expr, el segundo operando
-  if (op1->info->tVar != T_BOOL || op2->info->tVar != T_BOOL) {
-    fprintf(stderr, "operacion con tipos invalidos\n");
-    exit(EXIT_FAILURE);
-  }
-  node->info = malloc(sizeof(Simbolo));
-  node->info->tVar = T_BOOL;
-  node->info->nombre = strdup("DISYUNCION");
-
-  // operacion principal: OR
-  node->info->valor = (op1->info->valor != 0) || (op2->info->valor != 0);
-
-  node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
-
-  node->childs[0] = op1;
-  node->childs[1] = op2;
-}
-
-void module_switch_case_return(AST *node, int child_count, va_list args) {
-  node->childs = malloc(sizeof(AST *) * child_count);
-  for (int i = 0; i < child_count; i++)
-    node->childs[i] =
-        va_arg(args, AST *); // $2: expr, AST* que se retorna de la funcion
+  node->childs = malloc(sizeof(AST *));
+  node->childs[0] = va_arg(args, AST *);
 }
 
 AST *new_node(TipoNodo type, int child_count, ...) {
@@ -205,41 +293,36 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   case TR_PROGRAMA:
     module_switch_case_programa(node, args);
     break;
-  case TR_DECLARATION:
-    module_switch_case_declaracion(node, args);
+  case TR_VAR_DECLARATION:
+    module_switch_case_var_declaration(node, args);
+    break;
+  case TR_METHOD_DECLARATION:
+  case TR_METHOD_DECLARATION_EXTERN:
+    module_switch_case_method_declaration(node, args);
+    break;
+  case TR_PARAM:
+    module_switch_case_param(node, args);
+    break;
+  case TR_BLOCK:
+    module_switch_case_block(node, args);
     break;
   case TR_ASIGNACION:
     module_switch_case_asignacion(node, args);
     break;
-  case TR_VALOR:
-    module_switch_case_valor(node, args);
+  case TR_INVOCATION:
+    module_switch_case_invocation(node, args);
     break;
-  case TR_IDENTIFICADOR:
-    module_switch_case_identificador(node, args);
+  case TR_IF_STATEMENT:
+    module_switch_case_if(node, args);
     break;
-  case TR_SUMA:
-    module_switch_case_suma(node, args);
+  case TR_IF_ELSE_STATEMENT:
+    module_switch_case_if_else(node, args);
     break;
-  case TR_MULTIPLICACION:
-    module_switch_case_multiplicacion(node, args);
-    break;
-  case TR_AND:
-    module_switch_case_and(node, args);
-    break;
-  case TR_OR:
-    module_switch_case_or(node, args);
+  case TR_WHILE_STATEMENT:
+    module_switch_case_while(node, args);
     break;
   case TR_RETURN:
-    module_switch_case_return(node, child_count, args);
-    break;
-  case TR_EXPRESION:
-    module_switch_case_expresion(node, child_count, args); // TODO
-    break;
-  case TR_METHOD_EXTERN:
-    module_switch_case_method_extern(node, child_count, args); // TODO
-    break;
-  case TR_PARAM_LIST:
-    module_switch_case_param_list(node, child_count, args); // TODO
+    module_switch_case_return(node, args);
     break;
   // TR_PARAM, TR_BLOCK, TR_LISTA_SENTENCIAS, TR_INVOCATION,
   // TR_IF_STATEMENT, TR_IF_ELSE_STATEMENT, TR_WHILE_STATEMENT,
@@ -276,7 +359,6 @@ void free_ast(AST *node) {
   free(node->childs);
   free(node);
 }
-
 
 const char *tipoDatoToStr(Tipos type) {
   switch (type) {
