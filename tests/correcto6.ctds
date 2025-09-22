@@ -1,0 +1,9 @@
+program
+{
+  integer whiletrue = 1;
+  void main()
+  {
+    whiletrue = 2;
+    return;
+  }
+}
