@@ -324,13 +324,238 @@ void module_switch_case_negacion_logica(AST *node, va_list args)
   if (exp->info->tVar != T_BOOL)
   {
     fprintf(stderr,
-            "[Error semántico] La condición del 'while' debe ser de tipo "
-            "'boolean', pero se encontró '%s'.\n",
+            "[Error semántico] el operador '!' espera una expresion boleana"
+            "pero se encontró '%s'.\n",
             tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
   }
 
-  // node
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_BOOL;
+  node->info->valor = !exp->info->valor;
+  node->info->categoria = exp->info->categoria;
+  node->child_count = 1;
+  node->childs = malloc(sizeof(AST *));
+  node->childs[0] = exp;
+}
+
+void module_switch_case_negacion_aritmetica(AST *node, va_list args)
+{
+  AST *exp = va_arg(args, AST *);
+  if (exp->info->tVar != T_INT)
+  {
+    fprintf(stderr,
+            "[Error semántico] el operador '-' espera un entero"
+            "pero se encontró '%s'.\n",
+            tipoDatoToStr(exp->info->tVar));
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_INT;
+  node->info->valor = -(exp->info->valor);
+  node->child_count = 1;
+  node->childs = malloc(sizeof(AST *));
+  node->childs[0] = exp;
+}
+
+void module_switch_case_suma(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT)
+  {
+    fprintf(stderr, "[Error semántico] el operador '+' espera un entero");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_INT;
+  node->info->valor = operando1->info->valor + operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_resta(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT)
+  {
+    fprintf(stderr, "[Error semántico] el operador '-' espera un entero");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_INT;
+  node->info->valor = operando1->info->valor - operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_multiplicacion(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT)
+  {
+    fprintf(stderr, "[Error semántico] el operador '*' espera un entero");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_INT;
+  node->info->valor = operando1->info->valor * operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_divition(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT)
+  {
+    fprintf(stderr, "[Error semántico] el operador '/' espera un entero");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_INT;
+  node->info->valor = operando1->info->valor / operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_modulo(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT)
+  {
+    fprintf(stderr, "[Error semántico] el operador '%%' espera un entero");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_INT;
+  node->info->valor = operando1->info->valor % operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_less_than(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT)
+  {
+    fprintf(stderr, "[Error semántico] el operador '<' espera un entero");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_BOOL;
+  node->info->valor = operando1->info->valor < operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_greater_than(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT)
+  {
+    fprintf(stderr, "[Error semántico] el operador '>' espera un entero");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_BOOL;
+  node->info->valor = operando1->info->valor > operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_equal(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_BOOL || operando2->info->tVar != T_BOOL)
+  {
+    fprintf(stderr, "[Error semántico] el operador '==' espera boleanos");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_BOOL;
+  node->info->valor = operando1->info->valor == operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_and(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_BOOL || operando2->info->tVar != T_BOOL)
+  {
+    fprintf(stderr, "[Error semántico] el operador '&&' espera boleanos");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_BOOL;
+  node->info->valor = operando1->info->valor && operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_or(AST *node, va_list args)
+{
+  AST *operando1 = va_arg(args, AST *);
+  AST *operando2 = va_arg(args, AST *);
+  if (operando1->info->tVar != T_BOOL || operando2->info->tVar != T_BOOL)
+  {
+    fprintf(stderr, "[Error semántico] el operador '||' espera boleanos");
+    exit(EXIT_FAILURE);
+  }
+
+  node->info = malloc(sizeof(AST));
+  node->info->tVar = T_BOOL;
+  node->info->valor = operando1->info->valor || operando2->info->valor;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = operando1;
+  node->childs[0] = operando2;
+}
+
+void module_switch_case_literal(AST *node, va_list args)
+{
+  node->info = malloc(sizeof(Simbolo));
+  node->info->tVar = va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
+  node->info->nombre = strdup("TR_VALOR");
+  node->info->valor = va_arg(args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
+  node->child_count = 0;
 }
 
 AST *new_node(TipoNodo type, int child_count, ...)
@@ -382,11 +607,42 @@ AST *new_node(TipoNodo type, int child_count, ...)
   case TR_NEGACION_LOGICA:
     module_switch_case_negacion_logica(node, args);
     break;
-  // TR_PARAM, TR_BLOCK, TR_LISTA_SENTENCIAS, TR_INVOCATION,
-  // TR_IF_STATEMENT, TR_IF_ELSE_STATEMENT, TR_WHILE_STATEMENT,
-  // TR_ARG_LIST, TR_INVOCATION, TR_NEGACION_LOGICA,
-  // TR_NEGACION_ARITMETICA, TR_RESTA, TR_DIVICION, TR_MODULO
-  // TR_MENOR, TR_MAYOR, TR_IGUAL_LOGICOl,
+  case TR_NEGACION_ARITMETICA:
+    module_switch_case_negacion_aritmetica(node, args);
+    break;
+  case TR_SUMA:
+    module_switch_case_suma(node, args);
+    break;
+  case TR_RESTA:
+    module_switch_case_resta(node, args);
+    break;
+  case TR_MULTIPLICACION:
+    module_switch_case_multiplicacion(node, args);
+    break;
+  case TR_DIVITION:
+    module_switch_case_divition(node, args);
+    break;
+  case TR_MODULO:
+    module_switch_case_modulo(node, args);
+    break;
+  case TR_MENOR:
+    module_switch_case_less_than(node, args);
+    break;
+  case TR_MAYOR:
+    module_switch_case_greater_than(node, args);
+    break;
+  case TR_IGUAL_LOGICO:
+    module_switch_case_equal(node, args);
+    break;
+  case TR_AND:
+    module_switch_case_and(node, args);
+    break;
+  case TR_OR:
+    module_switch_case_or(node, args);
+    break;
+  case TR_VALOR:
+    module_switch_case_literal(node, args);
+    break;
   default:
     break;
   }

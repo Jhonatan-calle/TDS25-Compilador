@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "../headers/utils.h"
 
 int temp_counter = 0;

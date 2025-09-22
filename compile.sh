@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Starting compilation Flex and Bison"
-bison -d -Wall -Wcounterexamples syntax.y
+bison -d -Wall syntax.y
 flex lexicon.l
 
 echo "Compiling sources"
