@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include "../headers/utils.h"
 #include "../headers/simbolos.h"
+#include "../headers/main.h"
 
 int temp_counter = 0;
 
+// Assembly util function
 char *new_temp()
 {
   char buffer[16];
@@ -11,6 +13,7 @@ char *new_temp()
   return strdup(buffer);
 }
 
+// Assembly util function
 char *gen_code(AST *node)
 {
   if (!node)
@@ -21,14 +24,14 @@ char *gen_code(AST *node)
   case TR_VALOR:
   {
     char *t = new_temp();
-    printf("LOAD %s, %d\n", t, simbol->valor);
+    printf("LOAD %s, %d\n", t, node->info->valor);
     return t;
   }
 
   case TR_IDENTIFICADOR:
   {
     char *t = new_temp();
-    printf("LOAD %s, %s\n", t, simbol->nombre);
+    printf("LOAD %s, %s\n", t, node->info->nombre);
     return t;
   }
 
@@ -95,4 +98,11 @@ char *gen_code(AST *node)
   default:
     return NULL;
   }
+}
+
+// Print util function, grabbing the debug global flag and printing the parameter
+void print_if_debug(char* str)
+{
+  if (debug)
+    printf("%s\n", str);
 }

@@ -7,4 +7,5 @@ extern int debug;
 
 int yylex(void);
 int compiler_main(int argc, char *argv[]);
-void usage(const char *prog);
+void parse_method();
+void usage_message(const char *prog);

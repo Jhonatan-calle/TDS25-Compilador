@@ -1,13 +1,21 @@
 #include "../headers/utils.h"
 #include "../headers/main.h"
+#include "../headers/simbolos.h"
 #include "../syntax.tab.h"
 
 extern char *yytext;
 
+TablaSimbolos *global_scope;
+TablaSimbolos *local_scope;
+
 int debug = 0;
+int gen_assembly = 0;
 
 int compiler_main(int argc, char *argv[])
 {
+  global_scope = crear_tabla(10);
+  local_scope = crear_tabla(10);
+
   char *outfile = NULL;
   char *target = NULL;
   char *opt = NULL;
@@ -26,7 +34,7 @@ int compiler_main(int argc, char *argv[])
       else
       {
         fprintf(stderr, "Error: missing argument after -o\n");
-        usage(argv[0]);
+        usage_message(argv[0]);
       }
     }
     else if (strcmp(argv[i], "-target") == 0 || strcmp(argv[i], "-t") == 0)
@@ -38,7 +46,7 @@ int compiler_main(int argc, char *argv[])
       else
       {
         fprintf(stderr, "Error: missing argument after -target\n");
-        usage(argv[0]);
+        usage_message(argv[0]);
       }
     }
     else if (strcmp(argv[i], "-opt") == 0)
@@ -65,7 +73,7 @@ int compiler_main(int argc, char *argv[])
 
   if (!inputfile)
   {
-    usage(argv[0]);
+    usage_message(argv[0]);
     return EXIT_FAILURE;
   }
 
@@ -74,7 +82,7 @@ int compiler_main(int argc, char *argv[])
   if (!yyin)
   {
     perror("Error opening input file");
-    usage(argv[0]);
+    usage_message(argv[0]);
   }
 
   // Debug info
@@ -154,7 +162,7 @@ int compiler_main(int argc, char *argv[])
   {
     // Syntax analysis
     printf("Stage: Parse\n");
-    yyparse();
+    parse_method();
   }
   else if (target && strcmp(target, "codinter") == 0)
   {
@@ -165,24 +173,34 @@ int compiler_main(int argc, char *argv[])
   {
     // Assembly
     printf("Stage: Assembly\n");
+    gen_assembly = 1;
   }
   else if (target)
   {
-    // Target flag but invalid stage provided
-    usage(argv[0]);
+    // Target flag set but invalid stage provided
+    usage_message(argv[0]);
   }
   else
   {
-    // Normal compilation completed
-    yyparse();
-    printf("Compilation completed.\n");
+    // Normal compilation
+    parse_method();
   }
 
   fclose(yyin);
   return 0;
 }
 
-void usage(const char *prog)
+void parse_method()
+{
+  int compiled_with_errors = yyparse();
+
+  if (compiled_with_errors)
+    printf("Compilation completed with errors.\n");
+  else
+    printf("Compilation completed successfuly.\n");
+}
+
+void usage_message(const char *prog)
 {
   fprintf(stderr, "Usage: %s [flags] file.ctds\n", prog);
   fprintf(stderr, "Options:\n");

@@ -4,3 +4,4 @@
 
 char *new_temp();
 char *gen_code(AST *node);
+void print_if_debug(char* str);

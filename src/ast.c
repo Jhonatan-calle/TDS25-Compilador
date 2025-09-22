@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-AST *init_node(TipoNodo type, int child_count) {
+AST *init_node(TipoNodo type, int child_count)
+{
   AST *node = malloc(sizeof(AST));
-  if (!node) {
+  if (!node)
+  {
     fprintf(stderr, "<<<<<Error: no se pudo reservar memoria para AST>>>>>\n");
     exit(EXIT_FAILURE);
   }
@@ -19,25 +21,28 @@ AST *init_node(TipoNodo type, int child_count) {
   return node;
 }
 
-void module_switch_case_programa(AST *node, va_list args) {
+void module_switch_case_programa(AST *node, va_list args)
+{
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
   node->childs[1] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
 }
 
-void module_switch_case_var_declaration(AST *node, va_list args) {
-  int tipoIdentificador = va_arg(
-      args, int); // $1: tipos, el enum de los tipos (internamente un int)
-  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  Simbolo *id = buscar_simbolo(nombre);
-  if (id) {
-    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n",
-            nombre);
+void module_switch_case_var_declaration(AST *node, va_list args)
+{
+  int tipoIdentificador = va_arg(args, int); // $1: tipos, el enum de los tipos (internamente un int)
+  char *nombre = va_arg(args, char *);       // $2: ID, el nombre de la var declarada
+  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
+  if (id)
+  {
+    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado localmente>>>>>\n", nombre);
     exit(EXIT_FAILURE);
   }
+
   AST *exp = va_arg(args, AST *);
-  if (exp->info->tVar != id->tVar) {
+  if (exp->info->tVar != id->tVar)
+  {
     fprintf(stderr,
             "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
             "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
@@ -50,21 +55,34 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_VAR;
   simbol->valor = exp->info->valor;
-  insertar_simbolo(simbol);
+  insertar_simbolo(local_scope_table, simbol);
   node->info = simbol;
   node->child_count = 0;
 }
 
-void module_switch_case_method_declaration(AST *node, va_list args) {
-  int tipoIdentificador = va_arg(
-      args, int); // $1: tipos, el enum de los tipos (internamente un int)
-  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  Simbolo *id = buscar_simbolo(nombre);
-  if (id) {
-    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
-            nombre);
+void module_switch_case_method_declaration(AST *node, va_list args)
+{
+  int tipoIdentificador = va_arg(args, int); // $1: tipos, el enum de los tipos (internamente un int)
+  char *nombre = va_arg(args, char *);       // $2: ID, el nombre de la var declarada
+
+  // chequeo de declaracion de metodo en el scope local
+  // no se puede declarar un metodo con un nombre duplicado
+  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
+  if (id)
+  {
+    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado localmente.\n", nombre);
     exit(EXIT_FAILURE);
   }
+
+  // chequeo de declaracion de metodo en el scope global
+  // no se puede declarar un metodo con un nombre duplicado
+  id = buscar_simbolo(global_scope_table, nombre);
+  if (id)
+  {
+    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado globalmente.\n", nombre);
+    exit(EXIT_FAILURE);
+  }
+
   AST *params = va_arg(args, AST *);
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
@@ -72,38 +90,50 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   simbol->categoria = S_FUNC;
   simbol->num_params = params->child_count;
   simbol->param_tipos = malloc(sizeof(Tipos) * simbol->num_params);
-  for (int i = 0; i < simbol->num_params; i++) {
+
+  for (int i = 0; i < simbol->num_params; i++)
+  {
     simbol->param_tipos[i] = params->childs[i]->info->tVar;
   }
-  if (node->type == TR_METHOD_DECLARATION) {
+
+  // TR_METHOD_DECLARATION que no tiene sentencia reservada Extern
+  if (node->type == TR_METHOD_DECLARATION)
+  {
     AST *cuerpo = va_arg(args, AST *);
-    if (tipoIdentificador != T_VOID) {
-      //accedo a la parte de sentencias en el bloque
-      //la cual es el segundo hijo de un bloque
+    if (tipoIdentificador != T_VOID)
+    {
+      // accedo a la parte de sentencias en el bloque
+      // la cual es el segundo hijo de un bloque
       AST *sentencias = cuerpo->childs[1];
 
       int sentencesCount = sentencias->child_count;
       int returnFound = 0;
 
-      for (int i = 0; i < sentencesCount; i++) {
+      for (int i = 0; i < sentencesCount; i++)
+      {
         AST *sentencia = sentencias->childs[i];
 
-        if (sentencia->type == TR_RETURN) {
+        if (sentencia->type == TR_RETURN)
+        {
           returnFound = 1;
 
-
-          if (sentencia->info->tVar != tipoIdentificador) {
+          if (sentencia->info->tVar != tipoIdentificador)
+          {
             fprintf(stderr,
-                    "[Error semántico] En método '%s': el 'return' #%d tiene "
+                    "[Error semántico] En método '%s': "
+                    "el 'return' #%d tiene "
                     "tipo '%s', "
                     "se esperaba '%s'.\n",
-                    nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
+                    nombre,
+                    i + 1,
+                    tipoDatoToStr(sentencia->info->tVar),
                     tipoDatoToStr(tipoIdentificador));
             exit(EXIT_FAILURE);
           }
 
           // Warning de código inalcanzable
-          if (i < sentencesCount - 1) {
+          if (i < sentencesCount - 1)
+          {
             fprintf(stderr,
                     "[Warning semántico] En método '%s': código después del "
                     "'return' #%d es inalcanzable.\n",
@@ -112,53 +142,57 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
         }
       }
 
-      // Warning si no hay return en método no-void
-      if (!returnFound) {
+      // Error si no hay return en método no-void
+      if (!returnFound)
+      {
         fprintf(stderr,
                 "[Warning semántico] Método '%s' no tiene un 'return' y es de "
                 "tipo no-void.\n",
                 nombre);
+        exit(EXIT_FAILURE);
       }
     }
   }
-  insertar_simbolo(simbol);
+  insertar_simbolo(global_scope_table, simbol);
+  insertar_simbolo(local_scope_table, simbol);
   node->info = simbol;
   node->child_count = 0;
 }
 
-
-
-void module_switch_case_param(AST *node, va_list args) {
-  int tipoIdentificador = va_arg(
-      args, int); // $1: tipos, el enum de los tipos (internamente un int)
-  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
+void module_switch_case_param(AST *node, va_list args)
+{
+  int tipoIdentificador = va_arg(args, int);  // $1: tipos, el enum de los tipos (internamente un int)
+  char *nombre = va_arg(args, char *);        // $2: ID, el nombre de la var declarada
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador;
   simbol->nombre = nombre;
   node->info = simbol;
 }
 
-void module_switch_case_block(AST *node, va_list args) {
+void module_switch_case_block(AST *node, va_list args)
+{
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
-  node->childs[1] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
+  liberar_tabla(local_scope_table);
+  local_scope_table = crear_tabla(10);
+  node->childs[0] = va_arg(args, AST *); // $2: var_declaration_list, de tipo AST*
+  node->childs[1] = va_arg(args, AST *); // $3: statement_list, de tipo AST*
 }
 
-void module_switch_case_asignacion(AST *node, va_list args) {
+void module_switch_case_asignacion(AST *node, va_list args)
+{
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
-  Simbolo *id = buscar_simbolo(nombre);
-  if (!id) {
-    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
-            nombre);
+  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
+  if (!id)
+  {
+    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n", nombre);
     exit(EXIT_FAILURE);
   }
 
-  AST *exp = va_arg(
-      args,
-      AST *); // $3: expr, lo que se le va asignar a la variable, de tipo AST*
+  AST *exp = va_arg(args, AST *); // $3: expr, lo que se le va asignar a la variable, de tipo AST*
 
-  if (exp->info->tVar != id->tVar) {
+  if (exp->info->tVar != id->tVar)
+  {
     fprintf(stderr,
             "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
             "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
@@ -180,24 +214,36 @@ void module_switch_case_asignacion(AST *node, va_list args) {
   node->childs[1] = exp;
 }
 
-void module_switch_case_invocation(AST *node, va_list args) {
+void module_switch_case_invocation(AST *node, va_list args)
+{
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
-  Simbolo *id = buscar_simbolo(nombre);
-  if (!id) {
-    fprintf(stderr, "[Error semántico] El método '%s' no está declarado.\n",
-            nombre);
+  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
+  if (!id)
+  {
+    fprintf(stderr, "[Error semántico] El método '%s' no está declarado.\n", nombre);
     exit(EXIT_FAILURE);
   }
+
+  id = buscar_simbolo(global_scope_table, nombre);
+  if (!id)
+  {
+    fprintf(stderr, "[Error semántico] El método '%s' no está declarado.\n", nombre);
+    exit(EXIT_FAILURE);
+  }
+
   AST *params = va_arg(args, AST *);
-  if (params->child_count != id->num_params) {
+  if (params->child_count != id->num_params)
+  {
     fprintf(stderr,
             "[Error semántico] El método '%s' espera %d parámetro(s), "
             "pero se recibieron %d.\n",
             nombre, id->num_params, params->child_count);
     exit(EXIT_FAILURE);
   }
-  for (int i = 0; i < id->num_params; i++) {
-    if (id->param_tipos[i] == params->childs[i]->info->tVar) {
+  for (int i = 0; i < id->num_params; i++)
+  {
+    if (id->param_tipos[i] == params->childs[i]->info->tVar)
+    {
       fprintf(stderr,
               "[Error semántico] En la llamada a '%s': "
               "el parámetro #%d debería ser de tipo '%s', "
@@ -214,12 +260,14 @@ void module_switch_case_invocation(AST *node, va_list args) {
   node->childs[0] = params;
 }
 
-void module_switch_case_if(AST *node, va_list args) {
+void module_switch_case_if(AST *node, va_list args)
+{
   AST *condition = va_arg(args, AST *);
-  if (condition->info->tVar != T_BOOL) {
+  if (condition->info->tVar != T_BOOL)
+  {
     fprintf(stderr,
             "[Error semántico] La condición del 'if' debe ser de tipo "
-            "'booleano', pero se encontró '%s'.\n",
+            "'boolean', pero se encontró '%s'.\n",
             tipoDatoToStr(condition->info->tVar));
     exit(EXIT_FAILURE);
   }
@@ -231,12 +279,14 @@ void module_switch_case_if(AST *node, va_list args) {
   node->childs[1] = cuerpo;
 }
 
-void module_switch_case_if_else(AST *node, va_list args) {
+void module_switch_case_if_else(AST *node, va_list args)
+{
   AST *condition = va_arg(args, AST *);
-  if (condition->info->tVar != T_BOOL) {
+  if (condition->info->tVar != T_BOOL)
+  {
     fprintf(stderr,
             "[Error semántico] La condición del 'if' debe ser de tipo "
-            "'booleano', pero se encontró '%s'.\n",
+            "'boolean', pero se encontró '%s'.\n",
             tipoDatoToStr(condition->info->tVar));
     exit(EXIT_FAILURE);
   }
@@ -250,12 +300,14 @@ void module_switch_case_if_else(AST *node, va_list args) {
   node->childs[2] = cuerpo2;
 }
 
-void module_switch_case_while(AST *node, va_list args) {
+void module_switch_case_while(AST *node, va_list args)
+{
   AST *condition = va_arg(args, AST *);
-  if (condition->info->tVar != T_BOOL) {
+  if (condition->info->tVar != T_BOOL)
+  {
     fprintf(stderr,
             "[Error semántico] La condición del 'while' debe ser de tipo "
-            "'booleano', pero se encontró '%s'.\n",
+            "'boolean', pero se encontró '%s'.\n",
             tipoDatoToStr(condition->info->tVar));
     exit(EXIT_FAILURE);
   }
@@ -267,46 +319,50 @@ void module_switch_case_while(AST *node, va_list args) {
   node->childs[1] = cuerpo;
 }
 
-void module_switch_case_return(AST *node, va_list args) {
-  if (node->child_count != 1) {
+void module_switch_case_return(AST *node, va_list args)
+{
+  if (node->child_count != 1)
+  {
     return;
   }
   node->childs = malloc(sizeof(AST *));
   node->childs[0] = va_arg(args, AST *);
 }
 
-
-
-void module_switch_case_id(AST *node, va_list args) {
-  if (node->child_count != 1) {
+void module_switch_case_id(AST *node, va_list args)
+{
+  if (node->child_count != 1)
+  {
     return;
   }
   node->childs = malloc(sizeof(AST *));
   node->childs[0] = va_arg(args, AST *);
 }
 
-
-void module_switch_case_negacion_logica(AST *node, va_list args) {
+void module_switch_case_negacion_logica(AST *node, va_list args)
+{
   AST *exp = va_arg(args, AST *);
-  if (exp->info->tVar != T_BOOL) {
+  if (exp->info->tVar != T_BOOL)
+  {
     fprintf(stderr,
-            "[Error semántico] La condición del 'while' debe ser de tipo h"
-            "'booleano', pero se encontró '%s'.\n",
+            "[Error semántico] La condición del 'while' debe ser de tipo "
+            "'boolean', pero se encontró '%s'.\n",
             tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
   }
 
-  node 
+  // node
 }
 
-
-AST *new_node(TipoNodo type, int child_count, ...) {
+AST *new_node(TipoNodo type, int child_count, ...)
+{
   AST *node = init_node(type, child_count);
 
   va_list args;
   va_start(args, child_count);
 
-  switch (type) {
+  switch (type)
+  {
   case TR_PROGRAMA:
     module_switch_case_programa(node, args);
     break;
@@ -360,10 +416,12 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   return node;
 }
 
-AST *append_child(AST *list, AST *child) {
+AST *append_child(AST *list, AST *child)
+{
 
   list->childs = realloc(list->childs, sizeof(AST *) * (list->child_count + 1));
-  if (!list->childs) {
+  if (!list->childs)
+  {
     fprintf(stderr, "Error realloc en append_child\n");
     exit(EXIT_FAILURE);
   }
@@ -373,7 +431,8 @@ AST *append_child(AST *list, AST *child) {
   return list;
 }
 
-void free_ast(AST *node) {
+void free_ast(AST *node)
+{
   if (!node)
     return;
 
@@ -383,8 +442,10 @@ void free_ast(AST *node) {
   free(node);
 }
 
-const char *tipoDatoToStr(Tipos type) {
-  switch (type) {
+const char *tipoDatoToStr(Tipos type)
+{
+  switch (type)
+  {
   case T_INT:
     return "INT";
   case T_BOOL:

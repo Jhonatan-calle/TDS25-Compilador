@@ -4,7 +4,8 @@
 #include "tipos.h"
 #include "simbolos.h"
 
-extern TablaSimbolos *t;
+extern TablaSimbolos *global_scope_table;
+extern TablaSimbolos *local_scope_table;
 
 typedef struct AST
 {
