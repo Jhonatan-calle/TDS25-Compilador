@@ -150,7 +150,7 @@ expr
     : ID
        { $$ = new_node(TR_IDENTIFICADOR, 1, $1); }
     | ID '(' arg_list ')'
-        {$$ = new_node(TR_INVOCATION,1,$1,$3);}
+        {$$ = new_node(TR_INVOCATION,2,$1,$3);}
     | literal
         { $$ = $1;}
     | '!' expr %prec NOT
