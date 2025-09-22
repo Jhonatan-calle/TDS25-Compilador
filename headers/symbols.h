@@ -1,8 +1,8 @@
-#ifndef SIMBOLOS_H
-#define SIMBOLOS_H
+#ifndef SYMBOLS_H
+#define SYMBOLS_H
 
 #include <stdlib.h>
-#include "tipos.h"
+#include "types.h"
 
 typedef struct
 {
@@ -24,5 +24,6 @@ TablaSimbolos *crear_tabla(size_t capacidad_inicial);
 void insertar_simbolo(Simbolo *e);
 Simbolo *buscar_simbolo(char *nombre);
 void liberar_tabla();
+void print_symtable();
 
-#
+#endif // SYMBOLS_H

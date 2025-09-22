@@ -1,9 +1,9 @@
-|#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include "../headers/ast.h"
-#include "../headers/simbolos.h"
+#include "../headers/symbols.h"
 
 void print_indent(int level)
 {

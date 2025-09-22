@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../headers/simbolos.h"
+#include "../headers/symbols.h"
 
 TablaSimbolos *t = NULL;
 
@@ -53,4 +53,30 @@ void liberar_tabla()
   }
   free(t->tabla);
   free(t);
+}
+
+void print_symtable()
+{
+  if (t == NULL)
+  {
+    printf("Symtable not initialized.\n");
+    return;
+  }
+
+  printf("---- Symtable ----\n");
+  printf("Capacity: %zu | Used: %zu\n", t->capacidad, t->usados);
+
+  for (size_t i = 0; i < t->usados; i++)
+  {
+    Simbolo *s = t->tabla[i];
+    if (s != NULL)
+    {
+      printf("[%zu] Name: %s | Type var: %d | Value: %d\n",
+             i,
+             s->nombre ? s->nombre : "(null)",
+             s->tVar,
+             s->valor);
+    }
+  }
+  printf("---------------------------\n");
 }

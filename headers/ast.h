@@ -1,8 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
-#include "tipos.h"
-#include "simbolos.h"
+#include "types.h"
+#include "symbols.h"
 
 extern TablaSimbolos *t;
 
