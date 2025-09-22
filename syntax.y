@@ -30,7 +30,6 @@
 %type <node> block statement_list arg_list statement param_list var_declaration_list var_declaration 
 %token <id> ID 
 %type <tipo> type 
-%type param_list 
 %token T_EOS
 %token V_FALSE V_TRUE
 %token <val> V_NUM
@@ -64,7 +63,7 @@ var_declaration_list
   : %empty
     { $$ = new_node(TR_VAR_DECLARATION_LIST,0);}
   | var_declaration_list var_declaration 
-    { $$ = append_child($1,$3);}
+    { $$ = append_child($1,$2);}
   ;
 
 var_declaration 
@@ -75,13 +74,13 @@ method_declaration_list
   : %empty
     { $$ = new_node(TR_METHOD_DECLARATION_LIST,0);}
   | method_declaration_list method_declaration 
-    { $$ = append_child($1,$3);}
+    { $$ = append_child($1,$2);}
   ;
 
 
 method_declaration 
   : type ID '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
-    { $$ = new_node(TR_METHOD_DECLARATION,4,$1,$2,$4,$5);}
+    { $$ = new_node(TR_METHOD_DECLARATION,4,$1,$2,$4,$6);}
   |  type ID  '(' param_list ')' R_EXTERN T_EOS // extern method
     { $$ = new_node(TR_METHOD_DECLARATION_EXTERN,3,$1,$2,$4);}
   ;
