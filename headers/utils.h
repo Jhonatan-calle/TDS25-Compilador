@@ -5,6 +5,7 @@
 
 #include "ast.h"
 #include "symbols.h"
+#include "../syntax.tab.h"
 
 extern int debug_flag;
 extern int assembly_flag;
@@ -14,3 +15,6 @@ char *gen_code(AST *node);
 void print_if_debug_flag(char* str);
 void gen_assembly_if_assembly_flag(AST* root);
 int process_arguments(int argc, char *argv[], char **outfile, char **target, char **opt, char **inputfile);
+void parse_method();
+void usage_message(const char *prog);
+int process_target_stage(const char *target, const char *inputfile);
