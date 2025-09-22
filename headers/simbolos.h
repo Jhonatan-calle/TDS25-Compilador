@@ -2,10 +2,10 @@
 #define SIMBOLOS_H
 
 #include "tipos.h"
-#include "ast.h"
+#include "forward_declarations.h"
 #include <stdlib.h>
 
-typedef struct
+struct Simbolo
 {
   Categoria categoria;
   char *nombre; // identificador
@@ -15,7 +15,7 @@ typedef struct
   int num_params;
   Tipos *param_tipos;
   AST *cuerpo;
-} Simbolo;
+};
 
 typedef struct
 {
@@ -24,12 +24,11 @@ typedef struct
   size_t usados;
 } TablaSimbolos;
 
-extern TablaSimbolos *global_scope_table;
-extern TablaSimbolos *local_scope_table;
+extern TablaSimbolos *global_table;
 
 TablaSimbolos *crear_tabla(size_t capacidad_inicial);
-void insertar_simbolo(TablaSimbolos* t, Simbolo *e);
-Simbolo *buscar_simbolo(TablaSimbolos* t, char *nombre);
-void liberar_tabla(TablaSimbolos* t);
+void insertar_simbolo(Simbolo *e);
+Simbolo *buscar_simbolo(char *nombre);
+void liberar_tabla();
 
 #endif // SIMBOLOS_H
