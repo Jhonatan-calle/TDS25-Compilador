@@ -1,22 +1,18 @@
-#include "../headers/utils.h"
 #include "../headers/main.h"
-#include "../headers/simbolos.h"
-#include "../syntax.tab.h"
+#include <unistd.h>
 
 extern char *yytext;
 
-TablaSimbolos *global_scope;
-TablaSimbolos *local_scope;
-
-int debug = 0;
-int gen_assembly = 0;
+TablaSimbolos *global_table = NULL;
+int debug_flag = 0;
+int assembly_flag = 0;
 
 int compiler_main(int argc, char *argv[])
 {
-  global_scope = crear_tabla(10);
-  local_scope = crear_tabla(10);
+  global_table = crear_tabla(10);
 
-  char *outfile = NULL;
+  char outfile_with_ext[256];  // Buffer for filename with extension
+  char *outfile = "a.out";  // Default output file name
   char *target = NULL;
   char *opt = NULL;
 
@@ -29,7 +25,9 @@ int compiler_main(int argc, char *argv[])
     {
       if (i + 1 < argc)
       {
-        outfile = argv[++i]; // Takes the next as outfile
+        snprintf(outfile_with_ext, sizeof(outfile_with_ext), "%s.out", argv[i + 1]);
+        outfile = outfile_with_ext;
+        i++;
       }
       else
       {
@@ -62,7 +60,7 @@ int compiler_main(int argc, char *argv[])
     }
     else if (strcmp(argv[i], "-debug") == 0 || strcmp(argv[i], "-d") == 0)
     {
-      debug = 1;
+      debug_flag = 1;
     }
     else
     {
@@ -86,7 +84,7 @@ int compiler_main(int argc, char *argv[])
   }
 
   // Debug info
-  if (debug)
+  if (debug_flag)
   {
     printf("[DEBUG] Input file: %s\n", inputfile);
     if (outfile)
@@ -173,7 +171,8 @@ int compiler_main(int argc, char *argv[])
   {
     // Assembly
     printf("Stage: Assembly\n");
-    gen_assembly = 1;
+    assembly_flag = 1;
+    parse_method();
   }
   else if (target)
   {
@@ -187,6 +186,23 @@ int compiler_main(int argc, char *argv[])
   }
 
   fclose(yyin);
+
+  // Create symbolic link with specified output name
+  if (outfile) {
+    // Remove existing file if it exists
+    if (access(outfile, F_OK) == 0) {
+      unlink(outfile);
+    }
+    // Create symbolic link with specified name
+    if (symlink("c-tds", outfile) != 0) {
+      perror("Error creating output file");
+      return EXIT_FAILURE;
+    }
+    if (debug_flag) {
+      printf("[DEBUG] Created output file: %s\n", outfile);
+    }
+  }
+
   return 0;
 }
 

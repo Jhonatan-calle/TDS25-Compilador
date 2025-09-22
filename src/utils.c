@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include "../headers/utils.h"
-#include "../headers/simbolos.h"
-#include "../headers/main.h"
 
 int temp_counter = 0;
 
@@ -100,9 +98,18 @@ char *gen_code(AST *node)
   }
 }
 
-// Print util function, grabbing the debug global flag and printing the parameter
-void print_if_debug(char* str)
+// Print util function
+// Default print if global debug flag is enabled
+void print_if_debug_flag(char* str)
 {
-  if (debug)
+  if (debug_flag)
     printf("%s\n", str);
+}
+
+// Print util function
+// Default print if global assembly flag is enabled
+void gen_assembly_if_assembly_flag(AST* root)
+{
+  if (assembly_flag)
+    gen_code(root);
 }
