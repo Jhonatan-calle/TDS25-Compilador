@@ -11,65 +11,9 @@ int compiler_main(int argc, char *argv[])
 {
   global_table = crear_tabla(10);
 
-  char outfile_with_ext[256];  // Buffer for filename with extension
-  char *outfile = "a.out";  // Default output file name
-  char *target = NULL;
-  char *opt = NULL;
+  char *outfile, *target, *opt, *inputfile;
 
-  char *inputfile = NULL;
-
-  // Cycle the arguments
-  for (int i = 1; i < argc; i++)
-  {
-    if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "-output") == 0)
-    {
-      if (i + 1 < argc)
-      {
-        snprintf(outfile_with_ext, sizeof(outfile_with_ext), "%s.out", argv[i + 1]);
-        outfile = outfile_with_ext;
-        i++;
-      }
-      else
-      {
-        fprintf(stderr, "Error: missing argument after -o\n");
-        usage_message(argv[0]);
-      }
-    }
-    else if (strcmp(argv[i], "-target") == 0 || strcmp(argv[i], "-t") == 0)
-    {
-      if (i + 1 < argc)
-      {
-        target = argv[++i];
-      }
-      else
-      {
-        fprintf(stderr, "Error: missing argument after -target\n");
-        usage_message(argv[0]);
-      }
-    }
-    else if (strcmp(argv[i], "-opt") == 0)
-    {
-      if (i + 1 < argc && argv[i + 1][0] != '-')
-      {
-        opt = argv[++i]; // It can be 'all' or another
-      }
-      else
-      {
-        opt = "all"; // Assumming 'all' if nothing provided
-      }
-    }
-    else if (strcmp(argv[i], "-debug") == 0 || strcmp(argv[i], "-d") == 0)
-    {
-      debug_flag = 1;
-    }
-    else
-    {
-      // If its not an option, assumming its the input file
-      inputfile = argv[i];
-    }
-  }
-
-  if (!inputfile)
+  if (process_arguments(argc, argv, &outfile, &target, &opt, &inputfile) < 0)
   {
     usage_message(argv[0]);
     return EXIT_FAILURE;
@@ -100,59 +44,61 @@ int compiler_main(int argc, char *argv[])
     // Lexical analysis
     printf("Stage: Scan\n");
     int token;
-    while ((token = yylex()) != 0) {
-        switch (token) {
-            case V_NUM:
-                printf("TOKEN V_NUM: '%s'\n", yytext);
-                break;
-            case V_TRUE:
-                printf("TOKEN V_TRUE: '%s'\n", yytext);
-                break;
-            case V_FALSE:
-                printf("TOKEN V_FALSE: '%s'\n", yytext);
-                break;
-            case R_EXTERN:
-                printf("TOKEN R_EXTERN: '%s'\n", yytext);
-                break;
-            case R_BOOL:
-                printf("TOKEN R_BOOL: '%s'\n", yytext);
-                break;
-            case R_INTEGER:
-                printf("TOKEN R_INTEGER: '%s'\n", yytext);
-                break;
-            case R_VOID:
-                printf("TOKEN R_VOID: '%s'\n", yytext);
-                break;
-            case R_RETURN:
-                printf("TOKEN R_RETURN: '%s'\n", yytext);
-                break;
-            case R_WHILE:
-                printf("TOKEN R_WHILE: '%s'\n", yytext);
-                break;
-            case R_PROGRAM:
-                printf("TOKEN R_PROGRAM: '%s'\n", yytext);
-                break;
-            case R_IF:
-                printf("TOKEN R_IF: '%s'\n", yytext);
-                break;
-            case R_THEN:
-                printf("TOKEN R_THEN: '%s'\n", yytext);
-                break;
-            case OP_EQ:
-                printf("TOKEN OP_EQ: '%s'\n", yytext);
-                break;
-            case OP_AND:
-                printf("TOKEN OP_AND: '%s'\n", yytext);
-                break;
-            case OP_OR:
-                printf("TOKEN OP_OR: '%s'\n", yytext);
-                break;
-            case ID:
-                printf("TOKEN ID: '%s'\n", yytext);
-                break;
-            default:
-                printf("operatorDelimiter %d: '%s'\n", token, yytext);
-        }
+    while ((token = yylex()) != 0)
+    {
+      switch (token)
+      {
+      case V_NUM:
+        printf("TOKEN V_NUM: '%s'\n", yytext);
+        break;
+      case V_TRUE:
+        printf("TOKEN V_TRUE: '%s'\n", yytext);
+        break;
+      case V_FALSE:
+        printf("TOKEN V_FALSE: '%s'\n", yytext);
+        break;
+      case R_EXTERN:
+        printf("TOKEN R_EXTERN: '%s'\n", yytext);
+        break;
+      case R_BOOL:
+        printf("TOKEN R_BOOL: '%s'\n", yytext);
+        break;
+      case R_INTEGER:
+        printf("TOKEN R_INTEGER: '%s'\n", yytext);
+        break;
+      case R_VOID:
+        printf("TOKEN R_VOID: '%s'\n", yytext);
+        break;
+      case R_RETURN:
+        printf("TOKEN R_RETURN: '%s'\n", yytext);
+        break;
+      case R_WHILE:
+        printf("TOKEN R_WHILE: '%s'\n", yytext);
+        break;
+      case R_PROGRAM:
+        printf("TOKEN R_PROGRAM: '%s'\n", yytext);
+        break;
+      case R_IF:
+        printf("TOKEN R_IF: '%s'\n", yytext);
+        break;
+      case R_THEN:
+        printf("TOKEN R_THEN: '%s'\n", yytext);
+        break;
+      case OP_EQ:
+        printf("TOKEN OP_EQ: '%s'\n", yytext);
+        break;
+      case OP_AND:
+        printf("TOKEN OP_AND: '%s'\n", yytext);
+        break;
+      case OP_OR:
+        printf("TOKEN OP_OR: '%s'\n", yytext);
+        break;
+      case ID:
+        printf("TOKEN ID: '%s'\n", yytext);
+        break;
+      default:
+        printf("operatorDelimiter %d: '%s'\n", token, yytext);
+      }
     }
     printf("EOF\n");
   }
@@ -188,17 +134,21 @@ int compiler_main(int argc, char *argv[])
   fclose(yyin);
 
   // Create symbolic link with specified output name
-  if (outfile) {
+  if (outfile)
+  {
     // Remove existing file if it exists
-    if (access(outfile, F_OK) == 0) {
+    if (access(outfile, F_OK) == 0)
+    {
       unlink(outfile);
     }
     // Create symbolic link with specified name
-    if (symlink("c-tds", outfile) != 0) {
+    if (symlink("c-tds", outfile) != 0)
+    {
       perror("Error creating output file");
       return EXIT_FAILURE;
     }
-    if (debug_flag) {
+    if (debug_flag)
+    {
       printf("[DEBUG] Created output file: %s\n", outfile);
     }
   }
