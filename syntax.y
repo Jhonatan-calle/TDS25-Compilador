@@ -26,8 +26,8 @@
 }
 
 
-%type <node> program declaration_list declaration expr literal param  
-%type <node> block statement_list arg_list decl_rest statement param_list
+%type <node> program expr literal param  method_declaration method_declaration_list
+%type <node> block statement_list arg_list statement param_list var_declaration_list var_declaration 
 %token <id> ID 
 %type <tipo> type 
 %type param_list 
@@ -52,39 +52,44 @@
 %%
 
 program
-    : R_PROGRAM '{' declaration_list '}'  
+    : R_PROGRAM '{' var_declaration_list method_declaration_list '}'  
     { 
-      $$ = new_node(TR_PROGRAMA,1,$3);
+      $$ = new_node(TR_PROGRAMA,1,$3,$4);
       root = $$;
       free_ast($$);
     }
     ;
 
-declaration_list
-    : %empty
-        { $$ = new_node(TR_DECLARATION_LIST,0); }  /* un nodo */ 
-    | declaration_list declaration
-        { $$ = append_child($1, $2); }  /* agregar al árbol existente */
-    ;
+var_declaration_list 
+  : %empty
+    { $$ = new_node(TR_VAR_DECLARATION_LIST,0);}
+  | var_declaration_list var_declaration 
+    { $$ = append_child($1,$3);}
+  ;
 
-declaration
-    : type ID decl_rest
-        { $$ = new_node(TR_DECLARATION,3, $1,$2,$3); }  /* un nodo */ 
-    ;
+var_declaration 
+    : type ID '=' expr T_EOS 
+      { $$ = new_node(TR_VAR_DECLARATION,3,$1,$2,$4);} ;
 
-decl_rest
-    : '=' expr T_EOS           // variable declaration
-        { $$ = new_node(TR_EXPRESION,1, $2); }  /* un nodo */ 
-    | '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
-        { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
-    | '(' param_list ')' R_EXTERN T_EOS // extern method
-        { $$ = new_node(TR_METHOD_EXTERN,1,$2); }  /* un nodo */ 
-    ;
+method_declaration_list
+  : %empty
+    { $$ = new_node(TR_METHOD_DECLARATION_LIST,0);}
+  | method_declaration_list method_declaration 
+    { $$ = append_child($1,$3);}
+  ;
+
+
+method_declaration 
+  : type ID '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
+    { $$ = new_node(TR_METHOD_DECLARATION,4,$1,$2,$4,$5);}
+  |  type ID  '(' param_list ')' R_EXTERN T_EOS // extern method
+    { $$ = new_node(TR_METHOD_DECLARATION_EXTERN,3,$1,$2,$4);}
+  ;
 
 param_list
     : %empty /* Lambda */
         { $$ = new_node(TR_PARAM_LIST,0);}
-    | param_list',' param
+    | param_list ',' param
         { $$ = append_child($1,$3);}
     ;
 
@@ -96,7 +101,7 @@ param
 
 
 block
-    : '{' declaration_list statement_list '}'
+    : '{' var_declaration_list statement_list '}'
         { $$ = new_node(TR_BLOCK, 2, $2, $3);}
     ;
 
