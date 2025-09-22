@@ -91,13 +91,6 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
         if (sentencia->type == TR_RETURN) {
           returnFound = 1;
 
-          // Validar tipo del return
-          if (!sentencia->info) {
-            fprintf(stderr,
-                    "[Error semántico] 'return' en '%s' no tiene expresión.\n",
-                    nombre);
-            exit(EXIT_FAILURE);
-          }
 
           if (sentencia->info->tVar != tipoIdentificador) {
             fprintf(stderr,
@@ -275,13 +268,37 @@ void module_switch_case_while(AST *node, va_list args) {
 }
 
 void module_switch_case_return(AST *node, va_list args) {
-  // que tenga un hijo quiere decir que tiene una expresion a retornar
   if (node->child_count != 1) {
     return;
   }
   node->childs = malloc(sizeof(AST *));
   node->childs[0] = va_arg(args, AST *);
 }
+
+
+
+void module_switch_case_id(AST *node, va_list args) {
+  if (node->child_count != 1) {
+    return;
+  }
+  node->childs = malloc(sizeof(AST *));
+  node->childs[0] = va_arg(args, AST *);
+}
+
+
+void module_switch_case_negacion_logica(AST *node, va_list args) {
+  AST *exp = va_arg(args, AST *);
+  if (exp->info->tVar != T_BOOL) {
+    fprintf(stderr,
+            "[Error semántico] La condición del 'while' debe ser de tipo h"
+            "'booleano', pero se encontró '%s'.\n",
+            tipoDatoToStr(exp->info->tVar));
+    exit(EXIT_FAILURE);
+  }
+
+  node 
+}
+
 
 AST *new_node(TipoNodo type, int child_count, ...) {
   AST *node = init_node(type, child_count);
@@ -323,6 +340,12 @@ AST *new_node(TipoNodo type, int child_count, ...) {
     break;
   case TR_RETURN:
     module_switch_case_return(node, args);
+    break;
+  case TR_IDENTIFICADOR:
+    module_switch_case_id(node, args);
+    break;
+  case TR_NEGACION_LOGICA:
+    module_switch_case_negacion_logica(node, args);
     break;
   // TR_PARAM, TR_BLOCK, TR_LISTA_SENTENCIAS, TR_INVOCATION,
   // TR_IF_STATEMENT, TR_IF_ELSE_STATEMENT, TR_WHILE_STATEMENT,
