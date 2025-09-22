@@ -4,6 +4,17 @@ TablaSimbolos *global_table = NULL;
 int debug_flag = 0;
 int assembly_flag = 0;
 
+/**
+ * Entry point for the compiler project.
+ *
+ * This function initializes and sets up all necessary components required
+ * before executing the main logic of the compiler.
+ * It is responsible for preparing the environment, handling any required
+ * configuration, and starting the compilation process.
+ *
+ * Returns 0 on successful execution
+ * Retuns a non-zero value if an error occurs.
+ */
 int compiler_main(int argc, char *argv[]) {
   global_table = crear_tabla(10);
 
