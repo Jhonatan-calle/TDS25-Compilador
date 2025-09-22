@@ -3,7 +3,12 @@
 
 int temp_counter = 0;
 
-// Assembly util function
+/**
+ * Assembly util function
+ *
+ * Called when a new use of a register is used
+ * Uses temp_counter global variable to increment or decrement the amount of registers used
+ */
 char *new_temp()
 {
   char buffer[16];
@@ -11,14 +16,21 @@ char *new_temp()
   return strdup(buffer);
 }
 
-// Assembly util function
+/**
+ * Assembly util function
+ *
+ * Called on the top level of the program
+ * It constructs and prints a pseudo-assembly recursively
+ */
 char *gen_code(AST *node)
 {
+  // Case base: Node NULL
   if (!node)
     return NULL;
 
   switch (node->type)
   {
+  // Case base: Leaf
   case TR_VALOR:
   {
     char *t = new_temp();
@@ -26,6 +38,7 @@ char *gen_code(AST *node)
     return t;
   }
 
+  // Case base: Leaf
   case TR_IDENTIFICADOR:
   {
     char *t = new_temp();
@@ -33,6 +46,7 @@ char *gen_code(AST *node)
     return t;
   }
 
+  // Recursive step on the right side expression
   case TR_ASIGNACION:
   {
     // child[0] = identificador
@@ -42,6 +56,7 @@ char *gen_code(AST *node)
     return rhs;
   }
 
+  // Recursive step on both sides
   case TR_SUMA:
   {
     char *lhs = gen_code(node->childs[0]);
@@ -51,6 +66,7 @@ char *gen_code(AST *node)
     return t;
   }
 
+  // Recursive step on both sides
   case TR_MULTIPLICACION:
   {
     char *lhs = gen_code(node->childs[0]);
@@ -60,6 +76,7 @@ char *gen_code(AST *node)
     return t;
   }
 
+  // Recursive step on both sides
   case TR_AND:
   {
     char *lhs = gen_code(node->childs[0]);
@@ -69,6 +86,7 @@ char *gen_code(AST *node)
     return t;
   }
 
+  // Recursive step on both sides
   case TR_OR:
   {
     char *lhs = gen_code(node->childs[0]);
@@ -78,6 +96,7 @@ char *gen_code(AST *node)
     return t;
   }
 
+  // Recursive step on every sentence
   case TR_LISTA_SENTENCIAS:
   {
     for (int i = 0; i < node->child_count; i++)
@@ -85,11 +104,12 @@ char *gen_code(AST *node)
     return NULL;
   }
 
+  // Initial recursive step
   case TR_PROGRAMA:
   {
-    printf("; inicio programa\n");
+    printf("; Begin program\n");
     gen_code(node->childs[0]);
-    printf("; fin programa\n");
+    printf("; End program\n");
     return NULL;
   }
 
@@ -98,17 +118,23 @@ char *gen_code(AST *node)
   }
 }
 
-// Print util function
-// Default print if global debug flag is enabled
-void print_if_debug_flag(char* str)
+/**
+ * Print util function
+ *
+ * Default print if global debug flag is enabled
+ */
+void print_if_debug_flag(char *str)
 {
   if (debug_flag)
     printf("%s\n", str);
 }
 
-// Print util function
-// Default print if global assembly flag is enabled
-void gen_assembly_if_assembly_flag(AST* root)
+/**
+ * Print util function
+ *
+ * Calls gen_code function if global assembly flag is enabled
+ */
+void gen_assembly_if_assembly_flag(AST *root)
 {
   if (assembly_flag)
     gen_code(root);
