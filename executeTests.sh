@@ -7,9 +7,10 @@ echo "#################################"
 for file in tests/*.ctds; do
     echo ""
     echo "Case: $file"
-    ./c-tds -d "$file"
+    ./c-tds -d -o zztmp "$file"
     echo ""
 done
+rm -rf zztmp.out
 echo "#################################"
 
 echo "End of execution"

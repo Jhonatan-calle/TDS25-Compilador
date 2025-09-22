@@ -2,14 +2,21 @@
 #define SYMBOLS_H
 
 #include <stdlib.h>
-#include "types.h"
 
-typedef struct
+#include "types.h"
+#include "forward_declarations.h"
+
+struct Simbolo
 {
+  Categoria categoria;
   char *nombre; // identificador
-  Tipos tVar;   // tipo de variable
-  int valor;    // valor
-} Simbolo;
+  Tipos tVar;   // tipo
+  int valor;    // valor ---SOLO VARIABLES
+  //-----SOLO METODOS
+  int num_params;
+  Tipos *param_tipos;
+  AST *cuerpo;
+};
 
 typedef struct
 {
@@ -18,7 +25,7 @@ typedef struct
   size_t usados;
 } TablaSimbolos;
 
-extern TablaSimbolos *t;
+extern TablaSimbolos *global_table;
 
 TablaSimbolos *crear_tabla(size_t capacidad_inicial);
 void insertar_simbolo(Simbolo *e);
