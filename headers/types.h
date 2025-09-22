@@ -1,8 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-typedef enum
-{
+typedef enum {
   TR_PROGRAM,
   TR_VAR_DECLARATION,
   TR_VAR_DECLARATION_LIST,
@@ -36,17 +35,8 @@ typedef enum
   TR_VALUE
 } TipoNodo;
 
-typedef enum
-{
-  T_INT,
-  T_BOOL,
-  T_VOID
-} Tipos;
+typedef enum { T_INT, T_BOOL, T_VOID } Tipos;
 
-typedef enum
-{
-  S_VAR,
-  S_FUNC
-} Categoria;
+typedef enum { S_VAR, S_FUNC } Categoria;
 
 #endif // TYPES_H

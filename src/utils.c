@@ -8,10 +8,10 @@ int temp_counter = 0;
  * Assembly util function
  *
  * Called when a new use of a register is used
- * Uses temp_counter global variable to increment or decrement the amount of registers used
+ * Uses temp_counter global variable to increment or decrement the amount of
+ * registers used
  */
-char *new_temp()
-{
+char *new_temp() {
   char buffer[16];
   snprintf(buffer, sizeof(buffer), "t%d", temp_counter++);
   return strdup(buffer);
@@ -23,33 +23,28 @@ char *new_temp()
  * Called on the top level of the program
  * It constructs and prints a pseudo-assembly recursively
  */
-char *gen_code(AST *node)
-{
+char *gen_code(AST *node) {
   // Case base: Node NULL
   if (!node)
     return NULL;
 
-  switch (node->type)
-  {
+  switch (node->type) {
   // Case base: Leaf
-  case TR_VALUE:
-  {
+  case TR_VALUE: {
     char *t = new_temp();
     printf("LOAD %s, %d\n", t, node->info->valor);
     return t;
   }
 
   // Case base: Leaf
-  case TR_IDENTIFIER:
-  {
+  case TR_IDENTIFIER: {
     char *t = new_temp();
     printf("LOAD %s, %s\n", t, node->info->nombre);
     return t;
   }
 
   // Recursive step on the right side expression
-  case TR_ASSIGN:
-  {
+  case TR_ASSIGN: {
     // child[0] = identificador
     // child[1] = expresión
     char *rhs = gen_code(node->childs[1]);
@@ -58,8 +53,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on both sides
-  case TR_ADDITION:
-  {
+  case TR_ADDITION: {
     char *lhs = gen_code(node->childs[0]);
     char *rhs = gen_code(node->childs[1]);
     char *t = new_temp();
@@ -68,8 +62,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on both sides
-  case TR_MULTIPLICATION:
-  {
+  case TR_MULTIPLICATION: {
     char *lhs = gen_code(node->childs[0]);
     char *rhs = gen_code(node->childs[1]);
     char *t = new_temp();
@@ -78,8 +71,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on both sides
-  case TR_AND:
-  {
+  case TR_AND: {
     char *lhs = gen_code(node->childs[0]);
     char *rhs = gen_code(node->childs[1]);
     char *t = new_temp();
@@ -88,8 +80,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on both sides
-  case TR_OR:
-  {
+  case TR_OR: {
     char *lhs = gen_code(node->childs[0]);
     char *rhs = gen_code(node->childs[1]);
     char *t = new_temp();
@@ -98,16 +89,14 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on every sentence
-  case TR_SENTENCES_LIST:
-  {
+  case TR_SENTENCES_LIST: {
     for (int i = 0; i < node->child_count; i++)
       gen_code(node->childs[i]);
     return NULL;
   }
 
   // Initial recursive step
-  case TR_PROGRAM:
-  {
+  case TR_PROGRAM: {
     printf("; Begin program\n");
     gen_code(node->childs[0]);
     printf("; End program\n");
@@ -124,8 +113,7 @@ char *gen_code(AST *node)
  *
  * Default print if global debug flag is enabled
  */
-void print_if_debug_flag(char *str)
-{
+void print_if_debug_flag(char *str) {
   if (debug_flag)
     printf("%s\n", str);
 }
@@ -135,8 +123,7 @@ void print_if_debug_flag(char *str)
  *
  * Calls gen_code function if global assembly flag is enabled
  */
-void gen_assembly_if_assembly_flag(AST *root)
-{
+void gen_assembly_if_assembly_flag(AST *root) {
   if (assembly_flag)
     gen_code(root);
 }
@@ -147,73 +134,54 @@ void gen_assembly_if_assembly_flag(AST *root)
  * Receive variables from main and processes them
  * Returns -1 if error, otherwise returns 0
  */
-int process_arguments(int argc, char *argv[], char **outfile, char **target, char **opt, char **inputfile)
-{
-  static char outfile_with_ext[256]; // Static to ensure it persists after function returns
+int process_arguments(int argc, char *argv[], char **outfile, char **target,
+                      char **opt, char **inputfile) {
+  static char outfile_with_ext[256]; // Static to ensure it persists after
+                                     // function returns
   *target = NULL;
   *opt = NULL;
   *outfile = "a.out";
   *inputfile = NULL;
 
-  for (int i = 1; i < argc; i++)
-  {
-    if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "-output") == 0)
-    {
-      if (i + 1 < argc)
-      {
-        snprintf(outfile_with_ext, sizeof(outfile_with_ext), "%s.out", argv[i + 1]);
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "-output") == 0) {
+      if (i + 1 < argc) {
+        snprintf(outfile_with_ext, sizeof(outfile_with_ext), "%s.out",
+                 argv[i + 1]);
         *outfile = outfile_with_ext;
         i++;
-      }
-      else
-      {
+      } else {
         fprintf(stderr, "Error: missing argument after -o\n");
         return -1;
       }
-    }
-    else if (strcmp(argv[i], "-target") == 0 || strcmp(argv[i], "-t") == 0)
-    {
-      if (i + 1 < argc)
-      {
+    } else if (strcmp(argv[i], "-target") == 0 || strcmp(argv[i], "-t") == 0) {
+      if (i + 1 < argc) {
         *target = argv[++i];
-      }
-      else
-      {
+      } else {
         fprintf(stderr, "Error: missing argument after -target\n");
         return -1;
       }
-    }
-    else if (strcmp(argv[i], "-opt") == 0)
-    {
-      if (i + 1 < argc && argv[i + 1][0] != '-')
-      {
+    } else if (strcmp(argv[i], "-opt") == 0) {
+      if (i + 1 < argc && argv[i + 1][0] != '-') {
         *opt = argv[++i];
-      }
-      else
-      {
+      } else {
         *opt = "all";
       }
-    }
-    else if (strcmp(argv[i], "-debug") == 0 || strcmp(argv[i], "-d") == 0)
-    {
+    } else if (strcmp(argv[i], "-debug") == 0 || strcmp(argv[i], "-d") == 0) {
       debug_flag = 1;
-    }
-    else
-    {
+    } else {
       *inputfile = argv[i];
     }
   }
 
-  if (!*inputfile)
-  {
+  if (!*inputfile) {
     return -1;
   }
 
   return 0;
 }
 
-void parse_method()
-{
+void parse_method() {
   int compiled_with_errors = yyparse();
 
   if (compiled_with_errors)
@@ -222,17 +190,13 @@ void parse_method()
     printf("Compilation completed successfuly.\n");
 }
 
-int process_target_stage(const char *target, const char *inputfile)
-{
-  if (strcmp(target, "scan") == 0)
-  {
+int process_target_stage(const char *target, const char *inputfile) {
+  if (strcmp(target, "scan") == 0) {
     // Lexical analysis
     printf("Stage: Scan\n");
     int token;
-    while ((token = yylex()) != 0)
-    {
-      switch (token)
-      {
+    while ((token = yylex()) != 0) {
+      switch (token) {
       case V_NUM:
         printf("TOKEN V_NUM: '%s'\n", yytext);
         break;
@@ -287,22 +251,16 @@ int process_target_stage(const char *target, const char *inputfile)
     }
     printf("EOF\n");
     return 0;
-  }
-  else if (strcmp(target, "parse") == 0)
-  {
+  } else if (strcmp(target, "parse") == 0) {
     // Syntax analysis
     printf("Stage: Parse\n");
     parse_method();
     return 0;
-  }
-  else if (strcmp(target, "codinter") == 0)
-  {
+  } else if (strcmp(target, "codinter") == 0) {
     // Intermedium code
     printf("Stage: Intermedium code\n");
     return 0;
-  }
-  else if (strcmp(target, "assembly") == 0)
-  {
+  } else if (strcmp(target, "assembly") == 0) {
     // Assembly
     printf("Stage: Assembly\n");
     assembly_flag = 1;
@@ -314,12 +272,12 @@ int process_target_stage(const char *target, const char *inputfile)
   return -1;
 }
 
-void usage_message(const char *prog)
-{
+void usage_message(const char *prog) {
   fprintf(stderr, "Usage: %s [flags] file.ctds\n", prog);
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "  -o <output>        Renames the executable\n");
-  fprintf(stderr, "  -target <stage>    Stage: scan | parse | codinter | assembly\n");
+  fprintf(stderr,
+          "  -target <stage>    Stage: scan | parse | codinter | assembly\n");
   fprintf(stderr, "  -opt [opt]         Optimizations (all, ...)\n");
   fprintf(stderr, "  -debug             Debug info\n");
   exit(EXIT_FAILURE);

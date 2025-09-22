@@ -3,12 +3,11 @@
 
 #include <stdlib.h>
 
-#include "types.h"
-#include "symbols.h"
 #include "forward_declarations.h"
+#include "symbols.h"
+#include "types.h"
 
-struct AST
-{
+struct AST {
   TipoNodo type;
   Simbolo *info;
   int child_count;

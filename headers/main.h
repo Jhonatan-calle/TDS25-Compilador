@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
-#include "symbols.h"
 #include "ast.h"
+#include "symbols.h"
+#include "utils.h"
 
 extern FILE *yyin;
 

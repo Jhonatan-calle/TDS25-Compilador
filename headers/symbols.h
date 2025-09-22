@@ -3,11 +3,10 @@
 
 #include <stdlib.h>
 
-#include "types.h"
 #include "forward_declarations.h"
+#include "types.h"
 
-struct Simbolo
-{
+struct Simbolo {
   Categoria categoria;
   char *nombre; // identificador
   Tipos tVar;   // tipo
@@ -18,8 +17,7 @@ struct Simbolo
   AST *cuerpo;
 };
 
-typedef struct
-{
+typedef struct {
   Simbolo **tabla;
   size_t capacidad;
   size_t usados;
