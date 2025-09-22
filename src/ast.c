@@ -36,7 +36,7 @@ void module_switch_case_var_declaration(AST *node, va_list args)
   Simbolo *id = buscar_simbolo(nombre);
   if (id)
   {
-    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado localmente>>>>>\n", nombre);
+    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n", nombre);
     exit(EXIT_FAILURE);
   }
 
@@ -68,7 +68,7 @@ void module_switch_case_method_declaration(AST *node, va_list args)
   Simbolo *id = buscar_simbolo(nombre);
   if (id)
   {
-    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado localmente.\n", nombre);
+    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n", nombre);
     exit(EXIT_FAILURE);
   }
 
