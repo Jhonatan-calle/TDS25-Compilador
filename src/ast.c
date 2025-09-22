@@ -26,8 +26,8 @@ void module_switch_case_programa(AST *node, va_list args)
 {
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
-  node->childs[1] = va_arg(args, AST *); // $6: lista_sentencias, de tipo AST*
+  node->childs[0] = va_arg(args, AST *); // $3: var_declaration_list, de tipo AST*
+  node->childs[1] = va_arg(args, AST *); // $4: method_declaration_list, de tipo AST*
 }
 
 void module_switch_case_var_declaration(AST *node, va_list args)
@@ -192,7 +192,7 @@ void module_switch_case_asignacion(AST *node, va_list args)
   node->childs = malloc(sizeof(AST *) * 2);
 
   AST *aux = malloc(sizeof(AST));
-  aux->type = TR_IDENTIFICADOR;
+  aux->type = TR_IDENTIFIER;
   aux->info = id;
   aux->child_count = 0;
   aux->childs = NULL;
@@ -554,7 +554,7 @@ void module_switch_case_literal(AST *node, va_list args)
 {
   node->info = malloc(sizeof(Simbolo));
   node->info->tVar = va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
-  node->info->nombre = strdup("TR_VALOR");
+  node->info->nombre = strdup("TR_VALUE");
   node->info->valor = va_arg(args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
   node->child_count = 0;
 }
@@ -568,7 +568,7 @@ AST *new_node(TipoNodo type, int child_count, ...)
 
   switch (type)
   {
-  case TR_PROGRAMA:
+  case TR_PROGRAM:
     module_switch_case_programa(node, args);
     break;
   case TR_VAR_DECLARATION:
@@ -584,7 +584,7 @@ AST *new_node(TipoNodo type, int child_count, ...)
   case TR_BLOCK:
     module_switch_case_block(node, args);
     break;
-  case TR_ASIGNACION:
+  case TR_ASSIGN:
     module_switch_case_asignacion(node, args);
     break;
   case TR_INVOCATION:
@@ -602,22 +602,22 @@ AST *new_node(TipoNodo type, int child_count, ...)
   case TR_RETURN:
     module_switch_case_return(node, args);
     break;
-  case TR_IDENTIFICADOR:
+  case TR_IDENTIFIER:
     module_switch_case_id(node, args);
     break;
-  case TR_NEGACION_LOGICA:
+  case TR_LOGIC_NEGATION:
     module_switch_case_negacion_logica(node, args);
     break;
-  case TR_NEGACION_ARITMETICA:
+  case TR_ARITHMETIC_NEGATION:
     module_switch_case_negacion_aritmetica(node, args);
     break;
-  case TR_SUMA:
+  case TR_ADDITION:
     module_switch_case_suma(node, args);
     break;
-  case TR_RESTA:
+  case TR_SUBSTRACTION:
     module_switch_case_resta(node, args);
     break;
-  case TR_MULTIPLICACION:
+  case TR_MULTIPLICATION:
     module_switch_case_multiplicacion(node, args);
     break;
   case TR_DIVITION:
@@ -626,13 +626,13 @@ AST *new_node(TipoNodo type, int child_count, ...)
   case TR_MODULO:
     module_switch_case_modulo(node, args);
     break;
-  case TR_MENOR:
+  case TR_LESS_THAN:
     module_switch_case_less_than(node, args);
     break;
-  case TR_MAYOR:
+  case TR_GREATER_THAN:
     module_switch_case_greater_than(node, args);
     break;
-  case TR_IGUAL_LOGICO:
+  case TR_LOGIC_EQUAL:
     module_switch_case_equal(node, args);
     break;
   case TR_AND:
@@ -641,7 +641,7 @@ AST *new_node(TipoNodo type, int child_count, ...)
   case TR_OR:
     module_switch_case_or(node, args);
     break;
-  case TR_VALOR:
+  case TR_VALUE:
     module_switch_case_literal(node, args);
     break;
   default:

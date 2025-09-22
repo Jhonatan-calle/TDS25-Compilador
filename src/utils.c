@@ -30,7 +30,7 @@ char *gen_code(AST *node)
   switch (node->type)
   {
   // Case base: Leaf
-  case TR_VALOR:
+  case TR_VALUE:
   {
     char *t = new_temp();
     printf("LOAD %s, %d\n", t, node->info->valor);
@@ -38,7 +38,7 @@ char *gen_code(AST *node)
   }
 
   // Case base: Leaf
-  case TR_IDENTIFICADOR:
+  case TR_IDENTIFIER:
   {
     char *t = new_temp();
     printf("LOAD %s, %s\n", t, node->info->nombre);
@@ -46,7 +46,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on the right side expression
-  case TR_ASIGNACION:
+  case TR_ASSIGN:
   {
     // child[0] = identificador
     // child[1] = expresión
@@ -56,7 +56,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on both sides
-  case TR_SUMA:
+  case TR_ADDITION:
   {
     char *lhs = gen_code(node->childs[0]);
     char *rhs = gen_code(node->childs[1]);
@@ -66,7 +66,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on both sides
-  case TR_MULTIPLICACION:
+  case TR_MULTIPLICATION:
   {
     char *lhs = gen_code(node->childs[0]);
     char *rhs = gen_code(node->childs[1]);
@@ -96,7 +96,7 @@ char *gen_code(AST *node)
   }
 
   // Recursive step on every sentence
-  case TR_LISTA_SENTENCIAS:
+  case TR_SENTENCES_LIST:
   {
     for (int i = 0; i < node->child_count; i++)
       gen_code(node->childs[i]);
@@ -104,7 +104,7 @@ char *gen_code(AST *node)
   }
 
   // Initial recursive step
-  case TR_PROGRAMA:
+  case TR_PROGRAM:
   {
     printf("; Begin program\n");
     gen_code(node->childs[0]);
