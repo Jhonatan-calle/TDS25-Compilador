@@ -27,9 +27,9 @@
 
 
 %type <node> program expr literal param  method_declaration method_declaration_list
-%type <node> block statement_list arg_list statement param_list var_declaration_list var_declaration 
-%token <id> ID 
-%type <tipo> type 
+%type <node> block statement_list arg_list statement param_list var_declaration_list var_declaration
+%token <id> ID
+%type <tipo> type
 %token T_EOS
 %token V_FALSE V_TRUE
 %token <val> V_NUM
@@ -51,35 +51,37 @@
 %%
 
 program
-    : R_PROGRAM '{' var_declaration_list method_declaration_list '}'  
-    { 
+    : R_PROGRAM '{' var_declaration_list method_declaration_list '}'
+    {
       $$ = new_node(TR_PROGRAMA,1,$3,$4);
       root = $$;
+      gen_assembly_if_assembly_flag(root);
       free_ast($$);
+      print_if_debug_flag("End of compilation.\n");
     }
     ;
 
-var_declaration_list 
+var_declaration_list
   : %empty
     { $$ = new_node(TR_VAR_DECLARATION_LIST,0);}
-  | var_declaration_list var_declaration 
+  | var_declaration_list var_declaration
     { $$ = append_child($1,$2);}
   ;
 
-var_declaration 
-    : type ID '=' expr T_EOS 
+var_declaration
+    : type ID '=' expr T_EOS
       { $$ = new_node(TR_VAR_DECLARATION,3,$1,$2,$4);} ;
 
 method_declaration_list
   : %empty
     { $$ = new_node(TR_METHOD_DECLARATION_LIST,0);}
-  | method_declaration_list method_declaration 
+  | method_declaration_list method_declaration
     { $$ = append_child($1,$2);}
   ;
 
 
-method_declaration 
-  : type ID '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
+method_declaration
+  : type ID '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */
     { $$ = new_node(TR_METHOD_DECLARATION,4,$1,$2,$4,$6);}
   |  type ID  '(' param_list ')' R_EXTERN T_EOS // extern method
     { $$ = new_node(TR_METHOD_DECLARATION_EXTERN,3,$1,$2,$4);}
@@ -92,9 +94,9 @@ param_list
         { $$ = append_child($1,$3);}
     ;
 
-param 
+param
     : type ID
-      { $$ = new_node(TR_PARAM, 2, $1, $2); }  /* un nodo */ 
+      { $$ = new_node(TR_PARAM, 2, $1, $2); }  /* un nodo */
     ;
 
 
@@ -164,7 +166,7 @@ expr
     | expr '*' expr
         { $$ = new_node(TR_MULTIPLICACION, 2, $1, $3); }
     | expr '/' expr
-        { $$ = new_node(TR_DIVICION, 2, $1, $3); }
+        { $$ = new_node(TR_DIVITION, 2, $1, $3); }
     | expr '%' expr
         { $$ = new_node(TR_MODULO, 2, $1, $3); }
     | expr '<' expr             //---------------que pasa con menor igual o mayor igual

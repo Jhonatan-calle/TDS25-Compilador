@@ -2,17 +2,16 @@
 #define AST_H
 
 #include "tipos.h"
-#include "simbolos.h"
+#include "forward_declarations.h"
+#include <stdlib.h>
 
-extern TablaSimbolos *t;
-
-typedef struct AST
+struct AST
 {
   TipoNodo type;
   Simbolo *info;
   int child_count;
   struct AST **childs;
-} AST;
+};
 
 // API del AST
 AST *new_node(TipoNodo type, int child_count, ...);

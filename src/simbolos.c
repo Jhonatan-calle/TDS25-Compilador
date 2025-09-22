@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-TablaSimbolos *global = NULL;
-TablaSimbolos *secundary_scope = NULL;
+// Using extern variable defined in main.c
+extern TablaSimbolos *global_table;
 
-TablaSimbolos *crear_tabla(size_t capacidad_inicial) {
+TablaSimbolos *crear_tabla(size_t capacidad_inicial)
+{
   TablaSimbolos *t = malloc(sizeof(TablaSimbolos));
   t->capacidad = capacidad_inicial;
   t->usados = 0;
@@ -14,28 +15,29 @@ TablaSimbolos *crear_tabla(size_t capacidad_inicial) {
   return t;
 }
 
-void insertar_simbolo(Simbolo *e) {
-  if (t->usados >= t->capacidad) {
-    t->capacidad *= 2;
-    t->tabla = realloc(t->tabla, t->capacidad * sizeof(Simbolo *));
+void insertar_simbolo(Simbolo *e)
+{
+  if (global_table->usados >= global_table->capacidad)
+  {
+    global_table->capacidad *= 2;
+    global_table->tabla = realloc(global_table->tabla, global_table->capacidad * sizeof(Simbolo *));
   }
-  t->tabla[t->usados] = e;
-  t->usados++;
+  global_table->tabla[global_table->usados] = e;
+  global_table->usados++;
 }
 
-Simbolo *buscar_simbolo(char *nombre) {
-  for (size_t i = 0; i < t->usados; i++) {
-    if (strcmp(t->tabla[i]->nombre, nombre) == 0) {
-      return t->tabla[i];
-    }
-  }
+Simbolo *buscar_simbolo(char *nombre)
+{
+  for (size_t i = 0; i < global_table->usados; i++)
+    if (strcmp(global_table->tabla[i]->nombre, nombre) == 0)
+      return global_table->tabla[i];
   return NULL; // no encontrado
 }
 
-void liberar_tabla() {
-  for (size_t i = 0; i < t->usados; i++) {
-    free(t->tabla[i]);
-  }
-  free(t->tabla);
-  free(t);
+void liberar_tabla()
+{
+  for (size_t i = 0; i < global_table->usados; i++)
+    free(global_table->tabla[i]);
+  free(global_table->tabla);
+  free(global_table);
 }
