@@ -33,7 +33,7 @@ void module_switch_case_var_declaration(AST *node, va_list args)
 {
   int tipoIdentificador = va_arg(args, int); // $1: tipos, el enum de los tipos (internamente un int)
   char *nombre = va_arg(args, char *);       // $2: ID, el nombre de la var declarada
-  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
+  Simbolo *id = buscar_simbolo(nombre);
   if (id)
   {
     fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado localmente>>>>>\n", nombre);
@@ -55,7 +55,7 @@ void module_switch_case_var_declaration(AST *node, va_list args)
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_VAR;
   simbol->valor = exp->info->valor;
-  insertar_simbolo(local_scope_table, simbol);
+  insertar_simbolo(simbol);
   node->info = simbol;
   node->child_count = 0;
 }
@@ -65,21 +65,10 @@ void module_switch_case_method_declaration(AST *node, va_list args)
   int tipoIdentificador = va_arg(args, int); // $1: tipos, el enum de los tipos (internamente un int)
   char *nombre = va_arg(args, char *);       // $2: ID, el nombre de la var declarada
 
-  // chequeo de declaracion de metodo en el scope local
-  // no se puede declarar un metodo con un nombre duplicado
-  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
+  Simbolo *id = buscar_simbolo(nombre);
   if (id)
   {
     fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado localmente.\n", nombre);
-    exit(EXIT_FAILURE);
-  }
-
-  // chequeo de declaracion de metodo en el scope global
-  // no se puede declarar un metodo con un nombre duplicado
-  id = buscar_simbolo(global_scope_table, nombre);
-  if (id)
-  {
-    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado globalmente.\n", nombre);
     exit(EXIT_FAILURE);
   }
 
@@ -153,16 +142,15 @@ void module_switch_case_method_declaration(AST *node, va_list args)
       }
     }
   }
-  insertar_simbolo(global_scope_table, simbol);
-  insertar_simbolo(local_scope_table, simbol);
+  insertar_simbolo(simbol);
   node->info = simbol;
   node->child_count = 0;
 }
 
 void module_switch_case_param(AST *node, va_list args)
 {
-  int tipoIdentificador = va_arg(args, int);  // $1: tipos, el enum de los tipos (internamente un int)
-  char *nombre = va_arg(args, char *);        // $2: ID, el nombre de la var declarada
+  int tipoIdentificador = va_arg(args, int); // $1: tipos, el enum de los tipos (internamente un int)
+  char *nombre = va_arg(args, char *);       // $2: ID, el nombre de la var declarada
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador;
   simbol->nombre = nombre;
@@ -173,8 +161,6 @@ void module_switch_case_block(AST *node, va_list args)
 {
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-  liberar_tabla(local_scope_table);
-  local_scope_table = crear_tabla(10);
   node->childs[0] = va_arg(args, AST *); // $2: var_declaration_list, de tipo AST*
   node->childs[1] = va_arg(args, AST *); // $3: statement_list, de tipo AST*
 }
@@ -182,7 +168,7 @@ void module_switch_case_block(AST *node, va_list args)
 void module_switch_case_asignacion(AST *node, va_list args)
 {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
-  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
+  Simbolo *id = buscar_simbolo(nombre);
   if (!id)
   {
     fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n", nombre);
@@ -217,14 +203,7 @@ void module_switch_case_asignacion(AST *node, va_list args)
 void module_switch_case_invocation(AST *node, va_list args)
 {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
-  Simbolo *id = buscar_simbolo(local_scope_table, nombre);
-  if (!id)
-  {
-    fprintf(stderr, "[Error semántico] El método '%s' no está declarado.\n", nombre);
-    exit(EXIT_FAILURE);
-  }
-
-  id = buscar_simbolo(global_scope_table, nombre);
+  Simbolo *id = buscar_simbolo(nombre);
   if (!id)
   {
     fprintf(stderr, "[Error semántico] El método '%s' no está declarado.\n", nombre);
