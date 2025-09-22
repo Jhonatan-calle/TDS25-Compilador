@@ -44,7 +44,7 @@ int compiler_main(int argc, char *argv[]) {
   }
 
   if (target) {
-    if (process_target_stage(target, inputfile) < 0) {
+    if (process_target_stage(target) < 0) {
       usage_message(argv[0]);
       return EXIT_FAILURE;
     }

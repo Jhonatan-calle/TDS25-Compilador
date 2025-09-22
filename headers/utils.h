@@ -18,4 +18,4 @@ int process_arguments(int argc, char *argv[], char **outfile, char **target,
                       char **opt, char **inputfile);
 void parse_method();
 void usage_message(const char *prog);
-int process_target_stage(const char *target, const char *inputfile);
+int process_target_stage(const char *target);
