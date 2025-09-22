@@ -55,8 +55,9 @@ program
     {
       $$ = new_node(TR_PROGRAMA,1,$3,$4);
       root = $$;
-      if (gen_assembly) gen_code(root);
+      gen_assembly_if_assembly_flag(root);
       free_ast($$);
+      print_if_debug_flag("End of compilation.\n");
     }
     ;
 
