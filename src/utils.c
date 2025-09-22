@@ -181,6 +181,13 @@ int process_arguments(int argc, char *argv[], char **outfile, char **target,
   return 0;
 }
 
+/**
+ * Parse method
+ *
+ * Used in compiler main point.
+ * yyparse() is called and print if the compilation finished with errors or
+ * successfuly.
+ */
 void parse_method() {
   int compiled_with_errors = yyparse();
 
@@ -190,7 +197,16 @@ void parse_method() {
     printf("Compilation completed successfuly.\n");
 }
 
-int process_target_stage(const char *target, const char *inputfile) {
+/**
+ * Process a given target stage function
+ *
+ * Used in compiler main point.
+ * Given a string target, do the task of a stage conditionally.
+ *
+ * Retuns 0 if the target is valid.
+ * Returns -1 otherwise.
+ */
+int process_target_stage(const char *target) {
   if (strcmp(target, "scan") == 0) {
     // Lexical analysis
     printf("Stage: Scan\n");
@@ -272,6 +288,13 @@ int process_target_stage(const char *target, const char *inputfile) {
   return -1;
 }
 
+/**
+ * Utility function called when a flag is not valid.
+ *
+ * Used in compiler main point.
+ * Prints in stderr a message to help the user how to use the executable.
+ * Exits with EXIT_FAILURE after prints.
+ */
 void usage_message(const char *prog) {
   fprintf(stderr, "Usage: %s [flags] file.ctds\n", prog);
   fprintf(stderr, "Options:\n");
