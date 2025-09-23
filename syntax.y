@@ -52,7 +52,7 @@
 program
   : R_PROGRAM '{' var_declaration_list method_declaration_list '}'
   {
-    $$ = new_node(TR_PROGRAM, 1, $3, $4);
+    $$ = new_node(TR_PROGRAM, 2, $3, $4);
     root = $$;
     gen_assembly_if_assembly_flag(root);
     free_ast($$);
@@ -103,6 +103,10 @@ param_list
   : %empty /* Lambda */
   {
     $$ = new_node(TR_PARAM_LIST, 0);
+  }
+  | param
+  {
+    $$ = new_node(TR_PARAM, 1, $1);
   }
   | param_list ',' param
   {
@@ -215,11 +219,11 @@ expr
   }
   | '!' expr %prec NOT
   {
-    $$ = new_node(TR_LOGIC_NEGATION,1,$2);
+    $$ = new_node(TR_LOGIC_NEGATION, 1, $2);
   }
   | '-' expr %prec UMINUS
   {
-    $$ = new_node(TR_ARITHMETIC_NEGATION,1,$2);
+    $$ = new_node(TR_ARITHMETIC_NEGATION, 1, $2);
   }
   | expr '+' expr
   {
