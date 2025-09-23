@@ -6,6 +6,7 @@
 #include "forward_declarations.h"
 #include "symbols.h"
 #include "types.h"
+#include "utils.h"
 
 struct AST {
   TipoNodo type;
@@ -20,4 +21,5 @@ AST *append_child(AST *list, AST *child);
 void free_ast(AST *node);
 
 const char *tipoDatoToStr(Tipos type);
+const char *tipoNodoToStr(TipoNodo t);
 #endif // AST_H
