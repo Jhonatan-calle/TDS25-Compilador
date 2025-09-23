@@ -40,7 +40,11 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  AST *exp = va_arg(args, AST *);
+  AST *exp = va_arg(args, AST *); // $3: expr
+
+  id = crear_simbolo_variable(node, exp, tipoIdentificador, nombre,
+                              exp->info->valor);
+
   if (exp->info->tVar != id->tVar) {
     fprintf(stderr,
             "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
@@ -49,14 +53,6 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
             tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
   }
-  Simbolo *simbol = malloc(sizeof(Simbolo));
-  simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
-  simbol->nombre = nombre;          // identificador
-  simbol->categoria = S_VAR;
-  simbol->valor = exp->info->valor;
-  insertar_simbolo(simbol);
-  node->info = simbol;
-  node->child_count = 0;
 }
 
 void module_switch_case_method_declaration(AST *node, va_list args) {
@@ -72,20 +68,10 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   }
 
   AST *params = va_arg(args, AST *);
-  Simbolo *simbol = malloc(sizeof(Simbolo));
-  simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
-  simbol->nombre = nombre;          // identificador
-  simbol->categoria = S_FUNC;
-  simbol->num_params = params->child_count;
-  simbol->param_tipos = malloc(sizeof(Tipos) * simbol->num_params);
-
-  for (int i = 0; i < simbol->num_params; i++) {
-    simbol->param_tipos[i] = params->childs[i]->info->tVar;
-  }
+  AST *cuerpo = va_arg(args, AST *);
 
   // TR_METHOD_DECLARATION que no tiene sentencia reservada Extern
   if (node->type == TR_METHOD_DECLARATION) {
-    AST *cuerpo = va_arg(args, AST *);
     if (tipoIdentificador != T_VOID) {
       // accedo a la parte de sentencias en el bloque
       // la cual es el segundo hijo de un bloque
@@ -131,9 +117,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
       }
     }
   }
-  insertar_simbolo(simbol);
-  node->info = simbol;
-  node->child_count = 0;
+  crear_simbolo_metodo(node, params, cuerpo, tipoIdentificador, nombre);
 }
 
 void module_switch_case_param(AST *node, va_list args) {
@@ -207,7 +191,7 @@ void module_switch_case_invocation(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < id->num_params; i++) {
-    if (id->param_tipos[i] == params->childs[i]->info->tVar) {
+    if (id->param_tipos[i] != params->childs[i]->info->tVar) {
       fprintf(stderr,
               "[Error semántico] En la llamada a '%s': "
               "el parámetro #%d debería ser de tipo '%s', "
@@ -254,7 +238,7 @@ void module_switch_case_if_else(AST *node, va_list args) {
   AST *cuerpo2 = va_arg(args, AST *);
 
   node->child_count = 3;
-  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs = malloc(sizeof(AST *) * 3);
   node->childs[0] = condition;
   node->childs[1] = cuerpo1;
   node->childs[2] = cuerpo2;
@@ -303,7 +287,7 @@ void module_switch_case_negacion_logica(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_BOOL;
   node->info->valor = !exp->info->valor;
   node->info->categoria = exp->info->categoria;
@@ -322,7 +306,7 @@ void module_switch_case_negacion_aritmetica(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_INT;
   node->info->valor = -(exp->info->valor);
   node->child_count = 1;
@@ -338,13 +322,13 @@ void module_switch_case_suma(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_INT;
   node->info->valor = operando1->info->valor + operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_resta(AST *node, va_list args) {
@@ -355,13 +339,13 @@ void module_switch_case_resta(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_INT;
   node->info->valor = operando1->info->valor - operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_multiplicacion(AST *node, va_list args) {
@@ -372,13 +356,13 @@ void module_switch_case_multiplicacion(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_INT;
   node->info->valor = operando1->info->valor * operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_divition(AST *node, va_list args) {
@@ -389,13 +373,13 @@ void module_switch_case_divition(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_INT;
   node->info->valor = operando1->info->valor / operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_modulo(AST *node, va_list args) {
@@ -406,13 +390,13 @@ void module_switch_case_modulo(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_INT;
   node->info->valor = operando1->info->valor % operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_less_than(AST *node, va_list args) {
@@ -423,13 +407,13 @@ void module_switch_case_less_than(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_BOOL;
   node->info->valor = operando1->info->valor < operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_greater_than(AST *node, va_list args) {
@@ -440,13 +424,13 @@ void module_switch_case_greater_than(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_BOOL;
   node->info->valor = operando1->info->valor > operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_equal(AST *node, va_list args) {
@@ -457,13 +441,13 @@ void module_switch_case_equal(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_BOOL;
   node->info->valor = operando1->info->valor == operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_and(AST *node, va_list args) {
@@ -474,13 +458,13 @@ void module_switch_case_and(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_BOOL;
   node->info->valor = operando1->info->valor && operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_or(AST *node, va_list args) {
@@ -491,20 +475,20 @@ void module_switch_case_or(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
 
-  node->info = malloc(sizeof(AST));
+  node->info = malloc(sizeof(Simbolo));
   node->info->tVar = T_BOOL;
   node->info->valor = operando1->info->valor || operando2->info->valor;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
-  node->childs[0] = operando2;
+  node->childs[1] = operando2;
 }
 
 void module_switch_case_literal(AST *node, va_list args) {
   node->info = malloc(sizeof(Simbolo));
   node->info->tVar =
       va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
-  node->info->nombre = strdup("TR_VALUE");
+  node->info->nombre = "TR_VALUE";
   node->info->valor = va_arg(
       args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
   node->child_count = 0;
@@ -602,7 +586,6 @@ AST *new_node(TipoNodo type, int child_count, ...) {
 }
 
 AST *append_child(AST *list, AST *child) {
-
   list->childs = realloc(list->childs, sizeof(AST *) * (list->child_count + 1));
   if (!list->childs) {
     fprintf(stderr, "Error realloc en append_child\n");
