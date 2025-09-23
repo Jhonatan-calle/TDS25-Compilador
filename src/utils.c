@@ -305,3 +305,36 @@ void usage_message(const char *prog) {
   fprintf(stderr, "  -debug             Debug info\n");
   exit(EXIT_FAILURE);
 }
+
+/**
+ * Creates the output file as a symbolic link to the compiled binary.
+ *
+ * Given the outfile string name for the output file, creates a symbolic link
+ * with the c-tds object main executable.
+ * Return 0 on success
+ * Return -1 on error
+ */
+int create_output_file(const char *outfile) {
+  if (!outfile)
+    return 0; // No output file specified, nothing to do
+
+  // Remove existing file if it exists
+  if (access(outfile, F_OK) == 0) {
+    if (unlink(outfile) != 0) {
+      perror("Error removing existing output file");
+      return -1;
+    }
+  }
+
+  // Create symbolic link with specified name
+  if (symlink("c-tds", outfile) != 0) {
+    perror("Error creating output file");
+    return -1;
+  }
+
+  if (debug_flag) {
+    printf("[DEBUG] Created output file: %s\n", outfile);
+  }
+
+  return 0;
+}

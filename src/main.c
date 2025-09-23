@@ -35,8 +35,7 @@ int compiler_main(int argc, char *argv[]) {
   // Debug info
   if (debug_flag) {
     printf("[DEBUG] Input file: %s\n", inputfile);
-    if (outfile)
-      printf("[DEBUG] Out file: %s\n", outfile);
+    printf("[DEBUG] Out file: %s\n", outfile);
     if (target)
       printf("[DEBUG] Target: %s\n", target);
     if (opt)
@@ -55,20 +54,9 @@ int compiler_main(int argc, char *argv[]) {
 
   fclose(yyin);
 
-  // Create symbolic link with specified output name
-  if (outfile) {
-    // Remove existing file if it exists
-    if (access(outfile, F_OK) == 0) {
-      unlink(outfile);
-    }
-    // Create symbolic link with specified name
-    if (symlink("c-tds", outfile) != 0) {
-      perror("Error creating output file");
-      return EXIT_FAILURE;
-    }
-    if (debug_flag) {
-      printf("[DEBUG] Created output file: %s\n", outfile);
-    }
+  // Create output file if specified
+  if (create_output_file(outfile) < 0) {
+    return EXIT_FAILURE;
   }
 
   return 0;
