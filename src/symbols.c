@@ -33,12 +33,12 @@ Simbolo *buscar_simbolo(char *nombre) {
 }
 
 Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
-                                char *nombre, int valor) {
+                                char *nombre) {
   Simbolo *id = malloc(sizeof(Simbolo));
   id->tVar = tipoIdentificador; // tipo (enum Tipos)
   id->nombre = nombre;          // identificador
   id->categoria = S_VAR;
-  id->valor = valor;
+  id->valor = exp->info->valor;
   insertar_simbolo(id);
   node->info = id;
   node->child_count = 0;
@@ -46,7 +46,7 @@ Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
 }
 
 void crear_simbolo_metodo(AST *node, AST *params, AST *cuerpo,
-                              Tipos tipoIdentificador, char *nombre) {
+                          Tipos tipoIdentificador, char *nombre) {
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
   simbol->nombre = nombre;          // identificador

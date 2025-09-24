@@ -30,9 +30,9 @@ TablaSimbolos *crear_tabla(size_t capacidad_inicial);
 void insertar_simbolo(Simbolo *e);
 Simbolo *buscar_simbolo(char *nombre);
 Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
-                                char *nombre, int valor);
+                                char *nombre);
 void crear_simbolo_metodo(AST *node, AST *params, AST *cuerpo,
-                              Tipos tipoIdentificador, char *nombre);
+                          Tipos tipoIdentificador, char *nombre);
 void liberar_tabla();
 void print_symtable();
 

@@ -66,8 +66,7 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
 
   AST *exp = va_arg(args, AST *); // $3: expr
 
-  Simbolo *id = crear_simbolo_variable(node, exp, tipoIdentificador, nombre,
-                                       exp->info->valor);
+  Simbolo *id = crear_simbolo_variable(node, exp, tipoIdentificador, nombre);
 
   exit_if_types_invalid_at_declaration(exp, id);
 }
