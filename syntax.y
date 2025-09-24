@@ -27,7 +27,7 @@
 }
 
 %type <node> program declaration_list declaration expr literal param
-%type <node> block statement_list arg_list decl_rest statement param_list
+%type <node> statement_list arg_list decl_rest statement param_list
 %token <id> ID
 %type <tipo> type
 %token T_EOS
@@ -83,8 +83,8 @@ declaration
 decl_rest
   : '=' expr T_EOS           // variable declaration
       { $$ = new_node(TR_VAR_DECLARATION, 1, $2); }  /* un nodo */
-  | '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */
-      { $$ = new_node(TR_METHOD, 2, $2, $4); }  /* un nodo */
+  | '(' param_list ')' '{' declaration_list statement_list '}' // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */
+      { $$ = new_node(TR_METHOD, 4, $2, $5, $6); }  /* un nodo */
   | '(' param_list ')' R_EXTERN T_EOS // extern method
       { $$ = new_node(TR_METHOD_EXTERN, 1, $2); }  /* un nodo */
   ;
@@ -99,11 +99,6 @@ param_list
 param
   : type ID
     { $$ = new_node(TR_PARAM, 2, $1, $2); }  /* un nodo */
-  ;
-
-block
-  : '{' declaration_list statement_list '}'
-      { $$ = new_node(TR_BLOCK, 2, $2, $3);}
   ;
 
 type
@@ -121,23 +116,23 @@ statement_list
 
 statement
   : ID '=' expr T_EOS
-    {$$ = new_node(TR_ASSIGN,2,$1,$3);}
+    {$$ = new_node(TR_ASSIGN, 2, $1, $3);}
   | ID '(' arg_list ')'
-      {$$ = new_node(TR_INVOCATION,2,$1,$3);}
-  | R_IF '(' expr ')' R_THEN block
-    {$$ = new_node(TR_IF_STATEMENT,2,$3,$6);}
-  | R_IF '(' expr ')' R_THEN block R_ELSE block
-    {$$ = new_node(TR_IF_ELSE_STATEMENT,3,$3,$6,$8);}
-  | R_WHILE expr block
-    {$$ = new_node(TR_WHILE_STATEMENT,2,$2,$3);}
+      {$$ = new_node(TR_INVOCATION, 2, $1, $3);}
+  | R_IF '(' expr ')' R_THEN '{' declaration_list statement_list '}'
+    {$$ = new_node(TR_IF_STATEMENT, 3 , $3, $7, $8);}
+  | R_IF '(' expr ')' R_THEN '{' declaration_list statement_list '}' R_ELSE '{' declaration_list statement_list '}'
+    {$$ = new_node(TR_IF_ELSE_STATEMENT, 5, $3, $7, $8, $12, $13); }
+  | R_WHILE expr '{' declaration_list statement_list '}'
+    {$$ = new_node(TR_WHILE_STATEMENT, 3, $2, $4, $5);}
   | R_RETURN expr T_EOS
-    {$$ = new_node(TR_RETURN,1,$2);}
+    {$$ = new_node(TR_RETURN, 1, $2);}
   | R_RETURN T_EOS
-    {$$ = new_node(TR_RETURN,0);}
+    {$$ = new_node(TR_RETURN, 0);}
   | T_EOS
       { $$ = NULL;}
-  | block
-      { $$ = $1;}
+  | '{' declaration_list statement_list '}'
+      { $$ = new_node(TR_BLOCK, 2, $2, $3);}
   ;
 
 
