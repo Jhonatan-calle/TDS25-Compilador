@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "../headers/utils.h"
 
 int temp_counter = 0;
@@ -138,4 +137,75 @@ void gen_assembly_if_assembly_flag(AST *root)
 {
   if (assembly_flag)
     gen_code(root);
+}
+
+/**
+ * Utility function to process arguments
+ *
+ * Receive variables from main and processes them
+ * Returns -1 if error, otherwise returns 0
+ */
+int process_arguments(int argc, char *argv[], char **outfile, char **target, char **opt, char **inputfile)
+{
+  static char outfile_with_ext[256]; // Static to ensure it persists after function returns
+  *target = NULL;
+  *opt = NULL;
+  *outfile = "a.out";
+  *inputfile = NULL;
+
+  for (int i = 1; i < argc; i++)
+  {
+    if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "-output") == 0)
+    {
+      if (i + 1 < argc)
+      {
+        snprintf(outfile_with_ext, sizeof(outfile_with_ext), "%s.out", argv[i + 1]);
+        *outfile = outfile_with_ext;
+        i++;
+      }
+      else
+      {
+        fprintf(stderr, "Error: missing argument after -o\n");
+        return -1;
+      }
+    }
+    else if (strcmp(argv[i], "-target") == 0 || strcmp(argv[i], "-t") == 0)
+    {
+      if (i + 1 < argc)
+      {
+        *target = argv[++i];
+      }
+      else
+      {
+        fprintf(stderr, "Error: missing argument after -target\n");
+        return -1;
+      }
+    }
+    else if (strcmp(argv[i], "-opt") == 0)
+    {
+      if (i + 1 < argc && argv[i + 1][0] != '-')
+      {
+        *opt = argv[++i];
+      }
+      else
+      {
+        *opt = "all";
+      }
+    }
+    else if (strcmp(argv[i], "-debug") == 0 || strcmp(argv[i], "-d") == 0)
+    {
+      debug_flag = 1;
+    }
+    else
+    {
+      *inputfile = argv[i];
+    }
+  }
+
+  if (!*inputfile)
+  {
+    return -1;
+  }
+
+  return 0;
 }

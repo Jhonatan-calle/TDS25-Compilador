@@ -160,7 +160,7 @@ expr
     : ID
        { $$ = new_node(TR_IDENTIFICADOR, 1, $1); }
     | ID '(' arg_list ')'
-        {$$ = new_node(TR_INVOCATION,1,$1,$3);}
+        {$$ = new_node(TR_INVOCATION,2,$1,$3);}
     | literal
         { $$ = $1;}
     | '!' expr %prec NOT
@@ -174,7 +174,7 @@ expr
     | expr '*' expr
         { $$ = new_node(TR_MULTIPLICACION, 2, $1, $3); }
     | expr '/' expr
-        { $$ = new_node(TR_DIVICION, 2, $1, $3); }
+        { $$ = new_node(TR_DIVITION, 2, $1, $3); }
     | expr '%' expr
         { $$ = new_node(TR_MODULO, 2, $1, $3); }
     | expr '<' expr             //---------------que pasa con menor igual o mayor igual

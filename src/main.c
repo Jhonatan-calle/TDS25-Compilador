@@ -13,47 +13,9 @@ int compiler_main(int argc, char *argv[]) {
   scope->tail = NULL;
   inicialize_scope();
 
-  char outfile_with_ext[256]; // Buffer for filename with extension
-  char *outfile = "a.out";    // Default output file name
-  char *target = NULL;
-  char *opt = NULL;
+  char *outfile, *target, *opt, *inputfile;
 
-  char *inputfile = NULL;
-
-  // Cycle the arguments
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "-output") == 0) {
-      if (i + 1 < argc) {
-        snprintf(outfile_with_ext, sizeof(outfile_with_ext), "%s.out",
-                 argv[i + 1]);
-        outfile = outfile_with_ext;
-        i++;
-      } else {
-        fprintf(stderr, "Error: missing argument after -o\n");
-        usage_message(argv[0]);
-      }
-    } else if (strcmp(argv[i], "-target") == 0 || strcmp(argv[i], "-t") == 0) {
-      if (i + 1 < argc) {
-        target = argv[++i];
-      } else {
-        fprintf(stderr, "Error: missing argument after -target\n");
-        usage_message(argv[0]);
-      }
-    } else if (strcmp(argv[i], "-opt") == 0) {
-      if (i + 1 < argc && argv[i + 1][0] != '-') {
-        opt = argv[++i]; // It can be 'all' or another
-      } else {
-        opt = "all"; // Assumming 'all' if nothing provided
-      }
-    } else if (strcmp(argv[i], "-debug") == 0 || strcmp(argv[i], "-d") == 0) {
-      debug_flag = 1;
-    } else {
-      // If its not an option, assumming its the input file
-      inputfile = argv[i];
-    }
-  }
-
-  if (!inputfile) {
+  if (process_arguments(argc, argv, &outfile, &target, &opt, &inputfile) < 0) {
     usage_message(argv[0]);
     return EXIT_FAILURE;
   }
