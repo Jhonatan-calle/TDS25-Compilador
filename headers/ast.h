@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+#include "ast_modules.h"
 #include "forward_declarations.h"
 #include "symbols.h"
 #include "types.h"

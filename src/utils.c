@@ -338,3 +338,95 @@ int create_output_file(const char *outfile) {
 
   return 0;
 }
+
+/**
+ * "Tipos" Enum type to String
+ *
+ * Returns a string corresponding to the enum received.
+ */
+const char *tipoDatoToStr(Tipos type) {
+  switch (type) {
+  case T_INT:
+    return "INT";
+  case T_BOOL:
+    return "BOOL";
+  case T_VOID:
+    return "VOID";
+  default:
+    return "DESCONOCIDO";
+  }
+}
+
+/**
+ * "TipoNodo" Enum type to String
+ *
+ * Retuns a string corresponding to the enum received.
+ */
+const char *tipoNodoToStr(TipoNodo t) {
+  switch (t) {
+  case TR_PROGRAM:
+    return "TR_PROGRAM";
+  case TR_VAR_DECLARATION:
+    return "TR_VAR_DECLARATION";
+  case TR_VAR_DECLARATION_LIST:
+    return "TR_VAR_DECLARATION_LIST";
+  case TR_DECLARATION:
+    return "TR_DECLARATION";
+  case TR_METHOD:
+    return "TR_METHOD";
+  case TR_METHOD_EXTERN:
+    return "TR_METHOD_EXTERN";
+  case TR_PARAM_LIST:
+    return "TR_PARAM_LIST";
+  case TR_PARAM:
+    return "TR_PARAM";
+  case TR_BLOCK:
+    return "TR_BLOCK";
+  case TR_SENTENCES_LIST:
+    return "TR_SENTENCES_LIST";
+  case TR_ASSIGN:
+    return "TR_ASSIGN";
+  case TR_INVOCATION:
+    return "TR_INVOCATION";
+  case TR_IF_STATEMENT:
+    return "TR_IF_STATEMENT";
+  case TR_IF_ELSE_STATEMENT:
+    return "TR_IF_ELSE_STATEMENT";
+  case TR_WHILE_STATEMENT:
+    return "TR_WHILE_STATEMENT";
+  case TR_RETURN:
+    return "TR_RETURN";
+  case TR_ARG_LIST:
+    return "TR_ARG_LIST";
+  case TR_IDENTIFIER:
+    return "TR_IDENTIFIER";
+  case TR_LOGIC_NEGATION:
+    return "TR_LOGIC_NEGATION";
+  case TR_ARITHMETIC_NEGATION:
+    return "TR_ARITHMETIC_NEGATION";
+  case TR_ADDITION:
+    return "TR_ADDITION";
+  case TR_SUBSTRACTION:
+    return "TR_SUBSTRACTION";
+  case TR_MULTIPLICATION:
+    return "TR_MULTIPLICATION";
+  case TR_DIVITION:
+    return "TR_DIVITION";
+  case TR_MODULO:
+    return "TR_MODULO";
+  case TR_LESS_THAN:
+    return "TR_LESS_THAN";
+  case TR_GREATER_THAN:
+    return "TR_GREATER_THAN";
+  case TR_LOGIC_EQUAL:
+    return "TR_LOGIC_EQUAL";
+  case TR_AND:
+    return "TR_AND";
+  case TR_OR:
+    return "TR_OR";
+  case TR_VALUE:
+    return "TR_VALUE";
+  default:
+    return "UNKNOWN";
+  }
+}
