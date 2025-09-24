@@ -1,12 +1,11 @@
 #ifndef SIMBOLOS_H
 #define SIMBOLOS_H
 
-#include "tipos.h"
 #include "forward_declarations.h"
+#include "tipos.h"
 #include <stdlib.h>
 
-struct Simbolo
-{
+struct Simbolo {
   Categoria categoria;
   char *nombre; // identificador
   Tipos tVar;   // tipo
@@ -17,18 +16,23 @@ struct Simbolo
   AST *cuerpo;
 };
 
-typedef struct
-{
-  Simbolo **tabla;
-  size_t capacidad;
-  size_t usados;
-} TablaSimbolos;
+struct ScopeNode {
+  Simbolo *info;
+  ScopeNode *next;
+  ScopeNode *prev;
+};
 
-extern TablaSimbolos *global_table;
+// voy a usar ficiticio como frontera entre scopes
+struct Scope {
+  ScopeNode *head;
+  ScopeNode *tail;
+};
 
-TablaSimbolos *crear_tabla(size_t capacidad_inicial);
+extern Scope *scope;
+
+void inicialize_scope();
 void insertar_simbolo(Simbolo *e);
 Simbolo *buscar_simbolo(char *nombre);
-void liberar_tabla();
+void liberar_scope();
 
 #endif // SIMBOLOS_H

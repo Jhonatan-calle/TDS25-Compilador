@@ -26,10 +26,10 @@
 }
 
 
-%type <node> program expr literal param  method_declaration method_declaration_list
-%type <node> block statement_list arg_list statement param_list var_declaration_list var_declaration
-%token <id> ID
-%type <tipo> type
+%type <node> program declaration_list declaration expr literal param  param_list_nonempty
+%type <node> block statement_list arg_list statement param_list arg_list_nonempty
+%token <id> ID 
+%type <tipo> type 
 %token T_EOS
 %token V_FALSE V_TRUE
 %token <val> V_NUM
@@ -51,50 +51,47 @@
 %%
 
 program
-    : R_PROGRAM '{' var_declaration_list method_declaration_list '}'
-    {
-      $$ = new_node(TR_PROGRAMA,1,$3,$4);
-      root = $$;
-      gen_assembly_if_assembly_flag(root);
-      free_ast($$);
-      print_if_debug_flag("End of compilation.\n");
-    }
+    : R_PROGRAM '{' declaration_list '}'  
+      {
+        $$ = new_node(TR_PROGRAMA,1,$3);
+        root = $$;
+        gen_assembly_if_assembly_flag(root);
+        free_ast($$);
+        print_if_debug_flag("End of compilation.\n");
+      }
     ;
 
-var_declaration_list
-  : %empty
-    { $$ = new_node(TR_VAR_DECLARATION_LIST,0);}
-  | var_declaration_list var_declaration
-    { $$ = append_child($1,$2);}
-  ;
+declaration_list
+    : %empty
+        { $$ = new_node(TR_DECLARATION_LIST,0); }  /* un nodo */ 
+    | declaration_list declaration
+        { $$ = append_child($1, $2); }  /* agregar al árbol existente */
+    ;
 
-var_declaration
-    : type ID '=' expr T_EOS
-      { $$ = new_node(TR_VAR_DECLARATION,3,$1,$2,$4);} ;
-
-method_declaration_list
-  : %empty
-    { $$ = new_node(TR_METHOD_DECLARATION_LIST,0);}
-  | method_declaration_list method_declaration
-    { $$ = append_child($1,$2);}
-  ;
-
-
-method_declaration
-  : type ID '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */
-    { $$ = new_node(TR_METHOD_DECLARATION,4,$1,$2,$4,$6);}
-  |  type ID  '(' param_list ')' R_EXTERN T_EOS // extern method
-    { $$ = new_node(TR_METHOD_DECLARATION_EXTERN,3,$1,$2,$4);}
-  ;
+declaration
+    : type ID '=' expr T_EOS           // variable declaration
+        { $$ = new_node(TR_VAR_DECLARATION,1, $1, $2, $4); }  /* un nodo */ 
+    | type ID '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
+        { $$ = new_node(TR_METHOD_DECLARATION,4, $1,$2,$4,$6); }  /* un nodo */ 
+    | type ID '(' param_list ')' R_EXTERN T_EOS // extern method
+        { $$ = new_node(TR_METHOD_DECLARATION_EXTERN,3, $1,$2,$4); }  /* un nodo */ 
+    ;
 
 param_list
-    : %empty /* Lambda */
-        { $$ = new_node(TR_PARAM_LIST,0);}
-    | param_list ',' param
-        { $$ = append_child($1,$3);}
+    : %empty
+        { $$ = NULL; }
+    | param_list_nonempty
+        { $$ = $1; }
     ;
 
-param
+param_list_nonempty
+    : param
+        { $$ = new_node(TR_PARAM_LIST,1,$1);}
+    | param_list_nonempty ',' param
+        { $$ = append_child($1, $3); }  /* agregar al árbol existente */
+    ;
+
+param 
     : type ID
       { $$ = new_node(TR_PARAM, 2, $1, $2); }  /* un nodo */
     ;
@@ -102,8 +99,12 @@ param
 
 
 block
-    : '{' var_declaration_list statement_list '}'
-        { $$ = new_node(TR_BLOCK, 2, $2, $3);}
+    : '{' declaration_list statement_list '}'
+        { 
+          inicialize_scope();
+          $$ = new_node(TR_BLOCK, 2, $2, $3);
+          liberar_scope();
+        }
     ;
 
 type
@@ -122,7 +123,7 @@ statement_list
 statement
     : ID '=' expr T_EOS
       {$$ = new_node(TR_ASIGNACION,2,$1,$3);}
-    | ID '(' arg_list ')'
+    | ID '(' arg_list ')' T_EOS
         {$$ = new_node(TR_INVOCATION,2,$1,$3);}
     | R_IF '(' expr ')' R_THEN block
       {$$ = new_node(TR_IF_STATEMENT,2,$3,$6);}
@@ -142,7 +143,14 @@ statement
 
 
 arg_list
-    : %empty /* Lambda */
+    : %empty /* Lambda */        // { $$ = new_node(TR_ARG_LIST, 0); }
+        { $$ = new_node(TR_ARG_LIST, 0); }
+    |arg_list_nonempty
+      {$$ = $1;}
+    ;
+
+arg_list_nonempty
+    :  expr
         { $$ = new_node(TR_ARG_LIST, 0); }
     | arg_list',' expr
         { $$ = append_child($1, $3); }  /* agregar al árbol existente */
@@ -198,3 +206,4 @@ int main(int argc, char *argv[])
 {
 	return compiler_main(argc, argv);
 }
+

@@ -3,5 +3,7 @@
 
 typedef struct AST AST;
 typedef struct Simbolo Simbolo;
+typedef struct ScopeNode ScopeNode;
+typedef struct Scope Scope;
 
 #endif
