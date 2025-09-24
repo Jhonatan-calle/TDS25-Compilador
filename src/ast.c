@@ -98,7 +98,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
         if (sentencia->type == TR_RETURN) {
           returnFound = 1;
 
-          if (sentencia->info->tVar != tipoIdentificador) {
+          if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
             fprintf(stderr,
                     "[Error semántico] En método '%s': "
                     "el 'return' #%d tiene "
