@@ -27,7 +27,7 @@
 
 
 %type <node> program declaration_list declaration expr literal param  param_list_nonempty
-%type <node> statement_list arg_list statement param_list arg_list_nonempty cuerpo 
+%type <node> statement_list arg_list statement param_list arg_list_nonempty cuerpo else_cuerpo 
 %token <id> ID 
 %type <tipo> type 
 %token T_EOS
@@ -122,28 +122,19 @@ statement_list
 statement
     : ID '=' expr T_EOS
       {$$ = new_node(TR_ASIGNACION,2,$1,$3);}
-    | ID '(' arg_list ')' T_EOS
+    | ID '('{inicialize_scope();} arg_list ')' T_EOS
         {
-          inicialize_scope();
-          $$ = new_node(TR_INVOCATION,2,$1,$3);
+          $$ = new_node(TR_INVOCATION,2,$1,$4);
           liberar_scope();
         }
-    | R_IF '(' expr ')' R_THEN '{' declaration_list statement_list '}'
+    | R_IF '(' expr ')' R_THEN '{' {inicialize_scope();}declaration_list statement_list '}' else_cuerpo
       {
-        inicialize_scope();
-        $$ = new_node(TR_IF_STATEMENT,2,$3,$7,$8);
+        $$ = new_node(TR_IF_STATEMENT,2,$3,$8,$9,$11);
         liberar_scope();
       }
-    | R_IF '(' expr ')' R_THEN '{' declaration_list statement_list '}' R_ELSE '{' declaration_list statement_list '}'
+    | R_WHILE '(' expr ')' '{' {inicialize_scope();}declaration_list statement_list '}'
       {
-        inicialize_scope();
-        $$ = new_node(TR_IF_ELSE_STATEMENT,3,$3,$7,$8,$12,$13);
-        liberar_scope();
-      }
-    | R_WHILE expr '{' declaration_list statement_list '}'
-      {
-        inicialize_scope();
-        $$ = new_node(TR_WHILE_STATEMENT,3,$2,$4,$5);
+        $$ = new_node(TR_WHILE_STATEMENT,3,$3,$7,$8);
         liberar_scope();
       }
     | R_RETURN expr T_EOS
@@ -152,13 +143,23 @@ statement
       {$$ = new_node(TR_RETURN,0);}
     | T_EOS
        { $$ = NULL;}
-    | '{' declaration_list statement_list '}'
+    | '{' {inicialize_scope();}declaration_list statement_list '}'
        { 
-          inicialize_scope();
-          $$ = new_node(TR_BLOCK,2,$2,$3);
+          $$ = new_node(TR_BLOCK,2,$3,$4);
           liberar_scope();
         }
     ;
+
+
+else_cuerpo
+  : %empty
+    {$$ = NULL;}
+  | R_ELSE '{' {inicialize_scope();}declaration_list statement_list '}'
+    {
+      $$ = new_node(TR_ELSE_CUERPO,3,$4,$5);
+      liberar_scope();
+    } 
+
 
 
 arg_list

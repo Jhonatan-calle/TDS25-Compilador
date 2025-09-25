@@ -241,23 +241,14 @@ void module_switch_case_if(AST *node, va_list args) {
   node->childs[1] = cuerpo;
 }
 
-void module_switch_case_if_else(AST *node, va_list args) {
-  AST *condition = va_arg(args, AST *);
-  if (condition->info->tVar != T_BOOL) {
-    fprintf(stderr,
-            "[Error semántico] La condición del 'if' debe ser de tipo "
-            "'boolean', pero se encontró '%s'.\n",
-            tipoDatoToStr(condition->info->tVar));
-    exit(EXIT_FAILURE);
-  }
-  AST *cuerpo1 = va_arg(args, AST *);
-  AST *cuerpo2 = va_arg(args, AST *);
+void module_switch_case_else_cuerpo(AST *node, va_list args) {
+  AST *declaration_list = va_arg(args, AST *);
+  AST *stament_list = va_arg(args, AST *);
 
-  node->child_count = 3;
+  node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = condition;
-  node->childs[1] = cuerpo1;
-  node->childs[2] = cuerpo2;
+  node->childs[0] = declaration_list;
+  node->childs[1] = stament_list;
 }
 
 void module_switch_case_while(AST *node, va_list args) {
@@ -558,8 +549,8 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   case TR_IF_STATEMENT:
     module_switch_case_if(node, args);
     break;
-  case TR_IF_ELSE_STATEMENT:
-    module_switch_case_if_else(node, args);
+  case TR_ELSE_CUERPO:
+    module_switch_case_else_cuerpo(node, args);
     break;
   case TR_WHILE_STATEMENT:
     module_switch_case_while(node, args);
