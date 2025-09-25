@@ -33,6 +33,7 @@ extern Scope *scope;
 void inicialize_scope();
 void insertar_simbolo(Simbolo *e);
 Simbolo *buscar_simbolo(char *nombre);
+Simbolo *buscar_simbolo_local(char *nombre);
 void liberar_scope();
 
 #endif // SIMBOLOS_H

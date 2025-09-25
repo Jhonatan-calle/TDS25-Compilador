@@ -211,7 +211,7 @@ void module_switch_case_invocation(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
   for (int i = 0; i < id->num_params; i++) {
-    if (id->param_tipos[i] == params->childs[i]->info->tVar) {
+    if (id->param_tipos[i] != params->childs[i]->info->tVar) {
       fprintf(stderr,
               "[Error semántico] En la llamada a '%s': "
               "el parámetro #%d debería ser de tipo '%s', "
@@ -290,11 +290,16 @@ void module_switch_case_return(AST *node, va_list args) {
 }
 
 void module_switch_case_id(AST *node, va_list args) {
-  if (node->child_count != 1) {
-    return;
+  char *nombre = va_arg(args, char *); // $1: ID, el nombre de la variable
+  Simbolo *id = buscar_simbolo(nombre);
+  if (!id) {
+    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
+            nombre);
+    exit(EXIT_FAILURE);
   }
-  node->childs = malloc(sizeof(AST *));
-  node->childs[0] = va_arg(args, AST *);
+  node->info = id;
+  node->child_count = 0;
+  node->childs = NULL;
 }
 
 void module_switch_case_negacion_logica(AST *node, va_list args) {
