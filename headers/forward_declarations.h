@@ -1,0 +1,9 @@
+#ifndef FORWARD_DECLARATIONS_H
+#define FORWARD_DECLARATIONS_H
+
+typedef struct AST AST;
+typedef struct Simbolo Simbolo;
+typedef struct ScopeNode ScopeNode;
+typedef struct Scope Scope;
+
+#endif
