@@ -1,10 +1,10 @@
 program
 {
-  void fun(integer x){
-    pri();
+  void pri(){
     return;
   }
-  void pri(){
+  void fun(integer x){
+    pri();
     return;
   }
 }
