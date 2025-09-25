@@ -56,11 +56,10 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
 }
 
 void module_switch_case_method_declaration(AST *node, va_list args) {
-  int tipoIdentificador = va_arg(
-      args, int); // $1: tipos, el enum de los tipos (internamente un int)
+  int tipoIdentificador = va_arg(args, int);
   char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
 
-  Simbolo *id = buscar_simbolo(nombre);
+  Simbolo *id = buscar_simbolo_local(nombre);
   if (id) {
     fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
             nombre);
@@ -78,56 +77,52 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 
     for (int i = 0; i < simbol->num_params; i++) {
       simbol->param_tipos[i] = params->childs[i]->info->tVar;
+      insertar_simbolo(params->childs[i]->info);
     }
   }
-
+  AST *cuerpo = va_arg(args, AST *);
   // TR_METHOD_DECLARATION que no tiene sentencia reservada Extern
-  if (node->type == TR_METHOD_DECLARATION && tipoIdentificador != T_VOID) {
-    AST *cuerpo = va_arg(args, AST *);
-    if (tipoIdentificador != T_VOID) {
-      // accedo a la parte de sentencias en el bloque
-      // la cual es el segundo hijo de un bloque
-      AST *sentencias = cuerpo->childs[1];
+  if (cuerpo->type == TR_BLOCK && tipoIdentificador != T_VOID) {
 
-      int sentencesCount = sentencias->child_count;
-      int returnFound = 0;
+    int sentencesCount = cuerpo->childs[1]->child_count;
+    int returnFound = 0;
 
-      for (int i = 0; i < sentencesCount; i++) {
-        AST *sentencia = sentencias->childs[i];
+    for (int i = 0; i < sentencesCount; i++) {
+      AST *sentencia = cuerpo->childs[1]->childs[i];
 
-        if (sentencia->type == TR_RETURN) {
-          returnFound = 1;
+      if (sentencia->type == TR_RETURN) {
+        returnFound = 1;
 
-          if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
-            fprintf(stderr,
-                    "[Error semántico] En método '%s': "
-                    "el 'return' #%d tiene "
-                    "tipo '%s', "
-                    "se esperaba '%s'.\n",
-                    nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
-                    tipoDatoToStr(tipoIdentificador));
-            exit(EXIT_FAILURE);
-          }
+        if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
+          fprintf(stderr,
+                  "[Error semántico] En método '%s': "
+                  "el 'return' #%d tiene "
+                  "tipo '%s', "
+                  "se esperaba '%s'.\n",
+                  nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
+                  tipoDatoToStr(tipoIdentificador));
+          exit(EXIT_FAILURE);
+        }
 
-          // Warning de código inalcanzable
-          if (i < sentencesCount - 1) {
-            fprintf(stderr,
-                    "[Warning semántico] En método '%s': código después del "
-                    "'return' #%d es inalcanzable.\n",
-                    nombre, i + 1);
-          }
+        // Warning de código inalcanzable
+        if (i < sentencesCount - 1) {
+          fprintf(stderr,
+                  "[Warning semántico] En método '%s': código después del "
+                  "'return' #%d es inalcanzable.\n",
+                  nombre, i + 1);
         }
       }
-
-      // Error si no hay return en método no-void
-      if (!returnFound) {
-        fprintf(stderr,
-                "[Warning semántico] Método '%s' no tiene un 'return' y es de "
-                "tipo no-void.\n",
-                nombre);
-        exit(EXIT_FAILURE);
-      }
     }
+
+    // Error si no hay return en método no-void
+    if (!returnFound) {
+      fprintf(stderr,
+              "[Warning semántico] Método '%s' no tiene un 'return' y es de "
+              "tipo no-void.\n",
+              nombre);
+      exit(EXIT_FAILURE);
+    }
+    simbol->cuerpo = cuerpo;
   }
   insertar_simbolo(simbol);
   node->info = simbol;
@@ -148,6 +143,7 @@ void module_switch_case_param(AST *node, va_list args) {
   simbol->tVar = tipoIdentificador;
   simbol->nombre = nombre;
   node->info = simbol;
+  insertar_simbolo(simbol);
 }
 
 void module_switch_case_block(AST *node, va_list args) {
@@ -203,7 +199,7 @@ void module_switch_case_invocation(AST *node, va_list args) {
   }
 
   AST *params = va_arg(args, AST *);
-  if (params->child_count != id->num_params) {
+  if (params && params->child_count != id->num_params) {
     fprintf(stderr,
             "[Error semántico] El método '%s' espera %d parámetro(s), "
             "pero se recibieron %d.\n",
@@ -461,8 +457,10 @@ void module_switch_case_greater_than(AST *node, va_list args) {
 void module_switch_case_equal(AST *node, va_list args) {
   AST *operando1 = va_arg(args, AST *);
   AST *operando2 = va_arg(args, AST *);
-  if (operando1->info->tVar != T_BOOL || operando2->info->tVar != T_BOOL) {
-    fprintf(stderr, "[Error semántico] el operador '==' espera boleanos");
+  if (operando1->info->tVar != operando2->info->tVar) {
+    fprintf(
+        stderr,
+        "[Error semántico] el operador '==' espera operadores del mismo tipo");
     exit(EXIT_FAILURE);
   }
 
@@ -517,6 +515,12 @@ void module_switch_case_literal(AST *node, va_list args) {
   node->info->valor = va_arg(
       args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
   node->child_count = 0;
+}
+
+void module_switch_case_arg_list(AST *node, va_list args) {
+  node->child_count = 1;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = va_arg(args, AST *);
 }
 
 AST *new_node(TipoNodo type, int child_count, ...) {
@@ -604,6 +608,9 @@ AST *new_node(TipoNodo type, int child_count, ...) {
     break;
   case TR_VALOR:
     module_switch_case_literal(node, args);
+    break;
+  case TR_ARG_LIST:
+    module_switch_case_arg_list(node, args);
     break;
   default:
     break;

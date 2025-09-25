@@ -39,7 +39,18 @@ void insertar_simbolo(Simbolo *e) {
 Simbolo *buscar_simbolo(char *nombre) {
   ScopeNode *aux = scope->tail;
   while (aux) {
-    if (aux->info && aux->info->nombre == nombre) {
+    if (aux->info && strcmp(aux->info->nombre, nombre) == 0) {
+      return aux->info;
+    }
+    aux = aux->prev;
+  }
+  return NULL; // no encontrado
+}
+
+Simbolo *buscar_simbolo_local(char *nombre) {
+  ScopeNode *aux = scope->tail;
+  while (aux->info) {
+    if (strcmp(aux->info->nombre, nombre) == 0) {
       return aux->info;
     }
     aux = aux->prev;

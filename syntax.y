@@ -27,7 +27,7 @@
 
 
 %type <node> program declaration_list declaration expr literal param  param_list_nonempty
-%type <node> block statement_list arg_list statement param_list arg_list_nonempty
+%type <node> statement_list arg_list statement param_list arg_list_nonempty cuerpo 
 %token <id> ID 
 %type <tipo> type 
 %token T_EOS
@@ -69,13 +69,22 @@ declaration_list
     ;
 
 declaration
-    : type ID '=' expr T_EOS           // variable declaration
-        { $$ = new_node(TR_VAR_DECLARATION,1, $1, $2, $4); }  /* un nodo */ 
-    | type ID '(' param_list ')' block // method declaration { $$ = new_node(TR_METHOD,2, $2, $4); }  /* un nodo */ 
-        { $$ = new_node(TR_METHOD_DECLARATION,4, $1,$2,$4,$6); }  /* un nodo */ 
-    | type ID '(' param_list ')' R_EXTERN T_EOS // extern method
-        { $$ = new_node(TR_METHOD_DECLARATION_EXTERN,3, $1,$2,$4); }  /* un nodo */ 
+    : type ID '=' expr T_EOS
+        { $$ = new_node(TR_VAR_DECLARATION, 1, $1, $2, $4); }
+    | type ID '(' {inicialize_scope();} param_list ')' cuerpo
+        { 
+          liberar_scope();
+          $$ = new_node(TR_METHOD_DECLARATION, 5, $1, $2, $5, $7);
+        }
     ;
+
+cuerpo 
+  :'{' declaration_list statement_list '}'
+          {$$ = new_node(TR_BLOCK,2,$2,$3);}
+  | R_EXTERN T_EOS
+        { $$ = new_node(TR_EXTERN, 0); }
+  ;
+
 
 param_list
     : %empty
@@ -97,16 +106,6 @@ param
     ;
 
 
-
-block
-    : '{' declaration_list statement_list '}'
-        { 
-          inicialize_scope();
-          $$ = new_node(TR_BLOCK, 2, $2, $3);
-          liberar_scope();
-        }
-    ;
-
 type
     : R_INTEGER { $$ = T_INT;}
     | R_BOOL { $$ = T_BOOL ;}
@@ -124,34 +123,54 @@ statement
     : ID '=' expr T_EOS
       {$$ = new_node(TR_ASIGNACION,2,$1,$3);}
     | ID '(' arg_list ')' T_EOS
-        {$$ = new_node(TR_INVOCATION,2,$1,$3);}
-    | R_IF '(' expr ')' R_THEN block
-      {$$ = new_node(TR_IF_STATEMENT,2,$3,$6);}
-    | R_IF '(' expr ')' R_THEN block R_ELSE block
-      {$$ = new_node(TR_IF_ELSE_STATEMENT,3,$3,$6,$8);}
-    | R_WHILE expr block
-      {$$ = new_node(TR_WHILE_STATEMENT,2,$2,$3);}
+        {
+          inicialize_scope();
+          $$ = new_node(TR_INVOCATION,2,$1,$3);
+          liberar_scope();
+        }
+    | R_IF '(' expr ')' R_THEN '{' declaration_list statement_list '}'
+      {
+        inicialize_scope();
+        $$ = new_node(TR_IF_STATEMENT,2,$3,$7,$8);
+        liberar_scope();
+      }
+    | R_IF '(' expr ')' R_THEN '{' declaration_list statement_list '}' R_ELSE '{' declaration_list statement_list '}'
+      {
+        inicialize_scope();
+        $$ = new_node(TR_IF_ELSE_STATEMENT,3,$3,$7,$8,$12,$13);
+        liberar_scope();
+      }
+    | R_WHILE expr '{' declaration_list statement_list '}'
+      {
+        inicialize_scope();
+        $$ = new_node(TR_WHILE_STATEMENT,3,$2,$4,$5);
+        liberar_scope();
+      }
     | R_RETURN expr T_EOS
       {$$ = new_node(TR_RETURN,1,$2);}
     | R_RETURN T_EOS
       {$$ = new_node(TR_RETURN,0);}
     | T_EOS
        { $$ = NULL;}
-    | block
-       { $$ = $1;}
+    | '{' declaration_list statement_list '}'
+       { 
+          inicialize_scope();
+          $$ = new_node(TR_BLOCK,2,$2,$3);
+          liberar_scope();
+        }
     ;
 
 
 arg_list
     : %empty /* Lambda */        // { $$ = new_node(TR_ARG_LIST, 0); }
-        { $$ = new_node(TR_ARG_LIST, 0); }
+        { $$ = NULL; }
     |arg_list_nonempty
       {$$ = $1;}
     ;
 
 arg_list_nonempty
     :  expr
-        { $$ = new_node(TR_ARG_LIST, 0); }
+        { $$ = new_node(TR_ARG_LIST, 1,$1); }
     | arg_list',' expr
         { $$ = append_child($1, $3); }  /* agregar al árbol existente */
     ;
@@ -160,7 +179,11 @@ expr
     : ID
        { $$ = new_node(TR_IDENTIFICADOR, 1, $1); }
     | ID '(' arg_list ')'
-        {$$ = new_node(TR_INVOCATION,2,$1,$3);}
+        {
+          inicialize_scope();
+          $$ = new_node(TR_INVOCATION,2,$1,$3);
+          liberar_scope();
+        }
     | literal
         { $$ = $1;}
     | '!' expr %prec NOT
