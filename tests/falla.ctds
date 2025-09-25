@@ -1,5 +1,0 @@
-program
-{
-    void main(){}
-    integer hola = 0;
-}
