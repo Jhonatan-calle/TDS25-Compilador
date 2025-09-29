@@ -234,11 +234,12 @@ void module_switch_case_if(AST *node, va_list args) {
     exit(EXIT_FAILURE);
   }
   AST *cuerpo = va_arg(args, AST *);
-
-  node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
+  AST *else_cuerpo = va_arg(args, AST *);
+  node->child_count = 3;
+  node->childs = malloc(sizeof(AST *) * 3);
   node->childs[0] = condition;
   node->childs[1] = cuerpo;
+  node->childs[1] = else_cuerpo;
 }
 
 void module_switch_case_else_cuerpo(AST *node, va_list args) {
