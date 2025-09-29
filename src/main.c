@@ -1,6 +1,8 @@
 #include "../headers/main.h"
 
-TablaSimbolos *global_table = NULL;
+extern char *yytext;
+
+Scope *scope = NULL;
 int debug_flag = 0;
 int assembly_flag = 0;
 
@@ -16,7 +18,9 @@ int assembly_flag = 0;
  * Retuns a non-zero value if an error occurs.
  */
 int compiler_main(int argc, char *argv[]) {
-  global_table = crear_tabla(10);
+  scope = malloc(sizeof(Scope));
+  scope->tail = NULL;
+  inicialize_scope();
 
   char *outfile, *target, *opt, *inputfile;
 

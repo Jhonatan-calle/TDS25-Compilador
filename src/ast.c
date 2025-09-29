@@ -34,27 +34,27 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   va_list args;
   va_start(args, child_count);
 
-  if (debug_flag) {
-    printf("[DEBUG NEW_NODE] Creando nodo: %s, child_count=%d, addr=%p\n",
-           tipoNodoToStr(type), child_count, (void *)node);
+  // if (debug_flag) {
+  //   printf("[DEBUG NEW_NODE] Creando nodo: %s, child_count=%d, addr=%p\n",
+  //          tipoNodoToStr(type), child_count, (void *)node);
 
-    for (int i = 0; i < child_count; i++) {
-      AST *child = va_arg(args, AST *);
-      node->childs[i] = child;
-      if (child) {
-        printf("  [DEBUG] child[%d] = %s, addr=%p\n", i,
-               tipoNodoToStr(child->type), (void *)child);
-        if (child->info) {
-          printf("    info->tVar=%s, info->valor=%d\n",
-                 tipoDatoToStr(child->info->tVar), child->info->valor);
-        } else {
-          printf("    info=NULL\n");
-        }
-      } else {
-        printf("  [DEBUG] child[%d] = NULL\n", i);
-      }
-    }
-  }
+  //   for (int i = 0; i < child_count; i++) {
+  //     AST *child = va_arg(args, AST *);
+  //     node->childs[i] = child;
+  //     if (child) {
+  //       printf("  [DEBUG] child[%d] = %s, addr=%p\n", i,
+  //              tipoNodoToStr(child->type), (void *)child);
+  //       if (child->info) {
+  //         printf("    info->tVar=%s, info->valor=%d\n",
+  //                tipoDatoToStr(child->info->tVar), child->info->valor);
+  //       } else {
+  //         printf("    info=NULL\n");
+  //       }
+  //     } else {
+  //       printf("  [DEBUG] child[%d] = NULL\n", i);
+  //     }
+  //   }
+  // }
 
   switch (type) {
   // Nodos de programa
@@ -68,8 +68,7 @@ AST *new_node(TipoNodo type, int child_count, ...) {
     break;
 
   // Declaraciones de métodos
-  case TR_METHOD:
-  case TR_METHOD_EXTERN:
+  case TR_METHOD_DECLARATION:
     module_switch_case_method_declaration(node, args);
     break;
 
@@ -101,8 +100,8 @@ AST *new_node(TipoNodo type, int child_count, ...) {
     module_switch_case_if(node, args);
     break;
 
-  case TR_IF_ELSE_STATEMENT:
-    module_switch_case_if_else(node, args);
+  case TR_ELSE_BODY:
+    module_switch_case_else_cuerpo(node, args);
     break;
 
   case TR_WHILE_STATEMENT:
@@ -169,28 +168,18 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   case TR_VALUE:
     module_switch_case_literal(node, args);
     break;
-
-  // Nodos que son listas de hijos
-  case TR_VAR_DECLARATION_LIST:
-  case TR_SENTENCES_LIST:
-    if (child_count > 0) {
-      node->childs = malloc(sizeof(AST *) * child_count);
-      if (!node->childs) {
-        fprintf(stderr,
-                "Error: no se pudo reservar memoria para lista de hijos\n");
-        exit(EXIT_FAILURE);
-      }
-      for (int i = 0; i < child_count; i++) {
-        node->childs[i] = va_arg(args, AST *);
-      }
-    } else {
-      node->childs = NULL;
-    }
+  case TR_ARG_LIST:
+    module_switch_case_arg_list(node, args);
     break;
-
+  case TR_SENTENCES_LIST:
+  case TR_DECLARATION_LIST:
+  case TR_EXTERN:
+    // char *str = strcat("Pass Case: ", tipoNodoToStr(type));
+    // print_if_debug_flag(str);
+    break;
   default:
-    fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %d\n",
-            type);
+    fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %s\n",
+            tipoNodoToStr(type));
     node->childs = NULL;
     break;
   }

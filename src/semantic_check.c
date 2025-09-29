@@ -146,3 +146,14 @@ void exit_if_binary_boolean_operator_mismatch_types(AST *operando1,
     exit(EXIT_FAILURE);
   }
 }
+
+void exit_if_operators_mismatch_types(AST *operando1, AST *operando2,
+                                      char *op) {
+  if (operando1->info->tVar != operando2->info->tVar) {
+    fprintf(
+        stderr,
+        "[Error semántico] el operador '%s' espera operandos del mismo tipo",
+        op);
+    exit(EXIT_FAILURE);
+  }
+}

@@ -19,3 +19,4 @@ void exit_if_binary_arithmetic_operator_mismatch_types(AST *operando1,
 void exit_if_unary_boolean_operator_mismatch_types(AST *exp, char *op);
 void exit_if_binary_boolean_operator_mismatch_types(AST *operando1,
                                                     AST *operando2, char *op);
+void exit_if_operators_mismatch_types(AST *operando1, AST *operando2, char *op);

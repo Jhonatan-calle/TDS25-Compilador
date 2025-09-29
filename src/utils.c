@@ -366,16 +366,14 @@ const char *tipoNodoToStr(TipoNodo t) {
   switch (t) {
   case TR_PROGRAM:
     return "TR_PROGRAM";
+  case TR_METHOD_DECLARATION:
+    return "TR_METHOD_DECLARATION";
   case TR_VAR_DECLARATION:
     return "TR_VAR_DECLARATION";
-  case TR_VAR_DECLARATION_LIST:
-    return "TR_VAR_DECLARATION_LIST";
-  case TR_DECLARATION:
-    return "TR_DECLARATION";
-  case TR_METHOD:
-    return "TR_METHOD";
-  case TR_METHOD_EXTERN:
-    return "TR_METHOD_EXTERN";
+  case TR_DECLARATION_LIST:
+    return "TR_DECLARATION_LIST";
+  case TR_EXTERN:
+    return "TR_EXTERN";
   case TR_PARAM_LIST:
     return "TR_PARAM_LIST";
   case TR_PARAM:
@@ -390,8 +388,8 @@ const char *tipoNodoToStr(TipoNodo t) {
     return "TR_INVOCATION";
   case TR_IF_STATEMENT:
     return "TR_IF_STATEMENT";
-  case TR_IF_ELSE_STATEMENT:
-    return "TR_IF_ELSE_STATEMENT";
+  case TR_ELSE_BODY:
+    return "TR_ELSE_BODY";
   case TR_WHILE_STATEMENT:
     return "TR_WHILE_STATEMENT";
   case TR_RETURN:

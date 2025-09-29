@@ -1,9 +1,9 @@
 program
 {
     integer x = 2;
-    integer inc(integer x)
+    integer inc(integer z)
     {
-        return x + 1;
+        return z + 1;
     }
     integer get_int() extern;
     void print_int(integer i) extern ;
@@ -17,7 +17,8 @@ program
         }
         else
         {
-            return print_int(inc(y));
+            print_int(inc(y));
+            return;
         }
     }
 }
