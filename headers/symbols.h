@@ -1,9 +1,11 @@
-#ifndef SIMBOLOS_H
-#define SIMBOLOS_H
+#ifndef SYMBOLS_H
+#define SYMBOLS_H
 
-#include "forward_declarations.h"
-#include "tipos.h"
 #include <stdlib.h>
+
+#include "ast.h"
+#include "forward_declarations.h"
+#include "types.h"
 
 struct Simbolo {
   Categoria categoria;
@@ -33,7 +35,11 @@ extern Scope *scope;
 void inicialize_scope();
 void insertar_simbolo(Simbolo *e);
 Simbolo *buscar_simbolo(char *nombre);
+Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
+                                char *nombre);
+void liberar_tabla();
+void print_symtable();
 Simbolo *buscar_simbolo_local(char *nombre);
 void liberar_scope();
 
-#endif // SIMBOLOS_H
+#endif // SYMBOLS_H

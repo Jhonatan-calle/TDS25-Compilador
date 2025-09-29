@@ -17,7 +17,8 @@ program
         }
         else
         {
-            return print_int(inc(y));
+            print_int(inc(y));
+            return;
         }
     }
 }

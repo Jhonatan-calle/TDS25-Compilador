@@ -1,10 +1,10 @@
-#include "../headers/simbolos.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-// using extern variable defined in main.c
+#include "../headers/symbols.h"
+
+// Using extern variable defined in main.c
 extern Scope *scope;
 
 void inicialize_scope() {
@@ -67,4 +67,17 @@ void liberar_scope() {
   }
   scope->tail = aux->prev;
   free(aux); // elimino la frontera
+}
+
+Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
+                                char *nombre) {
+  Simbolo *id = malloc(sizeof(Simbolo));
+  id->tVar = tipoIdentificador; // tipo (enum Tipos)
+  id->nombre = nombre;          // identificador
+  id->categoria = S_VAR;
+  id->valor = exp->info->valor;
+  insertar_simbolo(id);
+  node->info = id;
+  node->child_count = 0;
+  return id;
 }

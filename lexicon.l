@@ -45,7 +45,7 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 
 {endOfStatement}        { return T_EOS; }
 
-{literals}              {yylval.val = atoi(yytext); return V_NUM;}
+{literals}              { yylval.val = atoi(yytext); return V_NUM; }
 {trueValue}             { return V_TRUE; }
 {falseValue}            { return V_FALSE; }
 
@@ -64,7 +64,7 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 {opAnd}                 { return OP_AND; }
 {opOr}                  { return OP_OR; }
 
-{ID}                    {yylval.id = strdup(yytext);return ID;}
+{ID}                    { yylval.id = strdup(yytext); return ID; }
 
 {operatorDelimiter}     { return *yytext; }
 
