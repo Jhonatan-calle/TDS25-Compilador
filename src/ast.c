@@ -33,28 +33,6 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   va_list args;
   va_start(args, child_count);
 
-  if (debug_flag) {
-    printf("[DEBUG NEW_NODE] Creando nodo: %s, child_count=%d, addr=%p\n",
-           tipoNodoToStr(type), child_count, (void *)node);
-
-    for (int i = 0; i < child_count; i++) {
-      AST *child = va_arg(args, AST *);
-      node->childs[i] = child;
-      if (child) {
-        printf("  [DEBUG] child[%d] = %s, addr=%p\n", i,
-               tipoNodoToStr(child->type), (void *)child);
-        if (child->info) {
-          printf("    info->tVar=%s, info->valor=%d\n",
-                 tipoDatoToStr(child->info->tVar), child->info->valor);
-        } else {
-          printf("    info=NULL\n");
-        }
-      } else {
-        printf("  [DEBUG] child[%d] = NULL\n", i);
-      }
-    }
-  }
-
   switch (type) {
   // Nodos de programa
   case TR_PROGRAM:
