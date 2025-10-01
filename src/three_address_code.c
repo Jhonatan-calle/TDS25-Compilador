@@ -16,7 +16,8 @@ void gen_inter_code(AST *root) {
       gen_inter_code(root->childs[0]);
     break;
   case TR_VAR_DECLARATION:
-      insert_tac(TAC_ASSIGN,root->info,NULL,root->info);
+      gen_inter_code(root->childs[0]);
+      insert_tac(TAC_ASSIGN,tac_list->tail->result,NULL,root->info);
     break;
   case TR_METHOD_DECLARATION:
     break;
