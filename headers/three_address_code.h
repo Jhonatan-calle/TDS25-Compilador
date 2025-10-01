@@ -38,6 +38,9 @@ typedef struct TACList {
   int count;
 } TACList;
 
+// Entry point for generate inter code
+void gen_inter_code(AST *root);
+
 // Global TAC list
 extern TACList *tac_list;
 

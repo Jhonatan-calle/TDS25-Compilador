@@ -22,6 +22,11 @@ void gen_assembly_if_assembly_flag(AST *root) {
     gen_assembly_code(root);
 }
 
+/**
+ * Generate the intermediate code
+ *
+ * Calls gen_inter_code function if global inter code flag is enabled
+ */
 void gen_inter_code_if_inter_code_flag(AST *root) {
   if (inter_code_flag)
     gen_inter_code(root);
