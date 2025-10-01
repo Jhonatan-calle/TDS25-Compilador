@@ -1,4 +1,5 @@
 #include "../headers/ast_modules.h"
+#include <stdlib.h>
 
 void allocate_binary_boolean_node(AST *node, AST *operando1, AST *operando2,
                                   char *op) {
@@ -81,7 +82,9 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   simbol->valor = exp->info->valor;
   insertar_simbolo(simbol);
   node->info = simbol;
-  node->child_count = 0;
+  node->child_count = 1;
+  node->childs = malloc(sizeof(AST*));
+  node->childs[0] = exp;
 }
 
 void module_switch_case_method_declaration(AST *node, va_list args) {
