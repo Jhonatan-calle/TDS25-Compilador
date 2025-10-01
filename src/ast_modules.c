@@ -167,7 +167,10 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   }
   insertar_simbolo(simbol);
   node->info = simbol;
-  node->child_count = 0;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST*)*2);
+  node->childs[0] = params;
+  node->childs[1] = cuerpo;
 }
 
 void module_switch_case_param(AST *node, va_list args) {
