@@ -9,11 +9,14 @@
 
 extern int debug_flag;
 extern int assembly_flag;
+extern int inter_code_flag;
 
 char *new_temp();
-char *gen_code(AST *node);
+char *gen_assembly_code(AST *node);
+void gen_inter_code(AST* root);
 void print_if_debug_flag(char *str);
 void gen_assembly_if_assembly_flag(AST *root);
+void gen_inter_code_if_inter_code_flag(AST* root);
 int process_arguments(int argc, char *argv[], char **outfile, char **target,
                       char **opt, char **inputfile);
 void parse_method();
