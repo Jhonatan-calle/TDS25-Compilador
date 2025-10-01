@@ -39,40 +39,4 @@ typedef enum { T_INT, T_BOOL, T_VOID } Tipos;
 
 typedef enum { S_VAR, S_FUNC } MethoCategory;
 
-typedef enum {
-  /* === Asignación y movimiento === */
-  TAC_ASSIGN, // x = y
-  TAC_COPY,   // x = y (alias más explícito, si querés separar)
-
-  /* === Operaciones aritméticas === */
-  TAC_ADD, // x = y + z
-  TAC_SUB, // x = y - z
-  TAC_MUL, // x = y * z
-  TAC_DIV, // x = y / z
-  TAC_MOD, // x = y % z
-  TAC_NEG, // x = -y (unario)
-
-  /* === Operaciones lógicas / booleanas === */
-  TAC_NOT, // x = !y
-  TAC_AND, // x = y && z
-  TAC_OR,  // x = y || z
-
-  /* === Comparaciones === */
-  TAC_LT, // x = (y < z)
-  TAC_GT, // x = (y > z)
-  TAC_EQ, // x = (y == z)
-
-  /* === Control de flujo === */
-  TAC_GOTO,  // goto L
-  TAC_IFZ,   // if x == 0 goto L   (salto condicional)
-  TAC_IFNZ,  // if x != 0 goto L   (salto condicional)
-  TAC_LABEL, // etiqueta L:
-
-  /* === Funciones === */
-  TAC_PARAM,  // param x
-  TAC_CALL,   // call f, n_args
-  TAC_RETURN, // return x
-
-} OpCode;
-
 #endif // TYPES_H

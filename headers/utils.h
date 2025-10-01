@@ -6,6 +6,8 @@
 #include "../syntax.tab.h"
 #include "ast.h"
 #include "symbols.h"
+#include "assembly_code.h"
+#include "three_address_code.h"
 
 extern int debug_flag;
 extern int assembly_flag;
