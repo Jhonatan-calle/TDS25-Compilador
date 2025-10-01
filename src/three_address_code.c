@@ -1,7 +1,7 @@
 #include "../headers/three_address_code.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <unistd.h>
 
 // Global TAC list
 TACList *tac_list = NULL;
@@ -16,7 +16,7 @@ void gen_inter_code(AST *root) {
       gen_inter_code(root->childs[0]);
     break;
   case TR_VAR_DECLARATION:
-
+      insert_tac(TAC_ASSIGN,root->info,NULL,root->info);
     break;
   case TR_METHOD_DECLARATION:
     break;
@@ -68,11 +68,9 @@ void gen_inter_code(AST *root) {
     break;
   case TR_ARG_LIST:
     break;
-  case TR_SENTENCES_LIST:
   case TR_DECLARATION_LIST:
-  case TR_EXTERN:
-    // char *str = strcat("Pass Case: ", tipoNodoToStr(type));
-    // print_if_debug_flag(str);
+      for(int i = 0; i < root->child_count;)
+        gen_inter_code(root->childs[0]);
     break;
   default:
     fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %s\n",
@@ -101,7 +99,7 @@ void init_tac_list() {
 }
 
 // Function to insert a new TAC instruction into the list
-void insert_tac(OpCode op, Simbolo *result, Simbolo *op1, Simbolo *op2) {
+void insert_tac(OpCode op, Simbolo *op1, Simbolo *op2, Simbolo *result) {
   if (tac_list == NULL) {
     init_tac_list();
   }

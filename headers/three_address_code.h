@@ -50,7 +50,7 @@ extern TACList *tac_list;
 void init_tac_list();
 
 // Function to insert a new TAC instruction into the list
-void insert_tac(OpCode op, Simbolo *result, Simbolo *op1, Simbolo *op2);
+void insert_tac(OpCode op, Simbolo *op1, Simbolo *op2, Simbolo *result);
 
 // Function to print the list of TAC instructions
 void print_tac_list();

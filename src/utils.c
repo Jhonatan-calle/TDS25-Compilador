@@ -28,8 +28,10 @@ void gen_assembly_if_assembly_flag(AST *root) {
  * Calls gen_inter_code function if global inter code flag is enabled
  */
 void gen_inter_code_if_inter_code_flag(AST *root) {
-  if (inter_code_flag)
+  if (inter_code_flag){
+    init_tac_list();
     gen_inter_code(root);
+  }
 }
 
 /**
