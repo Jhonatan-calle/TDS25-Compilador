@@ -1,9 +1,11 @@
 #ifndef THREE_ADDRESS_CODE_H
 #define THREE_ADDRESS_CODE_H
 
-#include <stdio.h>
-#include "types.h"
 #include "ast.h"
+#include "forward_declarations.h"
+#include "symbols.h"
+#include "types.h"
+#include <stdio.h>
 
 // Enum for TAC operations
 typedef enum {
@@ -25,9 +27,9 @@ typedef enum {
 // Structure for a single Three-Address Code instruction
 typedef struct TAC {
   OpCode op;
-  char *result;
-  char *op1;
-  char *op2;
+  Simbolo *op1;
+  Simbolo *op2;
+  Simbolo *result;
   struct TAC *next; // for a linked list implementation
 } TAC;
 
@@ -48,7 +50,7 @@ extern TACList *tac_list;
 void init_tac_list();
 
 // Function to insert a new TAC instruction into the list
-void insert_tac(OpCode op, char *result, char *op1, char *op2);
+void insert_tac(OpCode op, Simbolo *result, Simbolo *op1, Simbolo *op2);
 
 // Function to print the list of TAC instructions
 void print_tac_list();
