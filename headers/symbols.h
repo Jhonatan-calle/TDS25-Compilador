@@ -30,6 +30,13 @@ struct Scope {
   ScopeNode *tail;
 };
 
+typedef struct TAC_Node {
+  OpCode op; // Tipo de operación
+  struct TAC_Node *arg1;
+  struct TAC_Node *arg2;
+  struct TAC_Node *arg3; // opcional, para ifs o invocaciones
+} TAC_Node;
+
 extern Scope *scope;
 
 void inicialize_scope();
