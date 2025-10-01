@@ -7,23 +7,44 @@
 TACList *tac_list = NULL;
 
 void gen_inter_code(AST *root) {
-  init_tac_list();
+  if (!root)
+    return;
 
   int type = root->type;
 
   switch (type) {
   case TR_PROGRAM:
-      gen_inter_code(root->childs[0]);
+    gen_inter_code(root->childs[0]);
     break;
   case TR_VAR_DECLARATION:
-      gen_inter_code(root->childs[0]);
-      insert_tac(TAC_ASSIGN,tac_list->tail->result,NULL,root->info);
+    gen_inter_code(root->childs[0]);
+    insert_tac(TAC_ASSIGN, tac_list->tail->result, NULL, root->info);
     break;
   case TR_METHOD_DECLARATION:
+
+    insert_tac(TAC_LABEL, NULL, NULL, root->info);
+
+    // parametros de metodo
+    gen_inter_code(root->childs[0]);
+
+    //si el metodo el local y no externo
+    if (root->childs[1]->type == TR_BLOCK) {
+      gen_inter_code(root->childs[1]);
+
+      //si no tiene un return igual le pongo uno para marcar 
+      // el final del label
+      if (root->info->tVar == T_VOID) {
+        insert_tac(TAC_RETURN, NULL, NULL, NULL);
+      }
+
+
+    } else {
+      insert_tac(TAC_EXTERN, NULL, NULL, NULL);
+    }
+
+
     break;
   case TR_PARAM:
-    break;
-  case TR_PARAM_LIST:
     break;
   case TR_BLOCK:
     break;
@@ -70,8 +91,9 @@ void gen_inter_code(AST *root) {
   case TR_ARG_LIST:
     break;
   case TR_DECLARATION_LIST:
-      for(int i = 0; i < root->child_count;)
-        gen_inter_code(root->childs[0]);
+  case TR_PARAM_LIST:
+    for (int i = 0; i < root->child_count;)
+      gen_inter_code(root->childs[0]);
     break;
   default:
     fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %s\n",
@@ -129,7 +151,7 @@ void insert_tac(OpCode op, Simbolo *op1, Simbolo *op2, Simbolo *result) {
 
 // Function to print the list of TAC instructions
 void print_tac_list() {
-  //TODO
+  // TODO
 }
 
 // // Helper to get string for op

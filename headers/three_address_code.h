@@ -21,7 +21,8 @@ typedef enum {
   TAC_PARAM,
   TAC_CALL,
   TAC_RETURN,
-  TAC_PRINT
+  TAC_PRINT,
+  TAC_EXTERN
 } OpCode;
 
 // Structure for a single Three-Address Code instruction
