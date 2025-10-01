@@ -71,8 +71,7 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
     fprintf(stderr,
             "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
             "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
-            nombre, tipoDatoToStr(id->tVar),
-            tipoDatoToStr(exp->info->tVar));
+            nombre, tipoDatoToStr(id->tVar), tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
   }
   Simbolo *simbol = malloc(sizeof(Simbolo));
@@ -299,7 +298,8 @@ void module_switch_case_return(AST *node, va_list args) {
   // node->childs = malloc(sizeof(AST *));
   // node->childs[0] = va_arg(args, AST *);
 
-  // Intentamos leer un posible argumento; el parser debería pasar 1 si tiene expr.
+  // Intentamos leer un posible argumento; el parser debería pasar 1 si tiene
+  // expr.
   AST *maybe_expr = va_arg(args, AST *);
   if (maybe_expr != NULL) {
     node->child_count = 1;
