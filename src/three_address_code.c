@@ -6,6 +6,86 @@
 // Global TAC list
 TACList *tac_list = NULL;
 
+void gen_inter_code(AST *root) {
+  init_tac_list();
+
+  int type = root->type;
+
+  switch (type) {
+  case TR_PROGRAM:
+    break;
+  case TR_VAR_DECLARATION:
+    break;
+  case TR_METHOD_DECLARATION:
+    break;
+  case TR_PARAM:
+    break;
+  case TR_PARAM_LIST:
+    break;
+  case TR_BLOCK:
+    break;
+  case TR_ASSIGN:
+    break;
+  case TR_INVOCATION:
+    break;
+  case TR_IF_STATEMENT:
+    break;
+  case TR_ELSE_BODY:
+    break;
+  case TR_WHILE_STATEMENT:
+    break;
+  case TR_RETURN:
+    break;
+  case TR_LOGIC_NEGATION:
+    break;
+  case TR_ARITHMETIC_NEGATION:
+    break;
+  case TR_ADDITION:
+    break;
+  case TR_SUBSTRACTION:
+    break;
+  case TR_MULTIPLICATION:
+    break;
+  case TR_DIVITION:
+    break;
+  case TR_MODULO:
+    break;
+  case TR_LESS_THAN:
+    break;
+  case TR_GREATER_THAN:
+    break;
+  case TR_LOGIC_EQUAL:
+    break;
+  case TR_AND:
+    break;
+  case TR_OR:
+    break;
+  case TR_IDENTIFIER:
+    break;
+  case TR_VALUE:
+    break;
+  case TR_ARG_LIST:
+    break;
+  case TR_SENTENCES_LIST:
+  case TR_DECLARATION_LIST:
+  case TR_EXTERN:
+    // char *str = strcat("Pass Case: ", tipoNodoToStr(type));
+    // print_if_debug_flag(str);
+    break;
+  default:
+    fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %s\n",
+            tipoNodoToStr(type));
+    break;
+  }
+
+  if (debug_flag) {
+    printf("[DEBUG NEW_NODE] Nodo %s finalizado, child_count=%d\n",
+           tipoNodoToStr(type), root->child_count);
+  }
+
+  return;
+}
+
 // Function to initialize the TAC list
 void init_tac_list() {
   tac_list = (TACList *)malloc(sizeof(TACList));

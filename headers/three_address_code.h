@@ -2,6 +2,8 @@
 #define THREE_ADDRESS_CODE_H
 
 #include <stdio.h>
+#include "types.h"
+#include "ast.h"
 
 // Enum for TAC operations
 typedef enum {
