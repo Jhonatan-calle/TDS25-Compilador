@@ -188,9 +188,24 @@ void gen_inter_code(AST *root) {
 
     break;
   }
-  case TR_RETURN:
-    // ahora neceisto es
+  case TR_RETURN: {
+    if (root->child_count == 1) {
+      AST *expr = root->childs[0];
+
+      // Si la expresión es simple (identificador o literal)
+      if (expr->type == TR_IDENTIFIER || expr->type == TR_VALUE) {
+        insert_tac(TAC_RETURN, expr->info, NULL, NULL);
+      } else {
+        // Si es una expresión compuesta: generar su TAC
+        gen_inter_code(expr);
+        insert_tac(TAC_RETURN, tac_list->tail->result, NULL, NULL);
+      }
+    } else {
+      // return sin expresión (void)
+      insert_tac(TAC_RETURN, NULL, NULL, NULL);
+    }
     break;
+  }
   case TR_LOGIC_NEGATION:
     break;
   case TR_ARITHMETIC_NEGATION:
