@@ -282,14 +282,6 @@ void module_switch_case_while(AST *node, va_list args) {
 }
 
 void module_switch_case_return(AST *node, va_list args) {
-  // if (node->child_count != 1) {
-  //   return;
-  // }
-  // node->childs = malloc(sizeof(AST *));
-  // node->childs[0] = va_arg(args, AST *);
-
-  // Intentamos leer un posible argumento; el parser debería pasar 1 si tiene
-  // expr.
   AST *maybe_expr = va_arg(args, AST *);
   if (maybe_expr != NULL) {
     node->child_count = 1;
