@@ -14,12 +14,30 @@ void gen_inter_code(AST *root) {
 
   switch (type) {
   case TR_PROGRAM:
+
+    // codigo para la lista de declaraciones;
     gen_inter_code(root->childs[0]);
+
     break;
+
   case TR_VAR_DECLARATION:
-    gen_inter_code(root->childs[0]);
-    insert_tac(TAC_ASSIGN, tac_list->tail->result, NULL, root->info);
+
+    // si la expresion es un identificador o un litteral
+    if (root->childs[0]->type == TR_IDENTIFIER ||
+        root->childs[0]->type == TR_VALUE) {
+
+      insert_tac(TAC_ASSIGN, root->childs[0]->info, NULL, root->info);
+
+      // sino que primero resuelva la expresion y despues asigne el
+      // el resultado
+    } else {
+
+      gen_inter_code(root->childs[0]);
+      insert_tac(TAC_ASSIGN, tac_list->tail->result, NULL, root->info);
+    }
+
     break;
+
   case TR_METHOD_DECLARATION:
 
     insert_tac(TAC_LABEL, NULL, NULL, root->info);
@@ -27,28 +45,41 @@ void gen_inter_code(AST *root) {
     // parametros de metodo
     gen_inter_code(root->childs[0]);
 
-    //si el metodo el local y no externo
+    // si el metodo el local y no externo
     if (root->childs[1]->type == TR_BLOCK) {
       gen_inter_code(root->childs[1]);
 
-      //si no tiene un return igual le pongo uno para marcar 
-      // el final del label
+      // si no tiene un return igual le pongo uno para marcar
+      //  el final del label
       if (root->info->tVar == T_VOID) {
         insert_tac(TAC_RETURN, NULL, NULL, NULL);
       }
-
 
     } else {
       insert_tac(TAC_EXTERN, NULL, NULL, NULL);
     }
 
+    break;
+
+  case TR_PARAM:
+
+    insert_tac(TAC_PARAM, root->info, NULL, NULL);
 
     break;
-  case TR_PARAM:
-    break;
+
   case TR_BLOCK:
+
+    // generar codigo de declaraciones
+    gen_inter_code(root->childs[0]);
+    // generar codigo de staments
+    gen_inter_code(root->childs[1]);
+
     break;
+
   case TR_ASSIGN:
+
+    // generar codigo para expresión
+
     break;
   case TR_INVOCATION:
     break;
@@ -84,14 +115,15 @@ void gen_inter_code(AST *root) {
     break;
   case TR_OR:
     break;
+  case TR_ARG_LIST:
+    break;
   case TR_IDENTIFIER:
     break;
   case TR_VALUE:
     break;
-  case TR_ARG_LIST:
-    break;
   case TR_DECLARATION_LIST:
   case TR_PARAM_LIST:
+  case TR_SENTENCES_LIST:
     for (int i = 0; i < root->child_count;)
       gen_inter_code(root->childs[0]);
     break;
