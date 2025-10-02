@@ -13,20 +13,21 @@ void gen_inter_code(AST *root) {
   int type = root->type;
 
   switch (type) {
-  case TR_PROGRAM:
+  case TR_PROGRAM: {
 
     // codigo para la lista de declaraciones;
     gen_inter_code(root->childs[0]);
 
     break;
-
-  case TR_VAR_DECLARATION:
+  }
+  case TR_VAR_DECLARATION: {
 
     // si la expresion es un identificador o un litteral
     if (root->childs[0]->type == TR_IDENTIFIER ||
         root->childs[0]->type == TR_VALUE) {
 
       insert_tac(TAC_ASSIGN, root->childs[0]->info, NULL, root->info);
+
 
       // sino que primero resuelva la expresion y despues asigne el
       // el resultado
@@ -37,8 +38,8 @@ void gen_inter_code(AST *root) {
     }
 
     break;
-
-  case TR_METHOD_DECLARATION:
+  }
+  case TR_METHOD_DECLARATION: {
 
     insert_tac(TAC_LABEL, NULL, NULL, root->info);
 
@@ -60,14 +61,14 @@ void gen_inter_code(AST *root) {
     }
 
     break;
-
-  case TR_PARAM:
+  }
+  case TR_PARAM: {
 
     insert_tac(TAC_PARAM, root->info, NULL, NULL);
 
     break;
-
-  case TR_BLOCK:
+  }
+  case TR_BLOCK: {
 
     // generar codigo de declaraciones
     gen_inter_code(root->childs[0]);
@@ -75,14 +76,45 @@ void gen_inter_code(AST *root) {
     gen_inter_code(root->childs[1]);
 
     break;
+  }
+  case TR_ASSIGN: {
 
-  case TR_ASSIGN:
+    // si la expresion es un identificador o un litteral
+    if (root->childs[1]->type == TR_IDENTIFIER ||
+        root->childs[1]->type == TR_VALUE) {
 
-    // generar codigo para expresión
+      insert_tac(TAC_ASSIGN, root->childs[0]->info, NULL, root->info);
+
+      // sino que primero resuelva la expresion y despues asigne el
+      // el resultado
+    } else {
+
+      gen_inter_code(root->childs[0]);
+      insert_tac(TAC_ASSIGN, tac_list->tail->result, NULL, root->info);
+    }
 
     break;
-  case TR_INVOCATION:
+  }
+  case TR_INVOCATION: {
+    // 1. Generar código de la lista de argumentos (si existe)
+    if (root->child_count > 0 && root->childs[0]) {
+      gen_inter_code(root->childs[0]);
+    }
+
+    // Si la función devuelve algo (no es void)
+    if (root->info->tVar != T_VOID) {
+      // Crear un temporal para guardar el resultado
+      char *temp = new_temp();
+      Simbolo *simbol = malloc(sizeof(Simbolo*));
+      simbol->nombre = temp;
+      insert_tac(TAC_CALL, root->info,root->info,simbol);
+
+    } else {
+      // Si es void, no necesitamos temp
+      insert_tac(TAC_CALL, root->info,root->info,NULL);
+    }
     break;
+  }
   case TR_IF_STATEMENT:
     break;
   case TR_ELSE_BODY:
