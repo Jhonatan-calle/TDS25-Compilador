@@ -193,7 +193,7 @@ void module_switch_case_param_list(AST *node, va_list args) {
 void module_switch_case_block(AST *node, va_list args) {
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = va_arg(args, AST *); 
+  node->childs[0] = va_arg(args, AST *);
   node->childs[1] = va_arg(args, AST *); // $3: statement_list, de tipo AST*
 }
 
@@ -257,7 +257,6 @@ void module_switch_case_if(AST *node, va_list args) {
   node->childs[1] = cuerpo;
   node->childs[2] = else_cuerpo;
 }
-
 
 void module_switch_case_else_cuerpo(AST *node, va_list args) {
   AST *declaration_list = va_arg(args, AST *);

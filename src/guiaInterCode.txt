@@ -14,3 +14,11 @@ if / if else
 
     LABEL NULL, NULL, L_end
 
+
+while  
+    LABEL L_start
+    IFZ x - L_end
+    <codigo cuerpo>
+    GOTO L_start
+    LABEL L_end
+

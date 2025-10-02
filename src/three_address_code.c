@@ -28,7 +28,6 @@ void gen_inter_code(AST *root) {
 
       insert_tac(TAC_ASSIGN, root->childs[0]->info, NULL, root->info);
 
-
       // sino que primero resuelva la expresion y despues asigne el
       // el resultado
     } else {
@@ -105,23 +104,92 @@ void gen_inter_code(AST *root) {
     if (root->info->tVar != T_VOID) {
       // Crear un temporal para guardar el resultado
       char *temp = new_temp();
-      Simbolo *simbol = malloc(sizeof(Simbolo*));
+      Simbolo *simbol = malloc(sizeof(Simbolo *));
       simbol->nombre = temp;
-      insert_tac(TAC_CALL, root->info,root->info,simbol);
+      insert_tac(TAC_CALL, root->info, root->info, simbol);
 
     } else {
       // Si es void, no necesitamos temp
-      insert_tac(TAC_CALL, root->info,root->info,NULL);
+      insert_tac(TAC_CALL, root->info, root->info, NULL);
     }
     break;
   }
-  case TR_IF_STATEMENT:
+  case TR_IF_STATEMENT: {
+
+    // crecion de labels
+    Simbolo *L_else = malloc(sizeof(Simbolo *));
+    Simbolo *L_end = malloc(sizeof(Simbolo *));
+    L_else->nombre = "L_else";
+    L_end->nombre = "L_end";
+
+    // este if diferencia entre condicion compuesta o simple
+    if (root->childs[0]->type == TR_IDENTIFIER ||
+        root->childs[0]->type == TR_VALUE) {
+
+      insert_tac(TAC_IFZ, root->childs[0]->info, NULL, L_else);
+
+    } else {
+
+      gen_inter_code(root->childs[0]);
+      insert_tac(TAC_IFZ, tac_list->tail->result, NULL, L_else);
+    }
+
+    // cuerpo del if
+    gen_inter_code(root->childs[1]);
+    insert_tac(TAC_GOTO, NULL, NULL, L_end);
+
+    // else (opcional)
+    insert_tac(TAC_LABEL, NULL, NULL, L_else);
+    gen_inter_code(root->childs[2]);
+
+    // fin
+    insert_tac(TAC_LABEL, NULL, NULL, L_end);
     break;
-  case TR_ELSE_BODY:
+  }
+  case TR_ELSE_BODY: {
+    // primero declaraciones, si existen
+    if (root->childs[0] != NULL) {
+      gen_inter_code(root->childs[0]);
+    }
+
+    // luego el cuerpo de sentencias
+    if (root->childs[1] != NULL) {
+      gen_inter_code(root->childs[1]);
+    }
     break;
-  case TR_WHILE_STATEMENT:
+  }
+  case TR_WHILE_STATEMENT: {
+    // Crear labels
+    Simbolo *L_start = malloc(sizeof(Simbolo));
+    Simbolo *L_end = malloc(sizeof(Simbolo));
+    L_start->nombre = "L_start";
+    L_end->nombre = "L_end";
+
+    // 1. Label de inicio
+    insert_tac(TAC_LABEL, NULL, NULL, L_start);
+
+    // 2. Condición (igual que en if)
+    if (root->childs[0]->type == TR_IDENTIFIER ||
+        root->childs[0]->type == TR_VALUE) {
+      insert_tac(TAC_IFZ, root->childs[0]->info, NULL, L_end);
+    } else {
+      gen_inter_code(root->childs[0]);
+      insert_tac(TAC_IFZ, tac_list->tail->result, NULL, L_end);
+    }
+
+    // 3. Generar cuerpo del while
+    gen_inter_code(root->childs[1]);
+
+    // 4. Volver al inicio
+    insert_tac(TAC_GOTO, NULL, NULL, L_start);
+
+    // 5. Label de salida
+    insert_tac(TAC_LABEL, NULL, NULL, L_end);
+
     break;
+  }
   case TR_RETURN:
+    // ahora neceisto es
     break;
   case TR_LOGIC_NEGATION:
     break;
