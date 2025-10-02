@@ -23,7 +23,6 @@ void module_switch_case_block(AST *node, va_list args);
 void module_switch_case_asignacion(AST *node, va_list args);
 void module_switch_case_invocation(AST *node, va_list args);
 void module_switch_case_if(AST *node, va_list args);
-void module_switch_case_if_else(AST *node, va_list args);
 void module_switch_case_else_cuerpo(AST *node, va_list args);
 void module_switch_case_while(AST *node, va_list args);
 void module_switch_case_return(AST *node, va_list args);

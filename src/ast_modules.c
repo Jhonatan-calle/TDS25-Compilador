@@ -83,7 +83,7 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   insertar_simbolo(simbol);
   node->info = simbol;
   node->child_count = 1;
-  node->childs = malloc(sizeof(AST*));
+  node->childs = malloc(sizeof(AST *));
   node->childs[0] = exp;
 }
 
@@ -168,7 +168,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   insertar_simbolo(simbol);
   node->info = simbol;
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST*)*2);
+  node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = params;
   node->childs[1] = cuerpo;
 }
@@ -193,8 +193,7 @@ void module_switch_case_param_list(AST *node, va_list args) {
 void module_switch_case_block(AST *node, va_list args) {
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] =
-      va_arg(args, AST *); // $2: var_declaration_list, de tipo AST*
+  node->childs[0] = va_arg(args, AST *); 
   node->childs[1] = va_arg(args, AST *); // $3: statement_list, de tipo AST*
 }
 
@@ -203,9 +202,7 @@ void module_switch_case_asignacion(AST *node, va_list args) {
   exit_if_not_declared(nombre);
   Simbolo *id = buscar_simbolo(nombre);
 
-  AST *exp = va_arg(
-      args,
-      AST *); // $3: expr, lo que se le va asignar a la variable, de tipo AST*
+  AST *exp = va_arg(args, AST *);
 
   exit_if_invalid_types_at_assignment(exp, id);
 
@@ -261,19 +258,6 @@ void module_switch_case_if(AST *node, va_list args) {
   node->childs[2] = else_cuerpo;
 }
 
-void module_switch_case_if_else(AST *node, va_list args) {
-  AST *condition = va_arg(args, AST *);
-  exit_if_invalid_predicate_type(condition);
-
-  AST *cuerpo1 = va_arg(args, AST *);
-  AST *cuerpo2 = va_arg(args, AST *);
-
-  node->child_count = 3;
-  node->childs = malloc(sizeof(AST *) * 3);
-  node->childs[0] = condition;
-  node->childs[1] = cuerpo1;
-  node->childs[2] = cuerpo2;
-}
 
 void module_switch_case_else_cuerpo(AST *node, va_list args) {
   AST *declaration_list = va_arg(args, AST *);
