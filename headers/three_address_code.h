@@ -14,6 +14,12 @@ typedef enum {
   TAC_SUB,
   TAC_MUL,
   TAC_DIV,
+  TAC_MOD,
+  TAC_LESS,
+  TAC_GR,
+  TAC_EQ,
+  TAC_AND,
+  TAC_OR,
   TAC_ASSIGN,
   TAC_LABEL,
   TAC_GOTO,
@@ -22,6 +28,8 @@ typedef enum {
   TAC_CALL,
   TAC_RETURN,
   TAC_PRINT,
+  TAC_NOT,
+  TAC_NEG,
   TAC_EXTERN
 } OpCode;
 
@@ -59,4 +67,5 @@ void print_tac_list();
 // Helper to get string for op
 const char *tac_op_to_string(OpCode op);
 
+Simbolo *get_operand(AST *exp);
 #endif // THREE_ADDRESS_CODE_H

@@ -206,35 +206,158 @@ void gen_inter_code(AST *root) {
     }
     break;
   }
-  case TR_LOGIC_NEGATION:
+  case TR_LOGIC_NEGATION: {
+
+    // se optiene la expresion a negar
+    Simbolo *exp = get_operand(root->childs[0]);
+    Simbolo *temp = malloc(sizeof(Simbolo *));
+    temp->nombre = new_temp();
+    insert_tac(TAC_NOT, exp, NULL, temp);
     break;
-  case TR_ARITHMETIC_NEGATION:
+  }
+  case TR_ARITHMETIC_NEGATION: {
+    Simbolo *exp = get_operand(root->childs[0]);
+    Simbolo *temp = malloc(sizeof(Simbolo *));
+    temp->nombre = new_temp();
+    insert_tac(TAC_NEG, exp, NULL, temp);
     break;
-  case TR_ADDITION:
+  }
+  case TR_ADDITION: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_ADD, op1, op2, temp);
     break;
-  case TR_SUBSTRACTION:
+  }
+  case TR_SUBSTRACTION: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_SUB, op1, op2, temp);
     break;
-  case TR_MULTIPLICATION:
+  }
+  case TR_MULTIPLICATION: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_MUL, op1, op2, temp);
     break;
-  case TR_DIVITION:
+  }
+  case TR_DIVITION: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_DIV, op1, op2, temp);
     break;
-  case TR_MODULO:
+  }
+  case TR_MODULO: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_MOD, op1, op2, temp);
     break;
-  case TR_LESS_THAN:
+  }
+  case TR_LESS_THAN: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_LESS, op1, op2, temp);
     break;
-  case TR_GREATER_THAN:
+  }
+  case TR_GREATER_THAN: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_GR, op1, op2, temp);
     break;
-  case TR_LOGIC_EQUAL:
+  }
+  case TR_LOGIC_EQUAL: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_EQ, op1, op2, temp);
     break;
-  case TR_AND:
+  }
+  case TR_AND:{
+
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_AND, op1, op2, temp);
     break;
-  case TR_OR:
+    }
+  case TR_OR: {
+    AST *exp1 = root->childs[0];
+    AST *exp2 = root->childs[1];
+
+    Simbolo *op1 = get_operand(exp1);
+    Simbolo *op2 = get_operand(exp2);
+
+    Simbolo *temp = malloc(sizeof(Simbolo));
+    temp->nombre = new_temp();
+
+    insert_tac(TAC_OR, op1, op2, temp);
     break;
+    }
   case TR_ARG_LIST:
-    break;
-  case TR_IDENTIFIER:
-    break;
-  case TR_VALUE:
+      for(int i = 0; i < root->child_count; i++){
+        Simbolo *param = get_operand(root->childs[i]);
+        insert_tac(TAC_PARAM, param, NULL, NULL);
+      }
     break;
   case TR_DECLARATION_LIST:
   case TR_PARAM_LIST:
@@ -294,6 +417,16 @@ void insert_tac(OpCode op, Simbolo *op1, Simbolo *op2, Simbolo *result) {
     tac_list->tail = new_tac;
   }
   tac_list->count++;
+}
+
+// auxiliar: asegura que devuelve el símbolo asociado a un nodo
+Simbolo *get_operand(AST *exp) {
+  if (exp->type == TR_IDENTIFIER || exp->type == TR_VALUE) {
+    return exp->info;
+  } else {
+    gen_inter_code(exp);
+    return tac_list->tail->result;
+  }
 }
 
 // Function to print the list of TAC instructions
