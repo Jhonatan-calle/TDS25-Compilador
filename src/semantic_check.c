@@ -112,7 +112,7 @@ void exit_if_invalid_predicate_type(AST *condition) {
 void exit_if_unary_arithmetic_operator_mismatch_types(AST *exp, char *op) {
   if (exp->info->tVar != T_INT) {
     fprintf(stderr,
-            "[Error semántico] el operador '%s' espera un entero"
+            "[Error semántico] el operador '%s' espera un entero "
             "pero se encontró '%s'.\n",
             op, tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
@@ -132,7 +132,7 @@ void exit_if_binary_arithmetic_operator_mismatch_types(AST *operando1,
 void exit_if_unary_boolean_operator_mismatch_types(AST *exp, char *op) {
   if (exp->info->tVar != T_BOOL) {
     fprintf(stderr,
-            "[Error semántico] el operador '%s' espera una expresion boleana"
+            "[Error semántico] el operador '%s' espera una expresion boleana "
             "pero se encontró '%s'.\n",
             op, tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
