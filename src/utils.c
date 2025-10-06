@@ -182,6 +182,7 @@ int process_target_stage(const char *target) {
     // Intermedium code
     printf("Stage: Intermedium code\n");
     inter_code_flag = 1;
+    parse_method();
     return 0;
   } else if (strcmp(target, "assembly") == 0) {
     // Assembly
