@@ -17,34 +17,19 @@ void gen_inter_code(AST *root) {
 
     // codigo para la lista de declaraciones;
     gen_inter_code(root->childs[0]);
-
     break;
   }
   case TR_VAR_DECLARATION: {
 
-    // si la expresion es un identificador o un litteral
-    if (root->childs[0]->type == TR_IDENTIFIER ||
-        root->childs[0]->type == TR_VALUE) {
-
-      insert_tac(TAC_ASSIGN, root->childs[0]->info, NULL, root->info);
-
-      // sino que primero resuelva la expresion y despues asigne el
-      // el resultado
-    } else {
-
-      gen_inter_code(root->childs[0]);
-      insert_tac(TAC_ASSIGN, tac_list->tail->result, NULL, root->info);
-    }
-
+    Simbolo *exp = get_operand(root->childs[0]);
+    insert_tac(TAC_ASSIGN, exp, NULL, root->info);
     break;
   }
   case TR_METHOD_DECLARATION: {
 
     insert_tac(TAC_LABEL, NULL, NULL, root->info);
-
     // parametros de metodo
     gen_inter_code(root->childs[0]);
-
     // si el metodo el local y no externo
     if (root->childs[1]->type == TR_BLOCK) {
       gen_inter_code(root->childs[1]);
@@ -54,7 +39,6 @@ void gen_inter_code(AST *root) {
       if (root->info->tVar == T_VOID) {
         insert_tac(TAC_RETURN, NULL, NULL, NULL);
       }
-
     } else {
       insert_tac(TAC_EXTERN, NULL, NULL, NULL);
     }
@@ -78,27 +62,15 @@ void gen_inter_code(AST *root) {
   }
   case TR_ASSIGN: {
 
-    // si la expresion es un identificador o un litteral
-    if (root->childs[1]->type == TR_IDENTIFIER ||
-        root->childs[1]->type == TR_VALUE) {
-
-      insert_tac(TAC_ASSIGN, root->childs[0]->info, NULL, root->info);
-
-      // sino que primero resuelva la expresion y despues asigne el
-      // el resultado
-    } else {
-
-      gen_inter_code(root->childs[0]);
-      insert_tac(TAC_ASSIGN, tac_list->tail->result, NULL, root->info);
-    }
+    Simbolo *exp = get_operand(root->childs[0]);
+    insert_tac(TAC_ASSIGN, exp, NULL, root->info);
 
     break;
   }
   case TR_INVOCATION: {
     // 1. Generar código de la lista de argumentos (si existe)
-    if (root->child_count > 0 && root->childs[0]) {
+    if (root->child_count > 0 && root->childs[0])
       gen_inter_code(root->childs[0]);
-    }
 
     // Si la función devuelve algo (no es void)
     if (root->info->tVar != T_VOID) {
@@ -107,9 +79,7 @@ void gen_inter_code(AST *root) {
       Simbolo *simbol = malloc(sizeof(Simbolo *));
       simbol->nombre = temp;
       insert_tac(TAC_CALL, root->info, root->info, simbol);
-
     } else {
-      // Si es void, no necesitamos temp
       insert_tac(TAC_CALL, root->info, root->info, NULL);
     }
     break;
@@ -123,17 +93,8 @@ void gen_inter_code(AST *root) {
     L_end->nombre = "L_end";
 
     // este if diferencia entre condicion compuesta o simple
-    if (root->childs[0]->type == TR_IDENTIFIER ||
-        root->childs[0]->type == TR_VALUE) {
-
-      insert_tac(TAC_IFZ, root->childs[0]->info, NULL, L_else);
-
-    } else {
-
-      gen_inter_code(root->childs[0]);
-      insert_tac(TAC_IFZ, tac_list->tail->result, NULL, L_else);
-    }
-
+    Simbolo *exp = get_operand(root->childs[0]);
+    insert_tac(TAC_IFZ, exp, NULL, L_else);
     // cuerpo del if
     gen_inter_code(root->childs[1]);
     insert_tac(TAC_GOTO, NULL, NULL, L_end);
@@ -159,35 +120,22 @@ void gen_inter_code(AST *root) {
     break;
   }
   case TR_WHILE_STATEMENT: {
-    // Crear labels
-    Simbolo *L_start = malloc(sizeof(Simbolo));
+
+    Simbolo *L_start = malloc(sizeof(Simbolo)); // Crear labels
     Simbolo *L_end = malloc(sizeof(Simbolo));
     L_start->nombre = "L_start";
     L_end->nombre = "L_end";
-
-    // 1. Label de inicio
-    insert_tac(TAC_LABEL, NULL, NULL, L_start);
-
-    // 2. Condición (igual que en if)
-    if (root->childs[0]->type == TR_IDENTIFIER ||
-        root->childs[0]->type == TR_VALUE) {
-      insert_tac(TAC_IFZ, root->childs[0]->info, NULL, L_end);
-    } else {
-      gen_inter_code(root->childs[0]);
-      insert_tac(TAC_IFZ, tac_list->tail->result, NULL, L_end);
-    }
-
-    // 3. Generar cuerpo del while
-    gen_inter_code(root->childs[1]);
-
-    // 4. Volver al inicio
+    insert_tac(TAC_LABEL, NULL, NULL, L_start); // 1. Label de inicio
+    Simbolo *exp =
+        get_operand(root->childs[0]); // 2. Condición (igual que en if)
+    insert_tac(TAC_IFZ, exp, NULL, L_end);
+    gen_inter_code(root->childs[1]); // 3. Generar cuerpo del while
     insert_tac(TAC_GOTO, NULL, NULL, L_start);
-
-    // 5. Label de salida
-    insert_tac(TAC_LABEL, NULL, NULL, L_end);
+    insert_tac(TAC_LABEL, NULL, NULL, L_end); // 5. Label de salida
 
     break;
   }
+
   case TR_RETURN: {
     if (root->child_count == 1) {
       AST *expr = root->childs[0];
@@ -362,7 +310,7 @@ void gen_inter_code(AST *root) {
   case TR_DECLARATION_LIST:
   case TR_PARAM_LIST:
   case TR_SENTENCES_LIST:
-    for (int i = 0; i < root->child_count;)
+    for (int i = 0; i < root->child_count; i++)
       gen_inter_code(root->childs[0]);
     break;
   default:
@@ -432,26 +380,10 @@ Simbolo *get_operand(AST *exp) {
 // Function to print the list of TAC instructions
 
 void print_tac_list() {
-  TAC *current = tac_list->head;
+  // TAC *current = tac_list->head;
 
   printf("\n===== INTERMEDIATE CODE (TAC) =====\n");
-  while (current != NULL) {
-    printf("%-10s ", tac_op_to_string(current->op));
 
-    if (current->result)
-      printf("%s = ", current->result->nombre);
-    else
-      printf("       ");
-
-    if (current->op1)
-      printf("%s ", current->op1->nombre);
-
-    if (current->op2)
-      printf("%s ", current->op2->nombre);
-
-    printf("\n");
-    current = current->next;
-  }
   printf("===================================\n");
 }
 
