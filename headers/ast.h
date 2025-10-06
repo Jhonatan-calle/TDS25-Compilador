@@ -19,6 +19,8 @@ struct AST {
 // API del AST
 AST *new_node(TipoNodo type, int child_count, ...);
 AST *append_child(AST *list, AST *child);
+void print_ast(AST *node, int depth);
+void print_ast_tree(AST *root);
 void free_ast(AST *node);
 
 const char *tipoDatoToStr(Tipos type);

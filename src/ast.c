@@ -192,3 +192,38 @@ void free_ast(AST *node) {
   free(node->childs);
   free(node);
 }
+
+void print_ast_tree(AST *root) {
+  printf("\n===== ABSTRACT SYNTAX TREE =====\n");
+  print_ast(root, 0);
+  printf("================================\n");
+}
+
+void print_ast(AST *node, int depth) {
+  if (node == NULL)
+    return;
+
+  // Indentación visual
+  for (int i = 0; i < depth; i++) {
+    printf("  ");
+  }
+
+  // Mostrar tipo de nodo
+  printf("%s", tipoNodoToStr(node->type));
+
+  // Si tiene información semántica, mostrarla
+  if (node->info != NULL) {
+    printf(" [tVar=%s", tipoDatoToStr(node->info->tVar));
+    if (node->info->nombre != NULL)
+      printf(", nombre=%s", node->info->nombre);
+    printf(", valor=%d]", node->info->valor);
+  }
+
+  printf("\n");
+
+  // Recursión sobre los hijos
+  for (int i = 0; i < node->child_count; i++) {
+    print_ast(node->childs[i], depth + 1);
+  }
+}
+
