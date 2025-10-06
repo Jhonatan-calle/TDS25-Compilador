@@ -31,6 +31,7 @@ void gen_inter_code_if_inter_code_flag(AST *root) {
   if (inter_code_flag){
     init_tac_list();
     gen_inter_code(root);
+    print_tac_list();
   }
 }
 

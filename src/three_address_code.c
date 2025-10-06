@@ -430,8 +430,29 @@ Simbolo *get_operand(AST *exp) {
 }
 
 // Function to print the list of TAC instructions
+
 void print_tac_list() {
-  // TODO
+  TAC *current = tac_list->head;
+
+  printf("\n===== INTERMEDIATE CODE (TAC) =====\n");
+  while (current != NULL) {
+    printf("%-10s ", tac_op_to_string(current->op));
+
+    if (current->result)
+      printf("%s = ", current->result->nombre);
+    else
+      printf("       ");
+
+    if (current->op1)
+      printf("%s ", current->op1->nombre);
+
+    if (current->op2)
+      printf("%s ", current->op2->nombre);
+
+    printf("\n");
+    current = current->next;
+  }
+  printf("===================================\n");
 }
 
 // Helper to get string for op

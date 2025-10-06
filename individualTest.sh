@@ -32,6 +32,6 @@ echo "Compiling individual file: $input_file"
 echo "---------------------------"
 
 echo "___________________________"
-./c-tds -d -o outtt "$input_file"
+./c-tds -d -t codinter -o outtt "$input_file"
 echo "___________________________"
 echo ""
