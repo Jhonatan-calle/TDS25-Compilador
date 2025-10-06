@@ -326,7 +326,7 @@ void gen_inter_code(AST *root) {
     insert_tac(TAC_EQ, op1, op2, temp);
     break;
   }
-  case TR_AND:{
+  case TR_AND: {
 
     AST *exp1 = root->childs[0];
     AST *exp2 = root->childs[1];
@@ -339,7 +339,7 @@ void gen_inter_code(AST *root) {
 
     insert_tac(TAC_AND, op1, op2, temp);
     break;
-    }
+  }
   case TR_OR: {
     AST *exp1 = root->childs[0];
     AST *exp2 = root->childs[1];
@@ -352,12 +352,12 @@ void gen_inter_code(AST *root) {
 
     insert_tac(TAC_OR, op1, op2, temp);
     break;
-    }
+  }
   case TR_ARG_LIST:
-      for(int i = 0; i < root->child_count; i++){
-        Simbolo *param = get_operand(root->childs[i]);
-        insert_tac(TAC_PARAM, param, NULL, NULL);
-      }
+    for (int i = 0; i < root->child_count; i++) {
+      Simbolo *param = get_operand(root->childs[i]);
+      insert_tac(TAC_PARAM, param, NULL, NULL);
+    }
     break;
   case TR_DECLARATION_LIST:
   case TR_PARAM_LIST:
@@ -434,34 +434,54 @@ void print_tac_list() {
   // TODO
 }
 
-// // Helper to get string for op
-// const char *tac_op_to_string(OpCode op) {
-//   switch (op) {
-//   case TAC_ADD:
-//     return "+";
-//   case TAC_SUB:
-//     return "-";
-//   case TAC_MUL:
-//     return "*";
-//   case TAC_DIV:
-//     return "/";
-//   case TAC_ASSIGN:
-//     return "ASSIGN";
-//   case TAC_LABEL:
-//     return "LABEL";
-//   case TAC_GOTO:
-//     return "GOTO";
-//   case TAC_IFZ:
-//     return "IFZ";
-//   case TAC_PARAM:
-//     return "PARAM";
-//   case TAC_CALL:
-//     return "CALL";
-//   case TAC_RETURN:
-//     return "RETURN";
-//   case TAC_PRINT:
-//     return "PRINT";
-//   default:
-//     return "UNKNOWN";
-//   }
-// }
+// Helper to get string for op
+const char *tac_op_to_string(OpCode op) {
+  switch (op) {
+  case TAC_UNKNOWN:
+    return "TAC_UNKNOWN";
+  case TAC_ADD:
+    return "TAC_ADD";
+  case TAC_SUB:
+    return "TAC_SUB";
+  case TAC_MUL:
+    return "TAC_MUL";
+  case TAC_DIV:
+    return "TAC_DIV";
+  case TAC_MOD:
+    return "TAC_MOD";
+  case TAC_LESS:
+    return "TAC_LESS";
+  case TAC_GR:
+    return "TAC_GR";
+  case TAC_EQ:
+    return "TAC_EQ";
+  case TAC_AND:
+    return "TAC_AND";
+  case TAC_OR:
+    return "TAC_OR";
+  case TAC_ASSIGN:
+    return "TAC_ASSIGN";
+  case TAC_LABEL:
+    return "TAC_LABEL";
+  case TAC_GOTO:
+    return "TAC_GOTO";
+  case TAC_IFZ:
+    return "TAC_IFZ";
+  case TAC_PARAM:
+    return "TAC_PARAM";
+  case TAC_CALL:
+    return "TAC_CALL";
+  case TAC_RETURN:
+    return "TAC_RETURN";
+  case TAC_PRINT:
+    return "TAC_PRINT";
+  case TAC_NOT:
+    return "TAC_NOT";
+  case TAC_NEG:
+    return "TAC_NEG";
+  case TAC_EXTERN:
+    return "TAC_EXTERN";
+  default:
+    return "UNKNOWN";
+  }
+}
