@@ -196,7 +196,7 @@ void free_ast(AST *node) {
 void print_ast_tree(AST *root) {
   printf("\n===== ABSTRACT SYNTAX TREE =====\n");
   print_ast(root, 0);
-  printf("================================\n");
+  printf("\n================================\n");
 }
 
 void print_ast(AST *node, int depth) {
@@ -210,6 +210,18 @@ void print_ast(AST *node, int depth) {
 
   // Mostrar tipo de nodo
   printf("%s", tipoNodoToStr(node->type));
+
+  int type = node->type;
+
+  if (node->child_count <= 0) {
+    printf("\n");
+    return;
+  }
+
+  if (node < 0) {
+    printf("Invalid Node!\n");
+    return;
+  }
 
   // Si tiene información semántica, mostrarla
   if (node->info != NULL) {
@@ -226,4 +238,3 @@ void print_ast(AST *node, int depth) {
     print_ast(node->childs[i], depth + 1);
   }
 }
-
