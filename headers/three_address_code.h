@@ -68,4 +68,11 @@ void print_tac_list();
 const char *tac_op_to_string(OpCode op);
 
 Simbolo *get_operand(AST *exp);
+
+// Method to insert into the TAC List for Unary Operations
+void unary_operation_insert(OpCode opcode, AST *node);
+
+// Method to insert into the TAC List for Binary Operations
+void binary_operation_insert(OpCode opcode, AST *node);
+
 #endif // THREE_ADDRESS_CODE_H
