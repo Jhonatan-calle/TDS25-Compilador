@@ -378,14 +378,32 @@ Simbolo *get_operand(AST *exp) {
 }
 
 // Function to print the list of TAC instructions
-
 void print_tac_list() {
-  // TAC *current = tac_list->head;
+  if (!tac_list || !tac_list->head) {
+    printf("\n===== INTERMEDIATE CODE (TAC) =====\n");
+    printf("No TAC instructions generated.\n");
+    printf("===================================\n");
+    return;
+  }
+
+  TAC *current = tac_list->head;
 
   printf("\n===== INTERMEDIATE CODE (TAC) =====\n");
 
+  while (current) {
+    const char *op_name = tac_op_to_string(current->op); // función auxiliar
+    const char *arg1 = current->op1 ? current->op1->nombre : "_";
+    const char *arg2 = current->op2 ? current->op2->nombre : "_";
+    const char *res  = current->result  ? current->result->nombre  : "_";
+
+    printf("%-10s %-10s %-10s %-10s\n", op_name, arg1, arg2, res);
+
+    current = current->next;
+  }
+
   printf("===================================\n");
 }
+
 
 // Helper to get string for op
 const char *tac_op_to_string(OpCode op) {
