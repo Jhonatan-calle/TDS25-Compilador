@@ -311,7 +311,7 @@ void gen_inter_code(AST *root) {
   case TR_PARAM_LIST:
   case TR_SENTENCES_LIST:
     for (int i = 0; i < root->child_count; i++)
-      gen_inter_code(root->childs[0]);
+      gen_inter_code(root->childs[i]);
     break;
   default:
     fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %s\n",

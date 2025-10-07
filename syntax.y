@@ -54,6 +54,7 @@ program
   : R_PROGRAM '{' declaration_list '}' {
     $$ = new_node(TR_PROGRAM, 1, $3);
     root = $$;
+    print_ast_tree(root);
     gen_assembly_if_assembly_flag(root);
     gen_inter_code_if_inter_code_flag(root);
     print_if_debug_flag("End of compilation.\n");
