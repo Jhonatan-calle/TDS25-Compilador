@@ -124,45 +124,16 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 
       if (sentencia->type == TR_RETURN) {
         returnFound = 1;
+        exit_if_return_with_no_expression(sentencia, nombre, i);
 
-        if (sentencia->child_count <= 0 || sentencia->childs == NULL ||
-            sentencia->childs[0] == NULL) {
-          fprintf(stderr,
-                  "[Error semántico] En método '%s': 'return' #%d no tiene "
-                  "expresión asociada.\n",
-                  nombre, i + 1);
-          exit(EXIT_FAILURE);
-        }
+        exit_if_invalid_return_type(sentencia, tipoIdentificador, nombre, i);
 
-        if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
-          fprintf(stderr,
-                  "[Error semántico] En método '%s': "
-                  "el 'return' #%d tiene "
-                  "tipo '%s', "
-                  "se esperaba '%s'.\n",
-                  nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
-                  tipoDatoToStr(tipoIdentificador));
-          exit(EXIT_FAILURE);
-        }
-
-        // Warning de código inalcanzable
-        if (i < sentencesCount - 1) {
-          fprintf(stderr,
-                  "[Warning semántico] En método '%s': código después del "
-                  "'return' #%d es inalcanzable.\n",
-                  nombre, i + 1);
-        }
+        warning_if_unreachable_code(i, sentencesCount, nombre);
       }
     }
 
-    // Error si no hay return en método no-void
-    if (!returnFound) {
-      fprintf(stderr,
-              "[Warning semántico] Método '%s' no tiene un 'return' y es de "
-              "tipo no-void.\n",
-              nombre);
-      exit(EXIT_FAILURE);
-    }
+    exit_if_no_return_in_non_void_method(returnFound, nombre);
+
     simbol->cuerpo = cuerpo;
   }
   insertar_simbolo(simbol);
