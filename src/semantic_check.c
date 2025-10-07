@@ -53,7 +53,7 @@ void warning_if_unreachable_code(int i, int sentencesCount, char *nombre) {
   }
 }
 
-void error_if_no_return_in_non_void_method(int returnFound, char *nombre) {
+void exit_if_no_return_in_non_void_method(int returnFound, char *nombre) {
   // Error si no hay return en método no-void
   if (!returnFound) {
     fprintf(stderr,
@@ -154,6 +154,17 @@ void exit_if_operators_mismatch_types(AST *operando1, AST *operando2,
         stderr,
         "[Error semántico] el operador '%s' espera operandos del mismo tipo",
         op);
+    exit(EXIT_FAILURE);
+  }
+}
+
+void exit_if_return_with_no_expression(AST *sentencia, char *nombre, int i) {
+  if (sentencia->child_count <= 0 || sentencia->childs == NULL ||
+      sentencia->childs[0] == NULL) {
+    fprintf(stderr,
+            "[Error semántico] En método '%s': 'return' #%d no tiene "
+            "expresión asociada.\n",
+            nombre, i + 1);
     exit(EXIT_FAILURE);
   }
 }
