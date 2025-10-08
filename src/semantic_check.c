@@ -9,8 +9,19 @@ void exit_if_already_declared(char *nombre) {
   }
 }
 
+void exit_if_already_declared_locally(char *nombre) {
+  Simbolo *id = buscar_simbolo_local(nombre);
+  if (id) {
+    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
+            nombre);
+    exit(EXIT_FAILURE);
+  }
+}
+
 void exit_if_not_declared(char *nombre) {
   Simbolo *id = buscar_simbolo(nombre);
+  if (!id)
+    id = buscar_simbolo_local(nombre);
   if (!id) {
     fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
             nombre);
@@ -18,12 +29,13 @@ void exit_if_not_declared(char *nombre) {
   }
 }
 
-void exit_if_types_invalid_at_declaration(AST *exp, Simbolo *id) {
-  if (exp->info->tVar != id->tVar) {
+void exit_if_types_invalid_at_declaration(AST *exp, Tipos tipoIdentificador,
+                                          char *nombre) {
+  if (exp->info->tVar != tipoIdentificador) {
     fprintf(stderr,
             "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
             "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
-            id->nombre, tipoDatoToStr(id->tVar),
+            nombre, tipoDatoToStr(tipoIdentificador),
             tipoDatoToStr(exp->info->tVar));
     exit(EXIT_FAILURE);
   }
@@ -31,6 +43,20 @@ void exit_if_types_invalid_at_declaration(AST *exp, Simbolo *id) {
 
 void exit_if_invalid_return_type(AST *sentencia, int tipoIdentificador,
                                  char *nombre, int i) {
+  // Si no hay expresión en el return (info == NULL)
+  if (sentencia->info == NULL) {
+    if (tipoIdentificador != T_VOID) {
+      fprintf(stderr,
+              "Error semántico: la función '%s' (de tipo %s) tiene un `return` "
+              "sin expresión en la sentencia %d.\n",
+              nombre, tipoDatoToStr(tipoIdentificador), i + 1);
+      exit(EXIT_FAILURE);
+    } else {
+      // return sin expresión en función void -> válido
+      return;
+    }
+  }
+
   if (sentencia->info->tVar != tipoIdentificador) {
     fprintf(stderr,
             "[Error semántico] En método '%s': "
@@ -57,7 +83,7 @@ void exit_if_no_return_in_non_void_method(int returnFound, char *nombre) {
   // Error si no hay return en método no-void
   if (!returnFound) {
     fprintf(stderr,
-            "[Warning semántico] Método '%s' no tiene un 'return' y es de "
+            "[Error semántico] Método '%s' no tiene un 'return' y es de "
             "tipo no-void.\n",
             nombre);
     exit(EXIT_FAILURE);

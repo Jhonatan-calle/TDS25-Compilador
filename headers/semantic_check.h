@@ -1,8 +1,10 @@
 #include "ast.h"
+#include "types.h"
 
 void exit_if_already_declared(char *nombre);
+void exit_if_already_declared_locally(char *nombre);
 void exit_if_not_declared(char *nombre);
-void exit_if_types_invalid_at_declaration(AST *exp, Simbolo *id);
+void exit_if_types_invalid_at_declaration(AST *exp, Tipos tipoIdentificador, char *nombre);
 void exit_if_invalid_return_type(AST *sentencia, int tipoIdentificador,
                                  char *nombre, int i);
 void warning_if_unreachable_code(int i, int sentencesCount, char *nombre);

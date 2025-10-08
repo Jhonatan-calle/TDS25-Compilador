@@ -60,21 +60,12 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   int tipoIdentificador = va_arg(
       args, int); // $1: tipos, el enum de los tipos (internamente un int)
   char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  Simbolo *id = buscar_simbolo(nombre);
-  if (id) {
-    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n",
-            nombre);
-    exit(EXIT_FAILURE);
-  }
+  exit_if_already_declared(nombre);
+  exit_if_already_declared_locally(nombre);
 
   AST *exp = va_arg(args, AST *);
-  if (exp->info->tVar != tipoIdentificador) {
-    fprintf(stderr,
-            "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
-            "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
-            nombre, tipoDatoToStr(id->tVar), tipoDatoToStr(exp->info->tVar));
-    exit(EXIT_FAILURE);
-  }
+  exit_if_types_invalid_at_declaration(exp, tipoIdentificador, nombre);
+
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
   simbol->nombre = nombre;          // identificador
@@ -90,13 +81,8 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
 void module_switch_case_method_declaration(AST *node, va_list args) {
   int tipoIdentificador = va_arg(args, int);
   char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-
-  Simbolo *id = buscar_simbolo_local(nombre);
-  if (id) {
-    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
-            nombre);
-    exit(EXIT_FAILURE);
-  }
+  exit_if_already_declared(nombre);
+  exit_if_already_declared_locally(nombre);
 
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
@@ -171,7 +157,13 @@ void module_switch_case_block(AST *node, va_list args) {
 void module_switch_case_asignacion(AST *node, va_list args) {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
   exit_if_not_declared(nombre);
-  Simbolo *id = buscar_simbolo(nombre);
+
+  // Intenta asignar local, si no lo encuentra lo busca global
+  Simbolo *id = buscar_simbolo_local(nombre);
+  if (!id)
+    id = buscar_simbolo(nombre);
+
+  node->info = id;
 
   AST *exp = va_arg(args, AST *);
 
@@ -196,7 +188,10 @@ void module_switch_case_invocation(AST *node, va_list args) {
 
   exit_if_not_declared(nombre);
 
-  Simbolo *id = buscar_simbolo(nombre);
+  // Intenta invocar local, si no lo encuentra lo busca global
+  Simbolo *id = buscar_simbolo_local(nombre);
+  if (!id)
+    id = buscar_simbolo(nombre);
 
   AST *params = va_arg(args, AST *);
   if (params != NULL) {
@@ -266,7 +261,11 @@ void module_switch_case_return(AST *node, va_list args) {
 void module_switch_case_id(AST *node, va_list args) {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la variable
   exit_if_not_declared(nombre);
-  Simbolo *id = buscar_simbolo(nombre);
+
+  // Intenta buscar local, si no lo encuentra lo busca global
+  Simbolo *id = buscar_simbolo_local(nombre);
+  if (!id)
+    id = buscar_simbolo(nombre);
 
   node->info = id;
   node->child_count = 0;
@@ -392,7 +391,7 @@ void module_switch_case_literal(AST *node, va_list args) {
   node->info = malloc(sizeof(Simbolo));
   node->info->tVar =
       va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
-  node->info->nombre = strdup("TR_VALUE");
+  node->info->nombre = "TR_VALUE";
   node->info->valor = va_arg(
       args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
   node->child_count = 0;
