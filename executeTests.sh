@@ -7,7 +7,7 @@ echo "#################################"
 for file in tests/*.ctds; do
     echo ""
     echo "Case: $file"
-    ./c-tds -t codinter -o zztmp "$file"
+    ./c-tds -d -t codinter -o zztmp "$file"
     echo ""
 done
 rm -rf zztmp.out

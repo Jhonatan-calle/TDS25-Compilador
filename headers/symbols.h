@@ -41,5 +41,6 @@ void liberar_tabla();
 void print_symtable();
 Simbolo *buscar_simbolo_local(char *nombre);
 void liberar_scope();
+Tipos get_expression_type(AST *node);
 
 #endif // SYMBOLS_H

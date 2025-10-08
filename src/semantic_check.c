@@ -51,20 +51,14 @@ void exit_if_invalid_return_type(AST *sentencia, int tipoIdentificador,
               "sin expresión en la sentencia %d.\n",
               nombre, tipoDatoToStr(tipoIdentificador), i + 1);
       exit(EXIT_FAILURE);
-    } else {
-      // return sin expresión en función void -> válido
-      return;
     }
   }
 
   if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
     fprintf(stderr,
-            "[Error semántico] En método '%s': "
-            "el 'return' #%d tiene "
-            "tipo '%s', "
-            "se esperaba '%s'.\n",
-            nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
-            tipoDatoToStr(tipoIdentificador));
+            "Error semántico: la función '%s' (de tipo %s) tiene un `return` "
+            "sin expresión en la sentencia %d.\n",
+            nombre, tipoDatoToStr(tipoIdentificador), i + 1);
     exit(EXIT_FAILURE);
   }
 }

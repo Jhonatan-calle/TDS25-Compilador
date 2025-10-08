@@ -81,3 +81,31 @@ Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
   node->child_count = 0;
   return id;
 }
+
+Tipos get_expression_type(AST *node) {
+  switch (node->type) {
+  case TR_VALUE:
+    return node->info->tVar;
+
+  case TR_IDENTIFIER:
+    return node->info ? node->info->tVar : T_VOID;
+
+  case TR_ADDITION:
+  case TR_SUBSTRACTION:
+  case TR_MULTIPLICATION:
+  case TR_DIVITION:
+  case TR_MODULO:
+    return T_INT;
+
+  case TR_LOGIC_EQUAL:
+  case TR_LESS_THAN:
+  case TR_GREATER_THAN:
+  case TR_AND:
+  case TR_OR:
+  case TR_LOGIC_NEGATION:
+    return T_BOOL;
+
+  default:
+    return T_VOID;
+  }
+}

@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "types.h"
+#include "symbols.h"
 
 void exit_if_already_declared(char *nombre);
 void exit_if_already_declared_locally(char *nombre);

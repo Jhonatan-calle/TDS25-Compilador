@@ -11,7 +11,7 @@ program
     {
         integer y = 0;
         y = get_int();
-        if (y == 1) then    
+        if (y == 1) then
         {
             print_int(y);
         }

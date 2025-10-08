@@ -161,13 +161,16 @@ AST *new_node(TipoNodo type, int child_count, ...) {
     break;
   }
 
-  va_end(args);
-
   if (debug_flag) {
-    printf("[DEBUG NEW_NODE] Nodo %s finalizado\t\t nombre=%s\t child_count=%d\n",
-           tipoNodoToStr(type), (node->info) ? node->info->nombre : "_" , node->child_count);
+    const char *nombre = "_";
+    if (node && node->info && node->info->nombre)
+      nombre = node->info->nombre;
+
+    printf("[DEBUG NEW_NODE] Nodo %s finalizado. nombre=%s. child_count=%d\n",
+           tipoNodoToStr(type), nombre, node ? node->child_count : -1);
   }
 
+  va_end(args);
   return node;
 }
 

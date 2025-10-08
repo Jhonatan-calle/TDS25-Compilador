@@ -252,9 +252,11 @@ void module_switch_case_return(AST *node, va_list args) {
     node->child_count = 1;
     node->childs = malloc(sizeof(AST *));
     node->childs[0] = maybe_expr;
+    node->info = maybe_expr->info;
   } else {
     node->child_count = 0;
     node->childs = NULL;
+    node->info = NULL;
   }
 }
 
