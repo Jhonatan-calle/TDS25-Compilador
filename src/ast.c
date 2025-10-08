@@ -211,8 +211,6 @@ void print_ast(AST *node, int depth) {
   // Mostrar tipo de nodo
   printf("%s", tipoNodoToStr(node->type));
 
-  int type = node->type;
-
   if (node->child_count <= 0) {
     printf("\n");
     return;
