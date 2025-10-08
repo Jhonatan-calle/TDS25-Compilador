@@ -44,7 +44,7 @@ void exit_if_types_invalid_at_declaration(AST *exp, Tipos tipoIdentificador,
 void exit_if_invalid_return_type(AST *sentencia, int tipoIdentificador,
                                  char *nombre, int i) {
   // Si no hay expresión en el return (info == NULL)
-  if (sentencia->info == NULL) {
+  if (sentencia->child_count == 0) {
     if (tipoIdentificador != T_VOID) {
       fprintf(stderr,
               "Error semántico: la función '%s' (de tipo %s) tiene un `return` "
@@ -57,7 +57,7 @@ void exit_if_invalid_return_type(AST *sentencia, int tipoIdentificador,
     }
   }
 
-  if (sentencia->info->tVar != tipoIdentificador) {
+  if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
     fprintf(stderr,
             "[Error semántico] En método '%s': "
             "el 'return' #%d tiene "
@@ -184,7 +184,7 @@ void exit_if_operators_mismatch_types(AST *operando1, AST *operando2,
   }
 }
 
-void exit_if_return_with_no_expression(AST *sentencia, char *nombre, int i) {
+void  exit_if_return_with_no_expression(AST *sentencia, char *nombre, int i) {
   if (sentencia->child_count <= 0 || sentencia->childs == NULL ||
       sentencia->childs[0] == NULL) {
     fprintf(stderr,
