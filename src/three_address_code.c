@@ -201,7 +201,7 @@ void gen_inter_code(AST *root) {
     break;
 
   default:
-    fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %s\n",
+    fprintf(stderr, "Warning: Tipo de nodo no manejado en Gen Inter Code: %s\n",
             tipoNodoToStr(type));
     break;
   }

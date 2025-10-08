@@ -164,8 +164,8 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   va_end(args);
 
   if (debug_flag) {
-    printf("[DEBUG NEW_NODE] Nodo %s finalizado, child_count=%d\n",
-           tipoNodoToStr(type), node->child_count);
+    printf("[DEBUG NEW_NODE] Nodo %s finalizado\t\t nombre=%s\t child_count=%d\n",
+           tipoNodoToStr(type), (node->info) ? node->info->nombre : "_" , node->child_count);
   }
 
   return node;
