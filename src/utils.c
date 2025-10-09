@@ -334,6 +334,6 @@ const char *tipoNodoToStr(TipoNodo t) {
   case TR_VALUE:
     return "TR_VALUE";
   default:
-    return "UNKNOWN";
+    return "";
   }
 }

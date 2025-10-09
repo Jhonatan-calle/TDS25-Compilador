@@ -201,8 +201,6 @@ void gen_inter_code(AST *root) {
     break;
 
   default:
-    fprintf(stderr, "Warning: Tipo de nodo no manejado en Gen Inter Code: %s\n",
-            tipoNodoToStr(type));
     break;
   }
 
@@ -357,6 +355,6 @@ const char *tac_op_to_string(OpCode op) {
   case TAC_EXTERN:
     return "TAC_EXTERN";
   default:
-    return "UNKNOWN";
+    return "";
   }
 }
