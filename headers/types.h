@@ -37,6 +37,6 @@ typedef enum {
 
 typedef enum { T_INT, T_BOOL, T_VOID } Tipos;
 
-typedef enum { S_VAR, S_FUNC } Categoria;
+typedef enum { S_VAR, S_FUNC } MethodCategory;
 
 #endif // TYPES_H

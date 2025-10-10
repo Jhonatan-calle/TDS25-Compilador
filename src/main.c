@@ -5,6 +5,7 @@ extern char *yytext;
 Scope *scope = NULL;
 int debug_flag = 0;
 int assembly_flag = 0;
+int inter_code_flag = 0;
 
 /**
  * Entry point for the compiler project.

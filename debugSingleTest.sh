@@ -32,6 +32,6 @@ echo "Compiling individual file: $input_file"
 echo "---------------------------"
 
 echo "___________________________"
-gdb --quiet --args ./c-tds -d -o outtt "$input_file"
+gdb --quiet --args ./c-tds -t codinter -d -o outtt "$input_file"
 echo "___________________________"
 echo ""

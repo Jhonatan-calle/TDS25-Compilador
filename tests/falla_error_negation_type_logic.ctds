@@ -1,0 +1,10 @@
+program
+{
+  integer x = 1;
+  void main()
+  {
+    x = 2;
+    x = !x;
+    return;
+  }
+}

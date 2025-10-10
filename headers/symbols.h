@@ -8,7 +8,7 @@
 #include "types.h"
 
 struct Simbolo {
-  Categoria categoria;
+  MethodCategory categoria;
   char *nombre; // identificador
   Tipos tVar;   // tipo
   int valor;    // valor ---SOLO VARIABLES

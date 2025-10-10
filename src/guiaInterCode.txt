@@ -1,0 +1,24 @@
+if / if else 
+    # evaluar la condición
+    <codigo para condicion>
+    IFZ cond, NULL, L_else   # si cond == 0 salta a else
+
+    # cuerpo del if
+    <codigo cuerpo>
+    GOTO NULL, NULL, L_end
+
+    # else
+    LABEL NULL, NULL, L_else
+    <codigo else>
+    # fin del if
+
+    LABEL NULL, NULL, L_end
+
+
+while  
+    LABEL L_start
+    IFZ x - L_end
+    <codigo cuerpo>
+    GOTO L_start
+    LABEL L_end
+

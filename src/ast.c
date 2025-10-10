@@ -164,8 +164,8 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   va_end(args);
 
   if (debug_flag) {
-    printf("[DEBUG NEW_NODE] Nodo %s finalizado, child_count=%d\n",
-           tipoNodoToStr(type), node->child_count);
+    printf("[DEBUG NEW_NODE] Nodo %s finalizado\t\t nombre=%s\t child_count=%d\n",
+           tipoNodoToStr(type), (node->info) ? node->info->nombre : "_" , node->child_count);
   }
 
   return node;
@@ -191,4 +191,48 @@ void free_ast(AST *node) {
     free_ast(node->childs[i]);
   free(node->childs);
   free(node);
+}
+
+void print_ast_tree(AST *root) {
+  printf("\n===== ABSTRACT SYNTAX TREE =====\n");
+  print_ast(root, 0);
+  printf("\n================================\n");
+}
+
+void print_ast(AST *node, int depth) {
+  if (node == NULL)
+    return;
+
+  // Indentación visual
+  for (int i = 0; i < depth; i++) {
+    printf("  ");
+  }
+
+  // Mostrar tipo de nodo
+  printf("%s", tipoNodoToStr(node->type));
+
+  if (node->child_count <= 0) {
+    printf("\n");
+    return;
+  }
+
+  if (node < 0) {
+    printf("Invalid Node!\n");
+    return;
+  }
+
+  // Si tiene información semántica, mostrarla
+  if (node->info != NULL) {
+    printf(" [tVar=%s", tipoDatoToStr(node->info->tVar));
+    if (node->info->nombre != NULL)
+      printf(", nombre=%s", node->info->nombre);
+    printf(", valor=%d]", node->info->valor);
+  }
+
+  printf("\n");
+
+  // Recursión sobre los hijos
+  for (int i = 0; i < node->child_count; i++) {
+    print_ast(node->childs[i], depth + 1);
+  }
 }

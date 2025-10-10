@@ -1,0 +1,44 @@
+program
+{
+  integer whiletrue = 1;
+  void main()
+  {
+    bool ifelse = true;
+    if (ifelse) then
+    {
+      return;
+    }
+    else
+    {
+      integer x = 2;
+      integer y = 3;
+
+      integer elsethen = x + y;
+      return;
+    }
+  }
+  integer main2()
+  {
+    /*
+    comentario multilinea:
+    primero declaro las variables
+    luego declaro la lista de sentencias
+    */
+
+    // declaraciones de variables
+    bool bv = true;
+
+    // lista de sentencias
+    main();
+    whiletrue = 2;
+    while (!bv) {
+      if (bv) then {
+        whiletrue = whiletrue + 1;
+        bv = !bv;
+      } else {
+        whiletrue = whiletrue + 2;
+      }
+    }
+    return whiletrue;
+  }
+}

@@ -1,4 +1,5 @@
 #include "../headers/ast_modules.h"
+#include <stdlib.h>
 
 void allocate_binary_boolean_node(AST *node, AST *operando1, AST *operando2,
                                   char *op) {
@@ -59,22 +60,12 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   int tipoIdentificador = va_arg(
       args, int); // $1: tipos, el enum de los tipos (internamente un int)
   char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  Simbolo *id = buscar_simbolo(nombre);
-  if (id) {
-    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n",
-            nombre);
-    exit(EXIT_FAILURE);
-  }
+  exit_if_already_declared(nombre);
+  exit_if_already_declared_locally(nombre);
 
   AST *exp = va_arg(args, AST *);
-  if (exp->info->tVar != tipoIdentificador) {
-    fprintf(stderr,
-            "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
-            "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
-            nombre, tipoDatoToStr(id->tVar),
-            tipoDatoToStr(exp->info->tVar));
-    exit(EXIT_FAILURE);
-  }
+  exit_if_types_invalid_at_declaration(exp, tipoIdentificador, nombre);
+
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
   simbol->nombre = nombre;          // identificador
@@ -82,19 +73,16 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   simbol->valor = exp->info->valor;
   insertar_simbolo(simbol);
   node->info = simbol;
-  node->child_count = 0;
+  node->child_count = 1;
+  node->childs = malloc(sizeof(AST *));
+  node->childs[0] = exp;
 }
 
 void module_switch_case_method_declaration(AST *node, va_list args) {
   int tipoIdentificador = va_arg(args, int);
   char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-
-  Simbolo *id = buscar_simbolo_local(nombre);
-  if (id) {
-    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
-            nombre);
-    exit(EXIT_FAILURE);
-  }
+  exit_if_already_declared(nombre);
+  exit_if_already_declared_locally(nombre);
 
   Simbolo *simbol = malloc(sizeof(Simbolo));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
@@ -122,50 +110,24 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 
       if (sentencia->type == TR_RETURN) {
         returnFound = 1;
+        exit_if_return_with_no_expression(sentencia, nombre, i);
 
-        if (sentencia->child_count <= 0 || sentencia->childs == NULL ||
-            sentencia->childs[0] == NULL) {
-          fprintf(stderr,
-                  "[Error semántico] En método '%s': 'return' #%d no tiene "
-                  "expresión asociada.\n",
-                  nombre, i + 1);
-          exit(EXIT_FAILURE);
-        }
+        exit_if_invalid_return_type(sentencia, tipoIdentificador, nombre, i);
 
-        if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
-          fprintf(stderr,
-                  "[Error semántico] En método '%s': "
-                  "el 'return' #%d tiene "
-                  "tipo '%s', "
-                  "se esperaba '%s'.\n",
-                  nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
-                  tipoDatoToStr(tipoIdentificador));
-          exit(EXIT_FAILURE);
-        }
-
-        // Warning de código inalcanzable
-        if (i < sentencesCount - 1) {
-          fprintf(stderr,
-                  "[Warning semántico] En método '%s': código después del "
-                  "'return' #%d es inalcanzable.\n",
-                  nombre, i + 1);
-        }
+        warning_if_unreachable_code(i, sentencesCount, nombre);
       }
     }
 
-    // Error si no hay return en método no-void
-    if (!returnFound) {
-      fprintf(stderr,
-              "[Warning semántico] Método '%s' no tiene un 'return' y es de "
-              "tipo no-void.\n",
-              nombre);
-      exit(EXIT_FAILURE);
-    }
+    exit_if_no_return_in_non_void_method(returnFound, nombre);
+
     simbol->cuerpo = cuerpo;
   }
   insertar_simbolo(simbol);
   node->info = simbol;
-  node->child_count = 0;
+  node->child_count = 2;
+  node->childs = malloc(sizeof(AST *) * 2);
+  node->childs[0] = params;
+  node->childs[1] = cuerpo;
 }
 
 void module_switch_case_param(AST *node, va_list args) {
@@ -188,19 +150,22 @@ void module_switch_case_param_list(AST *node, va_list args) {
 void module_switch_case_block(AST *node, va_list args) {
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] =
-      va_arg(args, AST *); // $2: var_declaration_list, de tipo AST*
+  node->childs[0] = va_arg(args, AST *);
   node->childs[1] = va_arg(args, AST *); // $3: statement_list, de tipo AST*
 }
 
 void module_switch_case_asignacion(AST *node, va_list args) {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
   exit_if_not_declared(nombre);
-  Simbolo *id = buscar_simbolo(nombre);
 
-  AST *exp = va_arg(
-      args,
-      AST *); // $3: expr, lo que se le va asignar a la variable, de tipo AST*
+  // Intenta asignar local, si no lo encuentra lo busca global
+  Simbolo *id = buscar_simbolo_local(nombre);
+  if (!id)
+    id = buscar_simbolo(nombre);
+
+  node->info = id;
+
+  AST *exp = va_arg(args, AST *);
 
   exit_if_invalid_types_at_assignment(exp, id);
 
@@ -223,7 +188,10 @@ void module_switch_case_invocation(AST *node, va_list args) {
 
   exit_if_not_declared(nombre);
 
-  Simbolo *id = buscar_simbolo(nombre);
+  // Intenta invocar local, si no lo encuentra lo busca global
+  Simbolo *id = buscar_simbolo_local(nombre);
+  if (!id)
+    id = buscar_simbolo(nombre);
 
   AST *params = va_arg(args, AST *);
   if (params != NULL) {
@@ -256,20 +224,6 @@ void module_switch_case_if(AST *node, va_list args) {
   node->childs[2] = else_cuerpo;
 }
 
-void module_switch_case_if_else(AST *node, va_list args) {
-  AST *condition = va_arg(args, AST *);
-  exit_if_invalid_predicate_type(condition);
-
-  AST *cuerpo1 = va_arg(args, AST *);
-  AST *cuerpo2 = va_arg(args, AST *);
-
-  node->child_count = 3;
-  node->childs = malloc(sizeof(AST *) * 3);
-  node->childs[0] = condition;
-  node->childs[1] = cuerpo1;
-  node->childs[2] = cuerpo2;
-}
-
 void module_switch_case_else_cuerpo(AST *node, va_list args) {
   AST *declaration_list = va_arg(args, AST *);
   AST *stament_list = va_arg(args, AST *);
@@ -293,13 +247,6 @@ void module_switch_case_while(AST *node, va_list args) {
 }
 
 void module_switch_case_return(AST *node, va_list args) {
-  // if (node->child_count != 1) {
-  //   return;
-  // }
-  // node->childs = malloc(sizeof(AST *));
-  // node->childs[0] = va_arg(args, AST *);
-
-  // Intentamos leer un posible argumento; el parser debería pasar 1 si tiene expr.
   AST *maybe_expr = va_arg(args, AST *);
   if (maybe_expr != NULL) {
     node->child_count = 1;
@@ -314,7 +261,11 @@ void module_switch_case_return(AST *node, va_list args) {
 void module_switch_case_id(AST *node, va_list args) {
   char *nombre = va_arg(args, char *); // $1: ID, el nombre de la variable
   exit_if_not_declared(nombre);
-  Simbolo *id = buscar_simbolo(nombre);
+
+  // Intenta buscar local, si no lo encuentra lo busca global
+  Simbolo *id = buscar_simbolo_local(nombre);
+  if (!id)
+    id = buscar_simbolo(nombre);
 
   node->info = id;
   node->child_count = 0;
@@ -440,7 +391,7 @@ void module_switch_case_literal(AST *node, va_list args) {
   node->info = malloc(sizeof(Simbolo));
   node->info->tVar =
       va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
-  node->info->nombre = strdup("TR_VALUE");
+  node->info->nombre = "TR_VALUE";
   node->info->valor = va_arg(
       args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
   node->child_count = 0;
