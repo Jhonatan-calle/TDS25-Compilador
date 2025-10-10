@@ -68,7 +68,7 @@ void gen_inter_code(AST *root) {
     if (root->info->tVar != T_VOID) {
       // Crear un temporal para guardar el resultado
       char *temp = new_temp();
-      Simbolo *simbol = malloc(sizeof(Simbolo *));
+      Simbolo *simbol = malloc(sizeof(Simbolo));
       simbol->nombre = temp;
       insert_tac(TAC_CALL, root->info, root->info, simbol);
     } else {
@@ -78,8 +78,8 @@ void gen_inter_code(AST *root) {
 
   case TR_IF_STATEMENT:
     // crecion de labels
-    Simbolo *L_else = malloc(sizeof(Simbolo *));
-    L_end = malloc(sizeof(Simbolo *));
+    Simbolo *L_else = malloc(sizeof(Simbolo));
+    L_end = malloc(sizeof(Simbolo));
     L_else->nombre = "L_else";
     L_end->nombre = "L_end";
     // este if diferencia entre condicion compuesta o simple
@@ -288,7 +288,7 @@ void print_tac_list() {
 // Method to insert into the TAC List for Unary Operations
 void unary_operation_insert(OpCode opcode, AST *node) {
   Simbolo *exp = get_operand(node->childs[0]);
-  Simbolo *temp = malloc(sizeof(Simbolo *));
+  Simbolo *temp = malloc(sizeof(Simbolo));
   temp->nombre = new_temp();
   insert_tac(opcode, exp, NULL, temp);
 }
