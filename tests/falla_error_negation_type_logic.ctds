@@ -4,7 +4,7 @@ program
   void main()
   {
     x = 2;
-    x = !x 
+    x = !x;
     return;
   }
 }
