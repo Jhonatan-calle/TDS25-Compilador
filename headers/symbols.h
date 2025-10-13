@@ -7,7 +7,7 @@
 #include "forward_declarations.h"
 #include "types.h"
 
-struct Simbolo {
+struct Symbol {
   MethodCategory categoria;
   char *nombre; // identificador
   Tipos tVar;   // tipo
@@ -19,7 +19,7 @@ struct Simbolo {
 };
 
 struct ScopeNode {
-  Simbolo *info;
+  Symbol *info;
   ScopeNode *next;
   ScopeNode *prev;
 };
@@ -32,14 +32,10 @@ struct Scope {
 
 extern Scope *scope;
 
-void inicialize_scope();
-void insertar_simbolo(Simbolo *e);
-Simbolo *buscar_simbolo(char *nombre);
-Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
-                                char *nombre);
-void liberar_tabla();
-void print_symtable();
-Simbolo *buscar_simbolo_local(char *nombre);
-void liberar_scope();
+void initialize_scope();
+void insert_symbol(Symbol *e);
+Symbol *search_symbol_globally(char *nombre);
+Symbol *search_symbol_locally(char *nombre);
+void free_scope();
 
 #endif // SYMBOLS_H

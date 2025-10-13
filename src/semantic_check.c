@@ -1,7 +1,7 @@
 #include "../headers/semantic_check.h"
 
 void exit_if_already_declared(char *nombre) {
-  Simbolo *id = buscar_simbolo_local(nombre);
+  Symbol *id = search_symbol_locally(nombre);
   if (id) {
     fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n",
             nombre);
@@ -10,7 +10,7 @@ void exit_if_already_declared(char *nombre) {
 }
 
 void exit_if_already_declared_locally(char *nombre) {
-  Simbolo *id = buscar_simbolo_local(nombre);
+  Symbol *id = search_symbol_locally(nombre);
   if (id) {
     fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
             nombre);
@@ -19,9 +19,9 @@ void exit_if_already_declared_locally(char *nombre) {
 }
 
 void exit_if_not_declared(char *nombre) {
-  Simbolo *id = buscar_simbolo(nombre);
+  Symbol *id = search_symbol_globally(nombre);
   if (!id)
-    id = buscar_simbolo_local(nombre);
+    id = search_symbol_locally(nombre);
   if (!id) {
     fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
             nombre);
@@ -90,7 +90,7 @@ void exit_if_no_return_in_non_void_method(int returnFound, char *nombre) {
   }
 }
 
-void exit_if_invalid_types_at_assignment(AST *exp, Simbolo *id) {
+void exit_if_invalid_types_at_assignment(AST *exp, Symbol *id) {
   if (exp->info->tVar != id->tVar) {
     fprintf(stderr,
             "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
@@ -101,7 +101,7 @@ void exit_if_invalid_types_at_assignment(AST *exp, Simbolo *id) {
   }
 }
 
-void exit_if_invalid_amount_of_params(AST *params, Simbolo *id, char *nombre) {
+void exit_if_invalid_amount_of_params(AST *params, Symbol *id, char *nombre) {
   if (params->child_count != id->num_params) {
     fprintf(stderr,
             "[Error semántico] El método '%s' espera %d parámetro(s), "
@@ -111,7 +111,7 @@ void exit_if_invalid_amount_of_params(AST *params, Simbolo *id, char *nombre) {
   }
 }
 
-void exit_if_missmatch_types_params_at_invocation(AST *params, Simbolo *id,
+void exit_if_missmatch_types_params_at_invocation(AST *params, Symbol *id,
                                                   char *nombre, int i) {
   if (id->param_tipos[i] != params->childs[i]->info->tVar) {
     fprintf(stderr,

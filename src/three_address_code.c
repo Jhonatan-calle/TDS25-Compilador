@@ -11,8 +11,8 @@ void gen_inter_code(AST *root) {
     return;
 
   int type = root->type;
-  Simbolo *exp = NULL;
-  Simbolo *L_end = NULL;
+  Symbol *exp = NULL;
+  Symbol *L_end = NULL;
 
   switch (type) {
   case TR_PROGRAM:
@@ -68,7 +68,7 @@ void gen_inter_code(AST *root) {
     if (root->info->tVar != T_VOID) {
       // Crear un temporal para guardar el resultado
       char *temp = new_temp();
-      Simbolo *simbol = malloc(sizeof(Simbolo));
+      Symbol *simbol = malloc(sizeof(Symbol));
       simbol->nombre = temp;
       insert_tac(TAC_CALL, root->info, root->info, simbol);
     } else {
@@ -78,8 +78,8 @@ void gen_inter_code(AST *root) {
 
   case TR_IF_STATEMENT:
     // crecion de labels
-    Simbolo *L_else = malloc(sizeof(Simbolo));
-    L_end = malloc(sizeof(Simbolo));
+    Symbol *L_else = malloc(sizeof(Symbol));
+    L_end = malloc(sizeof(Symbol));
     L_else->nombre = "L_else";
     L_end->nombre = "L_end";
     // este if diferencia entre condicion compuesta o simple
@@ -107,8 +107,8 @@ void gen_inter_code(AST *root) {
     break;
 
   case TR_WHILE_STATEMENT:
-    Simbolo *L_start = malloc(sizeof(Simbolo)); // Crear labels
-    L_end = malloc(sizeof(Simbolo));
+    Symbol *L_start = malloc(sizeof(Symbol)); // Crear labels
+    L_end = malloc(sizeof(Symbol));
     L_start->nombre = "L_start";
     L_end->nombre = "L_end";
     insert_tac(TAC_LABEL, NULL, NULL, L_start); // 1. Label de inicio
@@ -188,7 +188,7 @@ void gen_inter_code(AST *root) {
 
   case TR_ARG_LIST:
     for (int i = 0; i < root->child_count; i++) {
-      Simbolo *param = get_operand(root->childs[i]);
+      Symbol *param = get_operand(root->childs[i]);
       insert_tac(TAC_PARAM, param, NULL, NULL);
     }
     break;
@@ -225,7 +225,7 @@ void init_tac_list() {
 }
 
 // Function to insert a new TAC instruction into the list
-void insert_tac(OpCode op, Simbolo *op1, Simbolo *op2, Simbolo *result) {
+void insert_tac(OpCode op, Symbol *op1, Symbol *op2, Symbol *result) {
   if (tac_list == NULL) {
     init_tac_list();
   }
@@ -253,7 +253,7 @@ void insert_tac(OpCode op, Simbolo *op1, Simbolo *op2, Simbolo *result) {
 }
 
 // auxiliar: asegura que devuelve el símbolo asociado a un nodo
-Simbolo *get_operand(AST *exp) {
+Symbol *get_operand(AST *exp) {
   if (exp->type == TR_IDENTIFIER || exp->type == TR_VALUE) {
     return exp->info;
   } else {
@@ -287,8 +287,8 @@ void print_tac_list() {
 
 // Method to insert into the TAC List for Unary Operations
 void unary_operation_insert(OpCode opcode, AST *node) {
-  Simbolo *exp = get_operand(node->childs[0]);
-  Simbolo *temp = malloc(sizeof(Simbolo));
+  Symbol *exp = get_operand(node->childs[0]);
+  Symbol *temp = malloc(sizeof(Symbol));
   temp->nombre = new_temp();
   insert_tac(opcode, exp, NULL, temp);
 }
@@ -298,10 +298,10 @@ void binary_operation_insert(OpCode opcode, AST *node) {
   AST *exp1 = node->childs[0];
   AST *exp2 = node->childs[1];
 
-  Simbolo *op1 = get_operand(exp1);
-  Simbolo *op2 = get_operand(exp2);
+  Symbol *op1 = get_operand(exp1);
+  Symbol *op2 = get_operand(exp2);
 
-  Simbolo *temp = malloc(sizeof(Simbolo));
+  Symbol *temp = malloc(sizeof(Symbol));
   temp->nombre = new_temp();
 
   insert_tac(opcode, op1, op2, temp);

@@ -18,8 +18,12 @@ void print_if_debug_flag(char *str) {
  * Calls gen_assembly_code function if global assembly flag is enabled
  */
 void gen_assembly_if_assembly_flag(AST *root) {
-  if (assembly_flag)
+  if (assembly_flag) {
+    init_tac_list();
+    gen_inter_code(root);
+    print_tac_list();
     gen_assembly_code(root);
+  }
 }
 
 /**

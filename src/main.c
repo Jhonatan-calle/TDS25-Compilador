@@ -21,7 +21,7 @@ int inter_code_flag = 0;
 int compiler_main(int argc, char *argv[]) {
   scope = malloc(sizeof(Scope));
   scope->tail = NULL;
-  inicialize_scope();
+  initialize_scope();
 
   char *outfile, *target, *opt, *inputfile;
 

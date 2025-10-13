@@ -11,7 +11,7 @@
 
 struct AST {
   TipoNodo type;
-  Simbolo *info;
+  Symbol *info;
   int child_count;
   struct AST **childs;
 };

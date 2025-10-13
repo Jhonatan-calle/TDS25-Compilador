@@ -7,7 +7,7 @@
 // Using extern variable defined in main.c
 extern Scope *scope;
 
-void inicialize_scope() {
+void initialize_scope() {
   ScopeNode *frontera = malloc(sizeof(ScopeNode));
   frontera->info = NULL; // marca de frontera
   frontera->prev = scope->tail;
@@ -17,16 +17,8 @@ void inicialize_scope() {
   scope->tail = frontera;
 }
 
-void insertar_simbolo(Simbolo *e) {
+void insert_symbol(Symbol *e) {
   ScopeNode *aux = scope->tail;
-
-  // buscar en el scope actual
-  while (aux->info) {
-    if (aux->info->nombre == e->nombre) {
-      // error el simbolo ya exite en el scope actual
-    }
-    aux = aux->prev;
-  }
 
   aux = malloc(sizeof(ScopeNode));
   aux->info = e;
@@ -36,7 +28,8 @@ void insertar_simbolo(Simbolo *e) {
   scope->tail = aux;
 }
 
-Simbolo *buscar_simbolo(char *nombre) {
+// Searchs in all the scope
+Symbol *search_symbol_globally(char *nombre) {
   ScopeNode *aux = scope->tail;
   while (aux) {
     if (aux->info && strcmp(aux->info->nombre, nombre) == 0) {
@@ -47,7 +40,8 @@ Simbolo *buscar_simbolo(char *nombre) {
   return NULL; // no encontrado
 }
 
-Simbolo *buscar_simbolo_local(char *nombre) {
+// Searchs until the first boundary
+Symbol *search_symbol_locally(char *nombre) {
   ScopeNode *aux = scope->tail;
   while (aux->info) {
     if (strcmp(aux->info->nombre, nombre) == 0) {
@@ -58,7 +52,7 @@ Simbolo *buscar_simbolo_local(char *nombre) {
   return NULL; // no encontrado
 }
 
-void liberar_scope() {
+void free_scope() {
   ScopeNode *aux = scope->tail;
   while (aux->info) {
     scope->tail = aux->prev;
@@ -67,17 +61,4 @@ void liberar_scope() {
   }
   scope->tail = aux->prev;
   free(aux); // elimino la frontera
-}
-
-Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
-                                char *nombre) {
-  Simbolo *id = malloc(sizeof(Simbolo));
-  id->tVar = tipoIdentificador; // tipo (enum Tipos)
-  id->nombre = nombre;          // identificador
-  id->categoria = S_VAR;
-  id->valor = exp->info->valor;
-  insertar_simbolo(id);
-  node->info = id;
-  node->child_count = 0;
-  return id;
 }

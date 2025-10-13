@@ -1,0 +1,9 @@
+program
+{
+  bool b = true;
+  bool main(bool x)
+  {
+    bool x = false;
+    return b;
+  }
+}

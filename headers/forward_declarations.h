@@ -2,7 +2,7 @@
 #define FORWARD_DECLARATIONS_H
 
 typedef struct AST AST;
-typedef struct Simbolo Simbolo;
+typedef struct Symbol Symbol;
 typedef struct ScopeNode ScopeNode;
 typedef struct Scope Scope;
 typedef struct TAC_Struction TAC_Struction;

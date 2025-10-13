@@ -36,9 +36,9 @@ typedef enum {
 // Structure for a single Three-Address Code instruction
 typedef struct TAC {
   OpCode op;
-  Simbolo *op1;
-  Simbolo *op2;
-  Simbolo *result;
+  Symbol *op1;
+  Symbol *op2;
+  Symbol *result;
   struct TAC *next; // for a linked list implementation
 } TAC;
 
@@ -59,7 +59,7 @@ extern TACList *tac_list;
 void init_tac_list();
 
 // Function to insert a new TAC instruction into the list
-void insert_tac(OpCode op, Simbolo *op1, Simbolo *op2, Simbolo *result);
+void insert_tac(OpCode op, Symbol *op1, Symbol *op2, Symbol *result);
 
 // Function to print the list of TAC instructions
 void print_tac_list();
@@ -67,7 +67,7 @@ void print_tac_list();
 // Helper to get string for op
 const char *tac_op_to_string(OpCode op);
 
-Simbolo *get_operand(AST *exp);
+Symbol *get_operand(AST *exp);
 
 // Method to insert into the TAC List for Unary Operations
 void unary_operation_insert(OpCode opcode, AST *node);

@@ -3,7 +3,7 @@
 
 void allocate_binary_boolean_node(AST *node, AST *operando1, AST *operando2,
                                   char *op) {
-  node->info = malloc(sizeof(Simbolo));
+  node->info = malloc(sizeof(Symbol));
   node->info->tVar = T_BOOL;
   set_info_value_depending_operator(node, operando1, operando2, op);
   node->child_count = 2;
@@ -14,7 +14,7 @@ void allocate_binary_boolean_node(AST *node, AST *operando1, AST *operando2,
 
 void allocate_binary_integer_node(AST *node, AST *operando1, AST *operando2,
                                   char *op) {
-  node->info = malloc(sizeof(Simbolo));
+  node->info = malloc(sizeof(Symbol));
   node->info->tVar = T_INT;
   set_info_value_depending_operator(node, operando1, operando2, op);
   node->child_count = 2;
@@ -66,12 +66,12 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   AST *exp = va_arg(args, AST *);
   exit_if_types_invalid_at_declaration(exp, tipoIdentificador, nombre);
 
-  Simbolo *simbol = malloc(sizeof(Simbolo));
+  Symbol *simbol = malloc(sizeof(Symbol));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_VAR;
   simbol->valor = exp->info->valor;
-  insertar_simbolo(simbol);
+  insert_symbol(simbol);
   node->info = simbol;
   node->child_count = 1;
   node->childs = malloc(sizeof(AST *));
@@ -84,7 +84,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   exit_if_already_declared(nombre);
   exit_if_already_declared_locally(nombre);
 
-  Simbolo *simbol = malloc(sizeof(Simbolo));
+  Symbol *simbol = malloc(sizeof(Symbol));
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_FUNC;
@@ -95,7 +95,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 
     for (int i = 0; i < simbol->num_params; i++) {
       simbol->param_tipos[i] = params->childs[i]->info->tVar;
-      insertar_simbolo(params->childs[i]->info);
+      insert_symbol(params->childs[i]->info);
     }
   }
   AST *cuerpo = va_arg(args, AST *);
@@ -122,7 +122,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 
     simbol->cuerpo = cuerpo;
   }
-  insertar_simbolo(simbol);
+  insert_symbol(simbol);
   node->info = simbol;
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
@@ -133,11 +133,11 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 void module_switch_case_param(AST *node, va_list args) {
   int tipoIdentificador = va_arg(args, int);
   char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  Simbolo *simbol = malloc(sizeof(Simbolo));
+  Symbol *simbol = malloc(sizeof(Symbol));
   simbol->tVar = tipoIdentificador;
   simbol->nombre = nombre;
   node->info = simbol;
-  insertar_simbolo(simbol);
+  insert_symbol(simbol);
 }
 
 void module_switch_case_param_list(AST *node, va_list args) {
@@ -159,9 +159,9 @@ void module_switch_case_asignacion(AST *node, va_list args) {
   exit_if_not_declared(nombre);
 
   // Intenta asignar local, si no lo encuentra lo busca global
-  Simbolo *id = buscar_simbolo_local(nombre);
+  Symbol *id = search_symbol_locally(nombre);
   if (!id)
-    id = buscar_simbolo(nombre);
+    id = search_symbol_globally(nombre);
 
   node->info = id;
 
@@ -189,9 +189,9 @@ void module_switch_case_invocation(AST *node, va_list args) {
   exit_if_not_declared(nombre);
 
   // Intenta invocar local, si no lo encuentra lo busca global
-  Simbolo *id = buscar_simbolo_local(nombre);
+  Symbol *id = search_symbol_locally(nombre);
   if (!id)
-    id = buscar_simbolo(nombre);
+    id = search_symbol_globally(nombre);
 
   AST *params = va_arg(args, AST *);
   if (params != NULL) {
@@ -263,9 +263,9 @@ void module_switch_case_id(AST *node, va_list args) {
   exit_if_not_declared(nombre);
 
   // Intenta buscar local, si no lo encuentra lo busca global
-  Simbolo *id = buscar_simbolo_local(nombre);
+  Symbol *id = search_symbol_locally(nombre);
   if (!id)
-    id = buscar_simbolo(nombre);
+    id = search_symbol_globally(nombre);
 
   node->info = id;
   node->child_count = 0;
@@ -276,7 +276,7 @@ void module_switch_case_negacion_aritmetica(AST *node, va_list args) {
   AST *exp = va_arg(args, AST *);
   exit_if_unary_arithmetic_operator_mismatch_types(exp, "-");
 
-  node->info = malloc(sizeof(Simbolo));
+  node->info = malloc(sizeof(Symbol));
   node->info->tVar = T_INT;
   node->info->valor = -(exp->info->valor);
   node->child_count = 1;
@@ -333,7 +333,7 @@ void module_switch_case_negacion_logica(AST *node, va_list args) {
   AST *exp = va_arg(args, AST *);
   exit_if_unary_boolean_operator_mismatch_types(exp, "!");
 
-  node->info = malloc(sizeof(Simbolo));
+  node->info = malloc(sizeof(Symbol));
   node->info->tVar = T_BOOL;
   node->info->valor = !exp->info->valor;
   node->info->categoria = exp->info->categoria;
@@ -388,7 +388,7 @@ void module_switch_case_or(AST *node, va_list args) {
 }
 
 void module_switch_case_literal(AST *node, va_list args) {
-  node->info = malloc(sizeof(Simbolo));
+  node->info = malloc(sizeof(Symbol));
   node->info->tVar =
       va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
   node->info->nombre = "TR_VALUE";
