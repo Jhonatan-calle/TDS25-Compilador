@@ -1,7 +1,7 @@
 #include "../headers/semantic_check.h"
 
 void exit_if_already_declared(char *nombre) {
-  Simbolo *id = buscar_simbolo(nombre);
+  Simbolo *id = buscar_simbolo_local(nombre);
   if (id) {
     fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n",
             nombre);
