@@ -1,0 +1,14 @@
+program
+{
+  void main()
+  {
+    // integer x = 0;
+    // mov las 2 cosas al reg cpu
+    // hacer suma
+    // traer resultado a donde lo tenga q guardar
+    integer y = 1;  // 8
+    integer z = 2;  // 8*2
+    integer res = y + z;  // 8*3 el y + z me da otro offset
+    return;
+  }
+}
