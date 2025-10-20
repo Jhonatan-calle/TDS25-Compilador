@@ -20,5 +20,5 @@ char *new_temp();
  * Called on the top level of the program
  * It constructs and prints a pseudo-assembly recursively
  */
-char *gen_assembly_code(AST *node);
+void gen_assembly_code(AST *node);
 #endif
