@@ -71,6 +71,7 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_VAR;
   simbol->valor = exp->info->valor;
+  simbol->offset = 8;
   insert_symbol(simbol);
   node->info = simbol;
   node->child_count = 1;

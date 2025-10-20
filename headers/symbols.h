@@ -8,6 +8,7 @@
 #include "types.h"
 
 struct Symbol {
+  int offset;
   MethodCategory categoria;
   char *nombre; // identificador
   Tipos tVar;   // tipo
