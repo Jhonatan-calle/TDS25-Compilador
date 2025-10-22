@@ -8,7 +8,8 @@ program
     // traer resultado a donde lo tenga q guardar
     integer y = 1;  // 8
     integer z = 2;  // 8*2
-    integer res = y + z;  // 8*3 el y + z me da otro offset
+    integer w = 3;
+    integer res = y + z + w;  // 8*3 el y + z me da otro offset
     return;
   }
 }

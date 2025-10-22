@@ -31,31 +31,56 @@ void gen_assembly_code(TAC *tac_instruction) {
   printf("op2 = %s\n", symbol_to_string(tac_instruction->op2));
   printf("result = %s\n", symbol_to_string(tac_instruction->result));
 
-  tac_instruction = tac_instruction->next;
-  gen_assembly_code(tac_instruction);
-
-  // if (tac_instruction->op == TAC_RETURN )
-
   switch (tac_instruction->op) {
   case TAC_ADD:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("ADD !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_SUB:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("SUB !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_MUL:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("MUL !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_DIV:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("DIV !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_MOD:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("MOD !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_LESS:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("LESS !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_GR:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("GR !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_EQ:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("EQ !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_AND:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("AND !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_OR:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("OR !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_ASSIGN:
     break;
@@ -74,12 +99,20 @@ void gen_assembly_code(TAC *tac_instruction) {
   case TAC_PRINT:
     break;
   case TAC_NOT:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("NOT !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_NEG:
+    update_offset();
+    tac_instruction->result->offset = DYNAMIC_OFFSET;
+    printf("NEG !! result = %s\n", symbol_to_string(tac_instruction->result));
     break;
   case TAC_UNKNOWN:
   case TAC_EXTERN:
   default:
     return;
   }
+  tac_instruction = tac_instruction->next;
+  gen_assembly_code(tac_instruction);
 }
