@@ -32,12 +32,14 @@ struct Scope {
 };
 
 extern Scope *scope;
-extern int INIT_OFFSET;
+extern int DYNAMIC_OFFSET;
 
+void update_offset();
 void initialize_scope();
 void insert_symbol(Symbol *e);
 Symbol *search_symbol_globally(char *nombre);
 Symbol *search_symbol_locally(char *nombre);
 void free_scope();
+char *symbol_to_string(Symbol *s);
 
 #endif // SYMBOLS_H

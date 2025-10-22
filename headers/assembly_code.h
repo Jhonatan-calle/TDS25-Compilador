@@ -15,10 +15,7 @@
 char *new_temp();
 
 /**
- * Assembly util function
- *
- * Called on the top level of the program
- * It constructs and prints a pseudo-assembly recursively
+ * Assembly generate function
  */
-void gen_assembly_code(AST *node);
+void gen_assembly_code(TAC *tac_instruction);
 #endif

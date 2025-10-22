@@ -22,7 +22,7 @@ void gen_assembly_if_assembly_flag(AST *root) {
     init_tac_list();
     gen_inter_code(root);
     print_tac_list();
-    gen_assembly_code(root);
+    gen_assembly_code(tac_list->head);
   }
 }
 

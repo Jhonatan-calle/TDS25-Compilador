@@ -5,7 +5,6 @@ typedef struct AST AST;
 typedef struct Symbol Symbol;
 typedef struct ScopeNode ScopeNode;
 typedef struct Scope Scope;
-typedef struct TAC_Struction TAC_Struction;
-typedef struct TAC_StructionNode TAC_StructionNode;
+typedef struct TAC TAC;
 
 #endif
