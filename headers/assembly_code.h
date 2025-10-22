@@ -17,5 +17,5 @@ char *new_temp();
 /**
  * Assembly generate function
  */
-void gen_assembly_code(TAC *tac_instruction);
+void gen_assembly_code(TAC *head);
 #endif

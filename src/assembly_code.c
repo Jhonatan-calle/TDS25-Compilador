@@ -21,98 +21,164 @@ char *new_temp() {
  * Called on the top level of the program
  * It constructs and prints a pseudo-assembly recursively
  */
-void gen_assembly_code(TAC *tac_instruction) {
-  // Case base: No more instructions
-  if (!tac_instruction)
-    return;
+void gen_assembly_code(TAC *head) {
+  if (head->op == TAC_ASSIGN)
+    printf("section .text:\n");
+  for (TAC *t = head; t; t = t->next) {
+    switch (t->op) {
 
-  printf("OpCode = %s \n", opcode_to_string(tac_instruction->op));
-  printf("op1 = %s\n", symbol_to_string(tac_instruction->op1));
-  printf("op2 = %s\n", symbol_to_string(tac_instruction->op2));
-  printf("result = %s\n", symbol_to_string(tac_instruction->result));
+    // --- Operaciones aritméticas ---
+    case TAC_ADD:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  add -%d(%%rbp), %%rax\n", t->op2->offset);
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
 
-  switch (tac_instruction->op) {
-  case TAC_ADD:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("ADD !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_SUB:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("SUB !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_MUL:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("MUL !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_DIV:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("DIV !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_MOD:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("MOD !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_LESS:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("LESS !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_GR:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("GR !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_EQ:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("EQ !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_AND:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("AND !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_OR:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("OR !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_ASSIGN:
-    break;
-  case TAC_LABEL:
-    break;
-  case TAC_GOTO:
-    break;
-  case TAC_IFZ:
-    break;
-  case TAC_PARAM:
-    break;
-  case TAC_CALL:
-    break;
-  case TAC_RETURN:
-    return;
-  case TAC_PRINT:
-    break;
-  case TAC_NOT:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("NOT !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_NEG:
-    update_offset();
-    tac_instruction->result->offset = DYNAMIC_OFFSET;
-    printf("NEG !! result = %s\n", symbol_to_string(tac_instruction->result));
-    break;
-  case TAC_UNKNOWN:
-  case TAC_EXTERN:
-  default:
-    return;
+    case TAC_SUB:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  sub -%d(%%rbp), %%rax\n", t->op2->offset);
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_MUL:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  imul -%d(%%rbp), %%rax\n", t->op2->offset);
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_DIV:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cqo\n");
+      printf("  idiv -%d(%%rbp)\n", t->op2->offset);
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_MOD:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cqo\n");
+      printf("  idiv -%d(%%rbp)\n", t->op2->offset);
+      printf("  mov %%rdx, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    // --- Comparaciones ---
+    case TAC_LESS:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cmp -%d(%%rbp), %%rax\n", t->op2->offset);
+      printf("  setl %%al\n");
+      printf("  movzbq %%al, %%rax\n");
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_GR:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cmp -%d(%%rbp), %%rax\n", t->op2->offset);
+      printf("  setg %%al\n");
+      printf("  movzbq %%al, %%rax\n");
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_EQ:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cmp -%d(%%rbp), %%rax\n", t->op2->offset);
+      printf("  sete %%al\n");
+      printf("  movzbq %%al, %%rax\n");
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    // --- Lógicos ---
+    case TAC_AND:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cmp $0, %%rax\n");
+      printf("  setne %%al\n");
+      printf("  movzbq %%al, %%rax\n");
+      printf("  mov -%d(%%rbp), %%rbx\n", t->op2->offset);
+      printf("  cmp $0, %%rbx\n");
+      printf("  setne %%bl\n");
+      printf("  and %%bl, %%al\n");
+      printf("  movzbq %%al, %%rax\n");
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_OR:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cmp $0, %%rax\n");
+      printf("  setne %%al\n");
+      printf("  mov -%d(%%rbp), %%rbx\n", t->op2->offset);
+      printf("  cmp $0, %%rbx\n");
+      printf("  setne %%bl\n");
+      printf("  or %%bl, %%al\n");
+      printf("  movzbq %%al, %%rax\n");
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_NOT:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cmp $0, %%rax\n");
+      printf("  sete %%al\n");
+      printf("  movzbq %%al, %%rax\n");
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    // --- Unarios ---
+    case TAC_NEG:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  neg %%rax\n");
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    // --- Asignación ---
+    case TAC_ASSIGN:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    // --- Control de flujo ---
+    case TAC_LABEL:
+      printf("%s:\n", t->result->nombre);
+      break;
+
+    case TAC_GOTO:
+      printf("  jmp %s\n", t->result->nombre);
+      break;
+
+    case TAC_IFZ:
+      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      printf("  cmp $0, %%rax\n");
+      printf("  je %s\n", t->result->nombre);
+      break;
+
+    // --- Funciones ---
+    case TAC_PARAM:
+      printf("  push -%d(%%rbp)\n", t->op1->offset);
+      break;
+
+    case TAC_CALL:
+      printf("  call %s\n", t->result->nombre);
+      printf("  add $%d, %%rsp\n", t->op1 ? t->op1->offset * 8 : 0); // limpiar args
+      printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      break;
+
+    case TAC_RETURN:
+      if (t->result)
+        printf("  mov -%d(%%rbp), %%rax\n", t->result->offset);
+      printf("  leave\n");
+      printf("  ret\n");
+      break;
+
+    // --- I/O y externos ---
+    case TAC_PRINT:
+      printf("  mov -%d(%%rbp), %%rdi\n", t->op1->offset);
+      printf("  call print_int\n");
+      break;
+
+    case TAC_EXTERN:
+      printf("  extern %s\n", t->result->nombre);
+      break;
+
+    case TAC_UNKNOWN:
+    default:
+      printf("  ; unknown TAC op %d\n", t->op);
+      break;
+    }
   }
-  tac_instruction = tac_instruction->next;
-  gen_assembly_code(tac_instruction);
 }
