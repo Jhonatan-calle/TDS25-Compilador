@@ -187,7 +187,7 @@ void print_tac_list() {
   } else {
     TAC *current = tac_list->head;
     while (current) {
-      const char *op_name = tac_op_to_string(current->op); // función auxiliar
+      const char *op_name = opcode_to_string(current->op); // función auxiliar
       const char *arg1 = current->op1 ? current->op1->nombre : "_";
       const char *arg2 = current->op2 ? current->op2->nombre : "_";
       const char *res = current->result ? current->result->nombre : "_";
@@ -224,7 +224,7 @@ void binary_operation_insert(OpCode opcode, AST *node) {
 }
 
 // Helper to get string for op
-const char *tac_op_to_string(OpCode op) {
+const char *opcode_to_string(OpCode op) {
   switch (op) {
   case TAC_UNKNOWN:
     return "TAC_UNKNOWN";

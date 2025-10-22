@@ -66,7 +66,7 @@ void insert_tac(OpCode op, Symbol *op1, Symbol *op2, Symbol *result);
 void print_tac_list();
 
 // Helper to get string for op
-const char *tac_op_to_string(OpCode op);
+const char *opcode_to_string(OpCode op);
 
 Symbol *get_operand(AST *exp);
 
