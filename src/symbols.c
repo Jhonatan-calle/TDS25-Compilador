@@ -4,6 +4,8 @@
 
 #include "../headers/symbols.h"
 
+int INIT_OFFSET = 8;
+
 // Using extern variable defined in main.c
 extern Scope *scope;
 

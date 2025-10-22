@@ -32,6 +32,7 @@ struct Scope {
 };
 
 extern Scope *scope;
+extern int INIT_OFFSET;
 
 void initialize_scope();
 void insert_symbol(Symbol *e);
