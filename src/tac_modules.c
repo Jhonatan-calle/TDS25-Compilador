@@ -51,7 +51,7 @@ void tac_invocation_module(AST *root) {
     simbol->nombre = temp;
     insert_tac(TAC_CALL, root->info, root->info, simbol);
   } else {
-    insert_tac(TAC_CALL, root->info, root->info, NULL);
+    insert_tac(TAC_CALL, root->info, root->info, root->info);
   }
 }
 
