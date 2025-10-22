@@ -4,6 +4,7 @@
 #include "ast.h"
 #include "forward_declarations.h"
 #include "symbols.h"
+#include "tac_modules.h"
 #include "types.h"
 #include <stdio.h>
 
