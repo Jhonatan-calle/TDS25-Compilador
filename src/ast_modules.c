@@ -71,7 +71,8 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_VAR;
   simbol->valor = exp->info->valor;
-  simbol->offset = INIT_OFFSET;   // all var declarations have 8 as offset
+  update_offset();
+  simbol->offset = DYNAMIC_OFFSET;   // all var declarations have 8 as offset
   insert_symbol(simbol);
   node->info = simbol;
   node->child_count = 1;
@@ -139,7 +140,8 @@ void module_switch_case_param(AST *node, va_list args) {
   simbol->nombre = nombre;
   simbol->categoria = S_VAR;
   simbol->valor = 0;              // init value of 0 for params
-  simbol->offset = INIT_OFFSET;   // all param have 8 as offset
+  update_offset();
+  simbol->offset = DYNAMIC_OFFSET;
   insert_symbol(simbol);
   node->info = simbol;
 }
