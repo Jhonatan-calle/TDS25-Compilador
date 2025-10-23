@@ -172,7 +172,7 @@ void gen_assembly_code(TAC *head) {
       break;
 
     case TAC_EXTERN:
-      printf("  extern %s\n", t->result->nombre);
+      printf("  extern \n");
       break;
 
     case TAC_UNKNOWN:
