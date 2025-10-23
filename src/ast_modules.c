@@ -229,13 +229,15 @@ void module_switch_case_if(AST *node, va_list args) {
   AST *condition = va_arg(args, AST *);
   exit_if_invalid_predicate_type(condition);
 
-  AST *cuerpo = va_arg(args, AST *);
+  AST *cuerpo_declarations = va_arg(args, AST *);
+  AST *cuerpo_staments = va_arg(args, AST *);
   AST *else_cuerpo = va_arg(args, AST *);
-  node->child_count = 3;
+  node->child_count = 4;
   node->childs = malloc(sizeof(AST *) * 3);
   node->childs[0] = condition;
-  node->childs[1] = cuerpo;
-  node->childs[2] = else_cuerpo;
+  node->childs[1] = cuerpo_declarations;
+  node->childs[2] = cuerpo_staments;
+  node->childs[3] = else_cuerpo;
 }
 
 void module_switch_case_else_cuerpo(AST *node, va_list args) {
