@@ -26,6 +26,7 @@ typedef enum {
   TAC_GOTO,
   TAC_IFZ, // If zero
   TAC_PARAM,
+  TAC_ARG,
   TAC_CALL,
   TAC_RETURN,
   TAC_PRINT,

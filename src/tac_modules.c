@@ -117,6 +117,6 @@ void tac_return_module(AST *root) {
 void tac_args_list_module(AST *root) {
   for (int i = 0; i < root->child_count; i++) {
     Symbol *param = get_operand(root->childs[i]);
-    insert_tac(TAC_PARAM, param, NULL, NULL);
+    insert_tac(TAC_ARG, param, NULL, NULL);
   }
 }

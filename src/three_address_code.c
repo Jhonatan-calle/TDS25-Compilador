@@ -258,6 +258,8 @@ const char *opcode_to_string(OpCode op) {
     return "TAC_IFZ";
   case TAC_PARAM:
     return "TAC_PARAM";
+  case TAC_ARG:
+    return "TAC_ARG";
   case TAC_CALL:
     return "TAC_CALL";
   case TAC_RETURN:
