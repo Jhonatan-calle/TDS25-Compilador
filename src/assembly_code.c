@@ -15,6 +15,25 @@ char *new_temp() {
   return strdup(buffer);
 }
 
+static const char* arg_registers[] = {
+    "%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"
+};
+
+static int next_arg = 0;  // índice del próximo registro libre
+
+// Devuelve el siguiente registro de argumento disponible
+const char* get_arg_register() {
+    if (next_arg >= 6) {
+        // Ya se usaron los 6 registros, los siguientes argumentos deben ir en la pila
+        return NULL;
+    }
+    return arg_registers[next_arg++];
+}
+
+// Reinicia el uso de registros de argumentos (después de un call)
+void reset_arg_registers() {
+    next_arg = 0;
+}
 /**
  * Assembly util function
  *
@@ -128,13 +147,18 @@ void gen_assembly_code(TAC *head) {
 
     // --- Asignación ---
     case TAC_ASSIGN:
-      printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+      if(t->op1->offset == 0)
+        printf("  mov $%d, %%rax\n", t->op1->valor);
+      else
+        printf("  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+
       printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
       break;
 
     // --- Control de flujo ---
     case TAC_LABEL:
       printf("%s:\n", t->result->nombre);
+      printf("  enter $(8 * %d) \n", t->result->offset);
       break;
 
     case TAC_GOTO:
@@ -149,6 +173,10 @@ void gen_assembly_code(TAC *head) {
 
     // --- Funciones ---
     case TAC_PARAM:
+      printf("  push -%d(%%rbp)\n", t->op1->offset);
+      break;
+
+    case TAC_ARG:
       printf("  push -%d(%%rbp)\n", t->op1->offset);
       break;
 
