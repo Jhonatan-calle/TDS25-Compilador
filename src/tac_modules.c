@@ -65,7 +65,9 @@ void tac_if_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_IFZ, exp, NULL, L_else);
   // cuerpo del if
-  gen_inter_code(root->childs[1]);
+  gen_inter_code(root->childs[1]);  
+  gen_inter_code(root->childs[2]);
+
   insert_tac(TAC_GOTO, NULL, NULL, L_end);
   // else (opcional)
   insert_tac(TAC_LABEL, NULL, NULL, L_else);
