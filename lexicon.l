@@ -19,6 +19,8 @@ operatorDelimiter     [-+*<(){}=!]
 opEquals              "=="
 opAnd                 "&&"
 opOr                  "||"
+comma                 ,
+
 
 /* reserved keywords */
 extern                extern
@@ -67,6 +69,8 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 {ID}                    { yylval.id = strdup(yytext); return ID; }
 
 {operatorDelimiter}     { return *yytext; }
+{comma}                 { return ','; }
+
 
 {ignoredRegex}          { /* comments, spaces, newlines and tabs */ }
 
