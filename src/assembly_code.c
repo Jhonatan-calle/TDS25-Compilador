@@ -23,11 +23,19 @@ static int next_arg = 0;  // índice del próximo registro libre
 
 // Devuelve el siguiente registro de argumento disponible
 const char* get_arg_register() {
-    if (next_arg >= 6) {
-        // Ya se usaron los 6 registros, los siguientes argumentos deben ir en la pila
-        return NULL;
+    static char stack_arg[32];  // buffer para devolver direcciones tipo "+16(%rbp)"
+    
+    if (next_arg < 6) {
+        // Primeros 6 argumentos: registros
+        return arg_registers[next_arg++];
+    } else {
+        // A partir del séptimo argumento: pila
+        int stack_offset = 16 + (next_arg - 6) * 8;
+        // +16(%rbp) → primer argumento en pila (séptimo total)
+        snprintf(stack_arg, sizeof(stack_arg), "+%d(%%rbp)", stack_offset);
+        next_arg++;
+        return stack_arg;
     }
-    return arg_registers[next_arg++];
 }
 
 // Reinicia el uso de registros de argumentos (después de un call)
