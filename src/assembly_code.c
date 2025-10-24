@@ -173,7 +173,7 @@ void gen_assembly_code(TAC *head) {
 
     // --- Funciones ---
     case TAC_PARAM:
-      printf("  push -%d(%%rbp)\n", t->op1->offset);
+      printf("  move %s, -%d(%%rpb)\n", get_arg_register(),t->op1->offset);
       break;
 
     case TAC_ARG:
@@ -181,12 +181,14 @@ void gen_assembly_code(TAC *head) {
       break;
 
     case TAC_CALL:
+      reset_arg_registers();
       printf("  call %s\n", t->result->nombre);
       printf("  add $%d, %%rsp\n", t->op1 ? t->op1->offset * 8 : 0); // limpiar args
       printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
       break;
 
     case TAC_RETURN:
+      reset_arg_registers();  
       if (t->result)
         printf("  mov -%d(%%rbp), %%rax\n", t->result->offset);
       printf("  leave\n");
