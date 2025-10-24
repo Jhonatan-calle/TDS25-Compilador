@@ -104,7 +104,7 @@ void tac_return_module(AST *root) {
 
     // Si la expresión es simple (identificador o literal)
     if (expr->type == TR_IDENTIFIER || expr->type == TR_VALUE) {
-      insert_tac(TAC_RETURN, expr->info, NULL, NULL);
+      insert_tac(TAC_RETURN, NULL, NULL, expr->info);
     } else {
       // Si es una expresión compuesta: generar su TAC
       gen_inter_code(expr);
