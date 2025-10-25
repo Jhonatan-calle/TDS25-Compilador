@@ -108,7 +108,7 @@ void tac_return_module(AST *root) {
     } else {
       // Si es una expresión compuesta: generar su TAC
       gen_inter_code(expr);
-      insert_tac(TAC_RETURN, tac_list->tail->result, NULL, NULL);
+      insert_tac(TAC_RETURN, NULL, NULL, tac_list->tail->result);
     }
   } else {
     // return sin expresión (void)
