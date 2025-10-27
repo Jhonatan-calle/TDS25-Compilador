@@ -1,7 +1,7 @@
 #include "../headers/assembly_code.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 int temp_counter = 0;
 
@@ -50,7 +50,8 @@ void reset_arg_registers() { next_arg = 0; }
  * It constructs and prints a pseudo-assembly recursively
  */
 void gen_assembly_code(TAC *head) {
-  if (!head) return;
+  if (!head)
+    return;
 
   if (head->op == TAC_ASSIGN)
     printf("section .text:\n");
@@ -288,8 +289,7 @@ void gen_assembly_code(TAC *head) {
     case TAC_LABEL:
       printf("%s:\n", t->result->nombre);
       // Si t->result->offset representa cantidad a reservar, se mantiene.
-      // Asegurate que ese campo sea el tamaño correcto en tu IR.
-      printf("  enter $(8 * %d)\n", t->result->offset);
+      printf("  enter $(8 * %d), $0\n", t->result->offset);
       break;
 
     case TAC_GOTO:
@@ -311,13 +311,9 @@ void gen_assembly_code(TAC *head) {
       // get_arg_register devuelve "%r??" o "16(%rbp)" (sin '+')
       const char *where = get_arg_register();
       // Si where empieza por '%' -> registro
-      if (where[0] == '%') {
-        // mover registro al slot local del argumento (en el callee)
-        printf("  mov %s, -%d(%%rbp)\n", where, t->op1->offset);
-      } else {
-        // where es algo como "16(%rbp)" -> mov 16(%rbp), -offset(%rbp)
-        printf("  mov %s, -%d(%%rbp)\n", where, t->op1->offset);
-      }
+      // mover registro al slot local del argumento (en el callee)
+      // where es algo como "16(%rbp)" -> mov 16(%rbp), -offset(%rbp)
+      printf("  mov %s, -%d(%%rbp)\n", where, t->op1->offset);
       break;
     }
 
@@ -329,7 +325,8 @@ void gen_assembly_code(TAC *head) {
     case TAC_CALL:
       reset_arg_registers();
       printf("  call %s\n", t->result->nombre);
-      // t->op1->offset assumed to be count of pushed args (caller responsibility)
+      // t->op1->offset assumed to be count of pushed args (caller
+      // responsibility)
       printf("  add $%d, %%rsp\n",
              t->op1 ? t->op1->offset * 8 : 0); // limpiar args
       printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
