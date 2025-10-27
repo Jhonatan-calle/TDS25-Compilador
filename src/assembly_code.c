@@ -56,6 +56,7 @@ void gen_assembly_code(TAC *head) {
   if (head->op == TAC_ASSIGN)
     printf("section .text:\n");
 
+  int mid_return = 0;
   for (TAC *t = head; t; t = t->next) {
     switch (t->op) {
 
@@ -342,8 +343,11 @@ void gen_assembly_code(TAC *head) {
           printf("  mov -%d(%%rbp), %%rax\n", t->result->offset);
       }
 
-      printf("  leave\n");
-      printf("  ret\n");
+      if (mid_return) {
+        printf("  jmp exit_routine\n");
+      } else {
+        mid_return = 1;
+      }
       break;
 
     // --- I/O y externos ---
@@ -366,4 +370,7 @@ void gen_assembly_code(TAC *head) {
       break;
     }
   }
+  printf("exit_routine:\n");
+  printf("  leave\n");
+  printf("  ret\n");
 }
