@@ -1,5 +1,7 @@
 #include "../headers/tac_modules.h"
 
+int return_found = 0;
+
 void tac_var_dec_module(AST *root, Symbol *exp) {
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_ASSIGN, exp, NULL, root->info);
@@ -15,8 +17,9 @@ void tac_method_dec_module(AST *root) {
 
     // si no tiene un return igual le pongo uno para marcar
     //  el final del label
-    if (root->info->tVar == T_VOID) {
+    if (root->info->tVar == T_VOID && !return_found) {
       insert_tac(TAC_RETURN, NULL, NULL, NULL);
+      return_found = 0;
     }
   } else {
     insert_tac(TAC_EXTERN, NULL, NULL, NULL);
@@ -65,7 +68,7 @@ void tac_if_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_IFZ, exp, NULL, L_else);
   // cuerpo del if
-  gen_inter_code(root->childs[1]);  
+  gen_inter_code(root->childs[1]);
   gen_inter_code(root->childs[2]);
 
   insert_tac(TAC_GOTO, NULL, NULL, L_end);
@@ -99,6 +102,7 @@ void tac_while_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
 }
 
 void tac_return_module(AST *root) {
+  return_found = 1;
   if (root->child_count == 1) {
     AST *expr = root->childs[0];
 
