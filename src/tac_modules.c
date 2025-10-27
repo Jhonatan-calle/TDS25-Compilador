@@ -35,7 +35,7 @@ void tac_block_module(AST *root) {
 }
 
 void tac_assign_module(AST *root, Symbol *exp) {
-  exp = get_operand(root->childs[0]);
+  exp = get_operand(root->childs[1]);
   insert_tac(TAC_ASSIGN, exp, NULL, root->info);
 }
 
@@ -49,9 +49,9 @@ void tac_invocation_module(AST *root) {
     char *temp = new_temp();
     Symbol *simbol = malloc(sizeof(Symbol));
     simbol->nombre = temp;
-    insert_tac(TAC_CALL, root->info, root->info, simbol);
+    insert_tac(TAC_CALL, root->info, NULL, simbol);
   } else {
-    insert_tac(TAC_CALL, root->info, root->info, root->info);
+    insert_tac(TAC_CALL, root->info, NULL, NULL);
   }
 }
 
