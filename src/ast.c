@@ -13,6 +13,7 @@ AST *init_node(TipoNodo type, int child_count) {
 
   node->type = type;
   node->info = NULL;
+  node->child_count = child_count;
   if (child_count > 0) {
     node->childs = malloc(sizeof(AST *) * child_count);
     if (!node->childs) {
