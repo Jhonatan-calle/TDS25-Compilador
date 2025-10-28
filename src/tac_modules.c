@@ -1,10 +1,29 @@
 #include "../headers/tac_modules.h"
 
 int return_found = 0;
+int endCounts = 0;
+int elseCounts = 0;
+
 
 void tac_var_dec_module(AST *root, Symbol *exp) {
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_ASSIGN, exp, NULL, root->info);
+}
+
+char *getIfNameLabels(OpCode type){
+  if(type == TAC_LABEL_IF){ 
+
+    char *mensaje = malloc(50);
+    if (mensaje == NULL) return NULL;
+    sprintf(mensaje, "L_else%d",elseCounts++);
+    return mensaje;  
+  }else if (type == TAC_LABEL_END){
+    char *mensaje = malloc(50);
+    if (mensaje == NULL) return NULL;
+    sprintf(mensaje, "L_end%d",endCounts++);
+    return mensaje;  
+  }
+  return NULL;
 }
 
 void tac_method_dec_module(AST *root) {
@@ -62,21 +81,22 @@ void tac_if_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
   // crecion de labels
   Symbol *L_else = malloc(sizeof(Symbol));
   L_end = malloc(sizeof(Symbol));
-  L_else->nombre = "L_else";
-  L_end->nombre = "L_end";
+  L_else->nombre = getIfNameLabels(TAC_LABEL_END);
+  L_end->nombre = getIfNameLabels(TAC_LABEL_IF);
   // este if diferencia entre condicion compuesta o simple
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_IFZ, exp, NULL, L_else);
   // cuerpo del if
   gen_inter_code(root->childs[1]);
   gen_inter_code(root->childs[2]);
-
+  
   insert_tac(TAC_GOTO, NULL, NULL, L_end);
   // else (opcional)
-  insert_tac(TAC_LABEL, NULL, NULL, L_else);
+  insert_tac(TAC_LABEL_IF, NULL, NULL, L_else);
+
   gen_inter_code(root->childs[2]);
   // fin
-  insert_tac(TAC_LABEL, NULL, NULL, L_end);
+  insert_tac(TAC_LABEL_END, NULL, NULL, L_end);
 }
 
 void tac_else_body_module(AST *root) {

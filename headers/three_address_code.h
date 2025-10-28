@@ -23,6 +23,8 @@ typedef enum {
   TAC_OR,
   TAC_ASSIGN,
   TAC_LABEL,
+  TAC_LABEL_IF,
+  TAC_LABEL_END,
   TAC_GOTO,
   TAC_IFZ, // If zero
   TAC_PARAM,

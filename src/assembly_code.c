@@ -202,8 +202,8 @@ void gen_assembly_code(TAC *head) {
       else
         printf("  cmp -%d(%%rbp), %%r10\n", t->op2->offset);
 
-      printf("  mov $(0), %%r11\n");
-      printf("  mov $(1), %%r10\n");
+      printf("  mov $0, %%r11\n");
+      printf("  mov $1, %%r10\n");
       printf("  cmov %%r10, %%r11\n");
       printf("  mov %%r11, -%d(%%rbp)\n", t->result->offset);
       break;
@@ -291,7 +291,7 @@ void gen_assembly_code(TAC *head) {
     case TAC_ASSIGN: {
       reset_arg_registers();
       if (t->op1->offset == 0)
-        printf("  mov $(%d), %%r10\n", t->op1->valor);
+        printf("  mov $%d, %%r10\n", t->op1->valor);
       else
         printf("  mov -%d(%%rbp), %%r10\n", t->op1->offset);
 
@@ -301,23 +301,29 @@ void gen_assembly_code(TAC *head) {
 
     // --- Control de flujo ---
     case TAC_LABEL:
-    reset_arg_registers();
+      reset_arg_registers();
       printf("%s:\n", t->result->nombre);
       // Si t->result->offset representa cantidad a reservar, se mantiene.
       printf("  enter $(8 * %d), $0\n", t->result->offset);
       break;
 
+    case TAC_LABEL_END:
+    case TAC_LABEL_IF:
+      reset_arg_registers();
+      printf("%s:\n", t->result->nombre);
+      break;
+
     case TAC_GOTO:
-    reset_arg_registers();
+      reset_arg_registers();
       printf("  jmp %s\n", t->result->nombre);
       break;
 
     case TAC_IFZ:
-    reset_arg_registers();
+      reset_arg_registers();
       if (t->op1->offset == 0)
         printf("  mov $%d, %%r10\n", t->op1->valor);
       else
-        printf("  mov $(1), %%r11\n", t->op1->offset);
+        printf("  mov -%d(%%rpb), %%r11\n", t->op1->offset);
 
       printf("  cmp %%r10, %%r11\n");
       printf("  je %s\n", t->result->nombre);
@@ -337,16 +343,17 @@ void gen_assembly_code(TAC *head) {
     case TAC_ARG:
       // push desde el slot local del argumento
       if (t->op1->offset == 0)
-        printf("  mov  $(%d), %s\n",t->op1->valor,get_arg_register());
+        printf("  mov  $%d, %s\n", t->op1->valor, get_arg_register());
       else
-        printf("  mov  -%d(%%rpb), %s\n",t->op1->offset,get_arg_register());
+        printf("  mov  -%d(%%rpb), %s\n", t->op1->offset, get_arg_register());
       break;
 
     case TAC_CALL:
       reset_arg_registers();
       printf("  call %s\n", t->op1->nombre);
-      // t->op1->offset assumed to be count of pushed args (caller responsibility)
-      if(t->result)
+      // t->op1->offset assumed to be count of pushed args (caller
+      // responsibility)
+      if (t->result)
         printf("  mov %%rax, -%d(%%rbp)\n", t->result->offset);
       break;
 
