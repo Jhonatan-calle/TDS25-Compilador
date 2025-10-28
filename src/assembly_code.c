@@ -1,4 +1,5 @@
 #include "../headers/assembly_code.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,11 +54,28 @@ void gen_assembly_code(TAC *head) {
   if (!head)
     return;
 
-  if (head->op == TAC_ASSIGN)
-    printf("section .text:\n");
+  bool in_function = false;
 
-  int mid_return = 0;
-  for (TAC *t = head; t; t = t->next) {
+  printf("  .data\n");
+  TAC *q;
+
+  for (q = head; q && !in_function; q = q->next) {
+    if (q->op == TAC_ASSIGN) {
+      // Si el resultado es global (sin función activa)
+      printf("%s:\n", q->result->nombre);
+      printf("  .quad %d\n", q->op1 ? q->op1->valor : 0);
+    }
+
+    if (q->op == TAC_LABEL) {
+      // cuando empieza una función
+      in_function = true;
+      break;
+    }
+  }
+
+  printf("\n  .text\n");
+
+  for (TAC *t = q; t; t = t->next) {
     switch (t->op) {
 
     // --- Operaciones aritméticas ---
@@ -205,7 +223,7 @@ void gen_assembly_code(TAC *head) {
 
       printf("  mov $0, %%r11\n");
       printf("  mov $1, %%r10\n");
-      printf("  cmov %%r10, %%r11\n");
+      printf("  cmp %%r10, %%r11\n");
       printf("  mov %%r11, -%d(%%rbp)\n", t->result->offset);
       break;
     }
@@ -324,7 +342,7 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         printf("  mov $%d, %%r10\n", t->op1->valor);
       else
-        printf("  mov -%d(%%rpb), %%r11\n", t->op1->offset);
+        printf("  mov -%d(%%rbp), %%r11\n", t->op1->offset);
 
       printf("  cmp %%r10, %%r11\n");
       printf("  je %s\n", t->result->nombre);
@@ -332,21 +350,34 @@ void gen_assembly_code(TAC *head) {
 
     // --- Funciones ---
     case TAC_PARAM: {
-      // get_arg_register devuelve "%r??" o "16(%rbp)" (sin '+')
       const char *where = get_arg_register();
-      // Si where empieza por '%' -> registro
-      // mover registro al slot local del argumento (en el callee)
-      // where es algo como "16(%rbp)" -> mov 16(%rbp), -offset(%rbp)
-      printf("  mov %s, -%d(%%rbp)\n", where, t->op1->offset);
+      if (where[0] == '%') {
+        // Registro → memoria (válido)
+        printf("  mov %s, -%d(%%rbp)\n", where, t->op1->offset);
+      } else {
+        // Memoria → memoria (no permitido) → pasar por registro temporal
+        printf("  mov %s, %%r10\n", where);
+        printf("  mov %%r10, -%d(%%rbp)\n", t->op1->offset);
+      }
       break;
     }
 
     case TAC_ARG:
       // push desde el slot local del argumento
-      if (t->op1->offset == 0)
-        printf("  mov  $%d, %s\n", t->op1->valor, get_arg_register());
-      else
-        printf("  mov  -%d(%%rpb), %s\n", t->op1->offset, get_arg_register());
+      if (t->op1->offset == 0) {
+        const char *where = get_arg_register();
+        if (where[0] == '%')
+          printf("  mov  $%d, %s\n", t->op1->offset, where);
+        else
+          printf("  movq  $%d, %s\n", t->op1->offset, where);
+
+      } else {
+        const char *where = get_arg_register();
+        if (where[0] == '%')
+          printf("  mov  -%d(%%rbp), %s\n", t->op1->offset, where);
+        else
+          printf("  movq  -%d(%%rbp), %s\n", t->op1->offset, where);
+      }
       break;
 
     case TAC_CALL:
@@ -368,11 +399,6 @@ void gen_assembly_code(TAC *head) {
           printf("  mov -%d(%%rbp), %%rax\n", t->result->offset);
       }
 
-      if (mid_return) {
-        printf("  jmp exit_routine\n");
-      } else {
-        mid_return = 1;
-      }
       break;
 
     // --- I/O y externos ---
@@ -386,7 +412,6 @@ void gen_assembly_code(TAC *head) {
 
     case TAC_EXTERN:
       // no se sabía qué extern imprimir; dejar placeholder
-      printf("  ; extern placeholder\n");
       break;
 
     case TAC_UNKNOWN:
@@ -395,7 +420,6 @@ void gen_assembly_code(TAC *head) {
       break;
     }
   }
-  printf("exit_routine:\n");
   printf("  leave\n");
   printf("  ret\n");
 }
