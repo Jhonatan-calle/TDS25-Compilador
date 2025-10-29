@@ -34,7 +34,9 @@ struct Scope {
 extern Scope *scope;
 extern int DYNAMIC_OFFSET;
 
-void update_offset();
+void enter_scope_offset();
+void exit_scope_offset();
+int get_offset();
 void initialize_scope();
 void insert_symbol(Symbol *e);
 Symbol *search_symbol_globally(char *nombre);

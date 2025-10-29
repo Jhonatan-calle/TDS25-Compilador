@@ -4,8 +4,7 @@
 void allocate_binary_boolean_node(AST *node, AST *operando1, AST *operando2,
                                   char *op) {
   node->info = malloc(sizeof(Symbol));
-  update_offset();
-  node->info->offset = DYNAMIC_OFFSET;
+  node->info->offset = get_offset();
   node->info->tVar = T_BOOL;
   set_info_value_depending_operator(node, operando1, operando2, op);
   node->child_count = 2;
@@ -19,8 +18,7 @@ void allocate_binary_integer_node(AST *node, AST *operando1, AST *operando2,
   node->info = malloc(sizeof(Symbol));
   node->info->tVar = T_INT;
   set_info_value_depending_operator(node, operando1, operando2, op);
-  update_offset();
-  node->info->offset = DYNAMIC_OFFSET;
+  node->info->offset = get_offset();
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
@@ -75,8 +73,7 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_VAR;
   simbol->valor = exp->info->valor;
-  update_offset();
-  simbol->offset = DYNAMIC_OFFSET;   // all var declarations have 8 as offset
+  simbol->offset = get_offset(); // all var declarations have 8 as offset
   insert_symbol(simbol);
   node->info = simbol;
   node->child_count = 1;
@@ -94,8 +91,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_FUNC;
-  update_offset();
-  simbol->offset = DYNAMIC_OFFSET;
+  simbol->offset = get_offset();
   AST *params = va_arg(args, AST *);
   if (params) {
     simbol->num_params = params->child_count;
@@ -145,9 +141,8 @@ void module_switch_case_param(AST *node, va_list args) {
   simbol->tVar = tipoIdentificador;
   simbol->nombre = nombre;
   simbol->categoria = S_VAR;
-  simbol->valor = 0;              // init value of 0 for params
-  update_offset();
-  simbol->offset = DYNAMIC_OFFSET;
+  simbol->valor = 0; // init value of 0 for params
+  simbol->offset = get_offset();
   insert_symbol(simbol);
   node->info = simbol;
 }
@@ -221,8 +216,7 @@ void module_switch_case_invocation(AST *node, va_list args) {
   }
 
   node->info = id;
-  update_offset();
-  id->offset = DYNAMIC_OFFSET;
+  id->offset = get_offset();
 }
 
 void module_switch_case_if(AST *node, va_list args) {

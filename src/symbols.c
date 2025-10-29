@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,10 +10,20 @@ extern Scope *scope;
 
 int DYNAMIC_OFFSET = 0;
 int n_offset = 0;
+bool in_function = false;
 
-void update_offset() {
-  n_offset++;
-  DYNAMIC_OFFSET = n_offset * 8;
+void enter_scope_offset() {
+  in_function = true;
+  DYNAMIC_OFFSET = 0;
+}
+
+void exit_scope_offset() { in_function = false; }
+
+int get_offset() {
+  if (in_function)
+    return ++DYNAMIC_OFFSET;
+  else
+    return ++n_offset;
 }
 
 void initialize_scope() {

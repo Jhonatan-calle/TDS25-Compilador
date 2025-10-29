@@ -321,7 +321,7 @@ void gen_assembly_code(TAC *head) {
     // --- Control de flujo ---
     case TAC_LABEL:
       reset_arg_registers();
-      printf("  .globl %s\n",t->result->nombre);
+      printf("  .globl %s\n", t->result->nombre);
       printf("%s:\n", t->result->nombre);
       // Si t->result->offset representa cantidad a reservar, se mantiene.
       printf("  enter $(8 * %d), $0\n", t->result->offset);
