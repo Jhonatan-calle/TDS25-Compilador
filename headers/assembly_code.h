@@ -18,4 +18,9 @@ char *new_temp();
  * Assembly generate function
  */
 void gen_assembly_code(TAC *head);
+
+/**
+ * Print the generated assembly if the debug flag is set
+ */
+void print_generated_assembly_if_debug_flag();
 #endif
