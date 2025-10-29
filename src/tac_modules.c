@@ -10,7 +10,7 @@ void tac_var_dec_module(AST *root, Symbol *exp) {
   insert_tac(TAC_ASSIGN, exp, NULL, root->info);
 }
 
-char *getIfNameLabels(OpCode type){
+char *get_if_name_labels(OpCode type){
   if(type == TAC_LABEL_IF){ 
 
     char *mensaje = malloc(50);
@@ -81,8 +81,8 @@ void tac_if_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
   // crecion de labels
   Symbol *L_else = malloc(sizeof(Symbol));
   L_end = malloc(sizeof(Symbol));
-  L_else->nombre = getIfNameLabels(TAC_LABEL_END);
-  L_end->nombre = getIfNameLabels(TAC_LABEL_IF);
+  L_else->nombre = get_if_name_labels(TAC_LABEL_END);
+  L_end->nombre = get_if_name_labels(TAC_LABEL_IF);
   // este if diferencia entre condicion compuesta o simple
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_IFZ, exp, NULL, L_else);
