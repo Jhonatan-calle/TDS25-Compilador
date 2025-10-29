@@ -194,10 +194,12 @@ void free_ast(AST *node) {
   free(node);
 }
 
-void print_ast_tree(AST *root) {
-  printf("\n===== ABSTRACT SYNTAX TREE =====\n");
-  print_ast(root, 0);
-  printf("\n================================\n");
+void print_ast_tree_if_debug_flag(AST *root) {
+  if (debug_flag) {
+    printf("\n===== ABSTRACT SYNTAX TREE =====\n");
+    print_ast(root, 0);
+    printf("\n================================\n");
+  }
 }
 
 void print_ast(AST *node, int depth) {
