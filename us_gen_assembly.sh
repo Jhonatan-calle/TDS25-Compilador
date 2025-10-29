@@ -19,6 +19,11 @@ if [ ! -f "$input_file" ]; then
     exit 1
 fi
 
+echo "Compiling the assembly..."
 gcc -c "$input_file" -o us_file.o || exit 1
+
+echo "Linking..."
 gcc us_file.o -o us_file
+
+echo "Executing..."
 ./us_file
