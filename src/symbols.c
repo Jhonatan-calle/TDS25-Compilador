@@ -8,24 +8,6 @@
 // Using extern variable defined in main.c
 extern Scope *scope;
 
-int DYNAMIC_OFFSET = 0;
-int n_offset = 0;
-bool in_function = false;
-
-void enter_scope_offset() {
-  in_function = true;
-  DYNAMIC_OFFSET = 0;
-}
-
-void exit_scope_offset() { in_function = false; }
-
-int get_offset() {
-  if (in_function)
-    return ++DYNAMIC_OFFSET;
-  else
-    return ++n_offset;
-}
-
 void initialize_scope() {
   ScopeNode *frontera = malloc(sizeof(ScopeNode));
   frontera->info = NULL; // marca de frontera

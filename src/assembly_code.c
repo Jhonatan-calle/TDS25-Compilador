@@ -12,6 +12,124 @@ static FILE *asm_out = NULL;
 
 int temp_counter = 0;
 
+int local_slots = 0; // número de variables/params (slots)
+int temp_slots = 0;  // número de temporales (slots)
+
+void enter_function() {
+  local_slots = 0;
+  temp_slots = 0;
+}
+
+
+int alloc_local() {
+  local_slots += 1;          // una nueva ranura de 8 bytes
+  return -(local_slots * 8); // -8, -16, -24, ...
+}
+
+/* reserva un temporal *después* de las locales, devuelve offset negativo único
+ */
+int alloc_temp() {
+  temp_slots += 1;
+  /* ubicamos el temporal justo después de las locales:
+     offset = -((local_slots + temp_index) * 8) */
+  return -((local_slots + temp_slots) * 8);
+}
+
+void gen_offsets(AST *root) {
+  if (!root)
+    return;
+
+  switch (root->type) {
+
+  case TR_PROGRAM:
+    // recorrer hijos
+    for (int i = 0; i < root->child_count; i++)
+      gen_offsets(root->childs[i]);
+    break;
+
+  case TR_METHOD_DECLARATION:
+    enter_function();
+
+    // Procesar parámetros primero
+    for (int i = 0; root->childs[0] && i < root->childs[0]->child_count; i++) {
+      AST *param = root->childs[0]->childs[i];
+      param->info->offset = alloc_local();
+    }
+
+    // Ahora procesar el cuerpo de la función
+    gen_offsets(root->childs[1]);
+
+    root->info->offset = (local_slots + temp_slots); // tamaño final del frame
+    exit_function();
+    break;
+
+  case TR_VAR_DECLARATION:
+    root->info->offset = alloc_local();
+    gen_offsets(root->childs[0]); // inicializador
+    break;
+
+  case TR_PARAM:
+    // Ya se asignó arriba en METHOD_DECLARATION
+    break;
+
+  case TR_ASSIGN:
+    gen_offsets(root->childs[1]);
+    root->info->offset = root->childs[0]->info->offset;
+    break;
+
+  case TR_VALUE:
+    root->info->offset = 0;
+    break;
+
+  case TR_INVOCATION:
+    // Reservar temporales para cada arg
+    if (root->child_count > 0)
+      gen_offsets(root->childs[0]);
+    root->info->offset = alloc_temp();
+    break;
+
+  case TR_ARG_LIST:
+    for (int i = 0; i < root->child_count; i++)
+      gen_offsets(root->childs[i]);
+    break;
+
+  case TR_ADDITION:
+  case TR_SUBSTRACTION:
+  case TR_MULTIPLICATION:
+  case TR_DIVITION:
+  case TR_MODULO:
+  case TR_LESS_THAN:
+  case TR_GREATER_THAN:
+  case TR_LOGIC_EQUAL:
+  case TR_AND:
+  case TR_OR:
+  case TR_LOGIC_NEGATION:
+  case TR_ARITHMETIC_NEGATION:
+    // hijos primero
+    gen_offsets(root->childs[0]);
+    if (root->child_count > 1)
+      gen_offsets(root->childs[1]);
+    root->info->offset = alloc_temp();
+    break;
+
+  case TR_IF_STATEMENT:
+  case TR_WHILE_STATEMENT:
+  case TR_RETURN:
+  case TR_BLOCK:
+  case TR_SENTENCES_LIST:
+  case TR_ELSE_BODY:
+    for (int i = 0; i < root->child_count; i++)
+      gen_offsets(root->childs[i]);
+    break;
+
+  default:
+    // fallback safe
+    for (int i = 0; i < root->child_count; i++)
+      gen_offsets(root->childs[i]);
+    break;
+  }
+}
+
 /**
  * Assembly util function
  *
@@ -101,14 +219,14 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       if (t->op2->offset == 0)
         fprintf(asm_out, "  add $%d, %%r10\n", t->op2->valor);
       else
-        fprintf(asm_out, "  add -%d(%%rbp), %%r10\n", t->op2->offset);
+        fprintf(asm_out, "  add %d(%%rbp), %%r10\n", t->op2->offset);
 
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -118,14 +236,14 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       if (t->op2->offset == 0)
         fprintf(asm_out, "  sub $%d, %%r10\n", t->op2->valor);
       else
-        fprintf(asm_out, "  sub -%d(%%rbp), %%r10\n", t->op2->offset);
+        fprintf(asm_out, "  sub %d(%%rbp), %%r10\n", t->op2->offset);
 
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -135,14 +253,15 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       if (t->op2->offset == 0)
-        fprintf(asm_out, "  imul $%d, %%r10\n", t->op2->valor); // immediate multiply
+        fprintf(asm_out, "  imul $%d, %%r10\n",
+                t->op2->valor); // immediate multiply
       else
-        fprintf(asm_out, "  imul -%d(%%rbp), %%r10\n", t->op2->offset);
+        fprintf(asm_out, "  imul %d(%%rbp), %%r10\n", t->op2->offset);
 
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -152,16 +271,16 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%rax\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%rax\n", t->op1->offset);
 
       fprintf(asm_out, "  cqo\n");
 
       if (t->op2->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n  idiv %%r10\n", t->op2->valor);
       else
-        fprintf(asm_out, "  idiv -%d(%%rbp)\n", t->op2->offset);
+        fprintf(asm_out, "  idiv %d(%%rbp)\n", t->op2->offset);
 
-      fprintf(asm_out, "  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%rax, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -171,16 +290,16 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%rax\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%rax\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%rax\n", t->op1->offset);
 
       fprintf(asm_out, "  cqo\n");
 
       if (t->op2->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n  idiv %%r10\n", t->op2->valor);
       else
-        fprintf(asm_out, "  idiv -%d(%%rbp)\n", t->op2->offset);
+        fprintf(asm_out, "  idiv %d(%%rbp)\n", t->op2->offset);
 
-      fprintf(asm_out, "  mov %%rdx, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%rdx, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -191,16 +310,16 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       if (t->op2->offset == 0)
         fprintf(asm_out, "  cmp $%d, %%r10\n", t->op2->valor);
       else
-        fprintf(asm_out, "  cmp -%d(%%rbp), %%r10\n", t->op2->offset);
+        fprintf(asm_out, "  cmp %d(%%rbp), %%r10\n", t->op2->offset);
 
       fprintf(asm_out, "  setl %%al\n");
       fprintf(asm_out, "  movzbq %%al, %%r10\n");
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -210,16 +329,16 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       if (t->op2->offset == 0)
         fprintf(asm_out, "  cmp $%d, %%r10\n", t->op2->valor);
       else
-        fprintf(asm_out, "  cmp -%d(%%rbp), %%r10\n", t->op2->offset);
+        fprintf(asm_out, "  cmp %d(%%rbp), %%r10\n", t->op2->offset);
 
       fprintf(asm_out, "  setg %%al\n");
       fprintf(asm_out, "  movzbq %%al, %%r10\n");
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -229,17 +348,17 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       if (t->op2->offset == 0)
         fprintf(asm_out, "  cmp $%d, %%r10\n", t->op2->valor);
       else
-        fprintf(asm_out, "  cmp -%d(%%rbp), %%r10\n", t->op2->offset);
+        fprintf(asm_out, "  cmp %d(%%rbp), %%r10\n", t->op2->offset);
 
       fprintf(asm_out, "  mov $0, %%r11\n");
       fprintf(asm_out, "  mov $1, %%r10\n");
       fprintf(asm_out, "  cmp %%r10, %%r11\n");
-      fprintf(asm_out, "  mov %%r11, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r11, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -251,7 +370,7 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       fprintf(asm_out, "  cmp $0, %%r10\n");
       fprintf(asm_out, "  setne %%al\n");
@@ -260,13 +379,13 @@ void gen_assembly_code(TAC *head) {
       if (t->op2->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r11\n", t->op2->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r11\n", t->op2->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r11\n", t->op2->offset);
 
       fprintf(asm_out, "  cmp $0, %%r11\n");
       fprintf(asm_out, "  setne %%bl\n");
       fprintf(asm_out, "  and %%bl, %%al\n");
       fprintf(asm_out, "  movzbq %%al, %%r10\n");
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -276,7 +395,7 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       fprintf(asm_out, "  cmp $0, %%r10\n");
       fprintf(asm_out, "  setne %%al\n");
@@ -284,13 +403,13 @@ void gen_assembly_code(TAC *head) {
       if (t->op2->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r11\n", t->op2->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r11\n", t->op2->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r11\n", t->op2->offset);
 
       fprintf(asm_out, "  cmp $0, %%r11\n");
       fprintf(asm_out, "  setne %%bl\n");
       fprintf(asm_out, "  or %%bl, %%al\n");
       fprintf(asm_out, "  movzbq %%al, %%r10\n");
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -299,12 +418,12 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       fprintf(asm_out, "  cmp $0, %%r10\n");
       fprintf(asm_out, "  sete %%al\n");
       fprintf(asm_out, "  movzbq %%al, %%r10\n");
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -314,10 +433,10 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       fprintf(asm_out, "  neg %%r10\n");
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
@@ -327,16 +446,16 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r10\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
-      fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->result->offset);
+      fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
       break;
     }
 
     // --- Control de flujo ---
     case TAC_LABEL:
       reset_arg_registers();
-      fprintf(asm_out, "  .globl %s\n",t->result->nombre);
+      fprintf(asm_out, "  .globl %s\n", t->result->nombre);
       fprintf(asm_out, "%s:\n", t->result->nombre);
       // Si t->result->offset representa cantidad a reservar, se mantiene.
       fprintf(asm_out, "  enter $(8 * %d), $0\n", t->result->offset);
@@ -358,7 +477,7 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%r11\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r11\n", t->op1->offset);
 
       fprintf(asm_out, "  cmp %%r10, %%r11\n");
       fprintf(asm_out, "  je %s\n", t->result->nombre);
@@ -369,11 +488,11 @@ void gen_assembly_code(TAC *head) {
       const char *where = get_arg_register();
       if (where[0] == '%') {
         // Registro → memoria (válido)
-        fprintf(asm_out, "  mov %s, -%d(%%rbp)\n", where, t->op1->offset);
+        fprintf(asm_out, "  mov %s, %d(%%rbp)\n", where, t->op1->offset);
       } else {
         // Memoria → memoria (no permitido) → pasar por registro temporal
         fprintf(asm_out, "  mov %s, %%r10\n", where);
-        fprintf(asm_out, "  mov %%r10, -%d(%%rbp)\n", t->op1->offset);
+        fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->op1->offset);
       }
       break;
     }
@@ -390,9 +509,9 @@ void gen_assembly_code(TAC *head) {
       } else {
         const char *where = get_arg_register();
         if (where[0] == '%')
-          fprintf(asm_out, "  mov  -%d(%%rbp), %s\n", t->op1->offset, where);
+          fprintf(asm_out, "  mov  %d(%%rbp), %s\n", t->op1->offset, where);
         else
-          fprintf(asm_out, "  movq  -%d(%%rbp), %s\n", t->op1->offset, where);
+          fprintf(asm_out, "  movq  %d(%%rbp), %s\n", t->op1->offset, where);
       }
       break;
 
@@ -402,7 +521,7 @@ void gen_assembly_code(TAC *head) {
       // t->op1->offset assumed to be count of pushed args (caller
       // responsibility)
       if (t->result)
-        fprintf(asm_out, "  mov %%rax, -%d(%%rbp)\n", t->result->offset);
+        fprintf(asm_out, "  mov %%rax, %d(%%rbp)\n", t->result->offset);
       break;
 
     case TAC_RETURN:
@@ -412,7 +531,7 @@ void gen_assembly_code(TAC *head) {
         if (t->result->offset == 0)
           fprintf(asm_out, "  mov $%d, %%rax\n", t->result->valor);
         else
-          fprintf(asm_out, "  mov -%d(%%rbp), %%rax\n", t->result->offset);
+          fprintf(asm_out, "  mov %d(%%rbp), %%rax\n", t->result->offset);
       }
 
       break;
@@ -422,7 +541,7 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%rdi\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov -%d(%%rbp), %%rdi\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%rdi\n", t->op1->offset);
       fprintf(asm_out, "  call print_int\n");
       break;
 
@@ -453,15 +572,15 @@ void gen_assembly_code(TAC *head) {
 void print_generated_assembly_if_debug_flag() {
   if (debug_flag) {
     printf("[DEBUG] Generated Assembly\n");
-    FILE* f;
+    FILE *f;
     int c;
-    if ((f = fopen(ctds_filename, "r")) == NULL){
+    if ((f = fopen(ctds_filename, "r")) == NULL) {
       printf("error in opening a file");
       exit(1);
     }
 
     while ((c = fgetc(f)) != EOF) {
-      printf("%c", c);//printing to the console
+      printf("%c", c); // printing to the console
     }
 
     fclose(f);

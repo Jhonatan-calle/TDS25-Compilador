@@ -76,10 +76,8 @@ declaration
   }
   | type ID '(' {
     initialize_scope();
-    enter_scope_offset();
   } param_list ')' cuerpo {
     free_scope();
-    exit_scope_offset();
     $$ = new_node(TR_METHOD_DECLARATION, 4, $1, $2, $5, $7);
   }
   ;
@@ -144,27 +142,21 @@ statement
   }
   | ID '(' {
     initialize_scope();
-    enter_scope_offset();
   } arg_list ')' T_EOS {
     $$ = new_node(TR_INVOCATION, 2, $1, $4);
     free_scope();
-    exit_scope_offset();
   }
   | R_IF '(' expr ')' R_THEN '{' {
     initialize_scope();
-    enter_scope_offset();
   } declaration_list statement_list '}' else_cuerpo {
     $$ = new_node(TR_IF_STATEMENT, 4, $3, $8, $9, $11);
     free_scope();
-    exit_scope_offset();
   }
   | R_WHILE '(' expr ')' '{' {
     initialize_scope();
-    enter_scope_offset();
   } declaration_list statement_list '}' {
     $$ = new_node(TR_WHILE_STATEMENT, 3, $3, $7, $8);
     free_scope();
-    exit_scope_offset();
   }
   | R_RETURN expr T_EOS {
     $$ = new_node(TR_RETURN, 1, $2);
@@ -177,11 +169,9 @@ statement
   }
   | '{' {
     initialize_scope();
-    enter_scope_offset();
   } declaration_list statement_list '}' {
     $$ = new_node(TR_BLOCK, 2, $3, $4);
     free_scope();
-    exit_scope_offset();
   }
   ;
 
@@ -191,11 +181,9 @@ else_cuerpo
   }
   | R_ELSE '{' {
     initialize_scope();
-    enter_scope_offset();
   } declaration_list statement_list '}' {
     $$ = new_node(TR_ELSE_BODY, 2, $4, $5);
     free_scope();
-    exit_scope_offset();
   }
 
 arg_list
@@ -222,10 +210,8 @@ expr
   }
   | ID '(' arg_list ')' {
     initialize_scope();
-    enter_scope_offset();
     $$ = new_node(TR_INVOCATION, 2, $1, $3);
     free_scope();
-    exit_scope_offset();
   }
   | literal {
     $$ = $1;

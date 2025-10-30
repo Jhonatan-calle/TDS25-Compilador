@@ -4,7 +4,6 @@
 void allocate_binary_boolean_node(AST *node, AST *operando1, AST *operando2,
                                   char *op) {
   node->info = malloc(sizeof(Symbol));
-  node->info->offset = get_offset();
   node->info->tVar = T_BOOL;
   set_info_value_depending_operator(node, operando1, operando2, op);
   node->child_count = 2;
@@ -18,7 +17,6 @@ void allocate_binary_integer_node(AST *node, AST *operando1, AST *operando2,
   node->info = malloc(sizeof(Symbol));
   node->info->tVar = T_INT;
   set_info_value_depending_operator(node, operando1, operando2, op);
-  node->info->offset = get_offset();
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
   node->childs[0] = operando1;
@@ -73,7 +71,6 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_VAR;
   simbol->valor = exp->info->valor;
-  simbol->offset = get_offset(); // all var declarations have 8 as offset
   insert_symbol(simbol);
   node->info = simbol;
   node->child_count = 1;
@@ -91,7 +88,6 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
   simbol->nombre = nombre;          // identificador
   simbol->categoria = S_FUNC;
-  simbol->offset = get_offset();
   AST *params = va_arg(args, AST *);
   if (params) {
     simbol->num_params = params->child_count;
@@ -142,7 +138,6 @@ void module_switch_case_param(AST *node, va_list args) {
   simbol->nombre = nombre;
   simbol->categoria = S_VAR;
   simbol->valor = 0; // init value of 0 for params
-  simbol->offset = get_offset();
   insert_symbol(simbol);
   node->info = simbol;
 }
@@ -157,8 +152,10 @@ void module_switch_case_param_list(AST *node, va_list args) {
 void module_switch_case_block(AST *node, va_list args) {
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
+  // declaration list
   node->childs[0] = va_arg(args, AST *);
-  node->childs[1] = va_arg(args, AST *); // $3: statement_list, de tipo AST*
+  // $3: statement_list, de tipo AST*
+  node->childs[1] = va_arg(args, AST *);
 }
 
 void module_switch_case_asignacion(AST *node, va_list args) {
@@ -180,13 +177,13 @@ void module_switch_case_asignacion(AST *node, va_list args) {
   node->child_count = 2;
   node->childs = malloc(sizeof(AST *) * 2);
 
-  AST *aux = malloc(sizeof(AST));
-  aux->type = TR_IDENTIFIER;
-  aux->info = id;
-  aux->child_count = 0;
-  aux->childs = NULL;
+  AST *id_ast = malloc(sizeof(AST));
+  id_ast->type = TR_IDENTIFIER;
+  id_ast->info = id;
+  id_ast->child_count = 0;
+  id_ast->childs = NULL;
 
-  node->childs[0] = aux;
+  node->childs[0] = id_ast;
   node->childs[1] = exp;
 }
 
@@ -200,23 +197,23 @@ void module_switch_case_invocation(AST *node, va_list args) {
   if (!id)
     id = search_symbol_globally(nombre);
 
-  AST *params = va_arg(args, AST *);
-  if (params != NULL) {
-    exit_if_invalid_amount_of_params(params, id, nombre);
+  AST *args_invocation = va_arg(args, AST *);
+  if (args_invocation != NULL) {
+    exit_if_invalid_amount_of_params(args_invocation, id, nombre);
 
     for (int i = 0; i < id->num_params; i++) {
-      exit_if_missmatch_types_params_at_invocation(params, id, nombre, i);
+      exit_if_missmatch_types_params_at_invocation(args_invocation, id, nombre,
+                                                   i);
     }
     node->child_count = 1;
     node->childs = malloc(sizeof(AST *));
-    node->childs[0] = params;
+    node->childs[0] = args_invocation;
   } else {
     node->child_count = 0;
     node->childs = NULL;
   }
 
   node->info = id;
-  id->offset = get_offset();
 }
 
 void module_switch_case_if(AST *node, va_list args) {

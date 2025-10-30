@@ -205,8 +205,6 @@ void print_tac_list() {
 void unary_operation_insert(OpCode opcode, AST *node) {
   Symbol *exp = get_operand(node->childs[0]);
   Symbol *temp = malloc(sizeof(Symbol));
-  update_offset();
-  temp->offset = DYNAMIC_OFFSET;
   temp->nombre = new_temp();
   insert_tac(opcode, exp, NULL, temp);
 }
@@ -220,8 +218,6 @@ void binary_operation_insert(OpCode opcode, AST *node) {
   Symbol *op2 = get_operand(exp2);
 
   Symbol *temp = malloc(sizeof(Symbol));
-  update_offset();
-  temp->offset = DYNAMIC_OFFSET;
   temp->nombre = new_temp();
 
   insert_tac(opcode, op1, op2, temp);
