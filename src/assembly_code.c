@@ -60,7 +60,6 @@ void gen_offsets(AST *root) {
     gen_offsets(root->childs[1]);
 
     root->info->offset = (local_slots + temp_slots); // tamaño final del frame
-    exit_function();
     break;
 
   case TR_VAR_DECLARATION:
