@@ -452,7 +452,7 @@ void gen_assembly_code(TAC *head) {
       fprintf(asm_out, "  .globl %s\n", t->result->nombre);
       fprintf(asm_out, "%s:\n", t->result->nombre);
       // Si t->result->offset representa cantidad a reservar, se mantiene.
-      fprintf(asm_out, "  enter $(8 * %d), $0\n", -t->result->offset);
+      fprintf(asm_out, "  enter $(8 * %d), $0\n", t->result->offset);
       break;
 
     case TAC_LABEL_END:

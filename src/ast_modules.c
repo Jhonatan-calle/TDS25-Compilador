@@ -212,8 +212,14 @@ void module_switch_case_invocation(AST *node, va_list args) {
     node->child_count = 0;
     node->childs = NULL;
   }
-
-  node->info = id;
+  Symbol *info_invocation = malloc(sizeof(Symbol));
+  info_invocation->categoria = id->categoria;
+  info_invocation->cuerpo = id->cuerpo;
+  info_invocation->nombre = id->nombre;
+  info_invocation->num_params = id->num_params;
+  info_invocation->param_tipos = id->param_tipos;
+  info_invocation->tVar = id->tVar;
+  node->info = info_invocation;
 }
 
 void module_switch_case_if(AST *node, va_list args) {
