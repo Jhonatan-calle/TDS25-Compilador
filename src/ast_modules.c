@@ -260,9 +260,8 @@ void module_switch_case_while(AST *node, va_list args) {
 }
 
 void module_switch_case_return(AST *node, va_list args) {
-  AST *maybe_expr = va_arg(args, AST *);
-  if (maybe_expr != NULL) {
-    node->child_count = 1;
+  if (node->child_count == 1) {
+    AST *maybe_expr = va_arg(args, AST *);
     node->childs = malloc(sizeof(AST *));
     node->childs[0] = maybe_expr;
   } else {
