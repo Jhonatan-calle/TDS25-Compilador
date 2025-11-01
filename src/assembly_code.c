@@ -20,7 +20,6 @@ void enter_function() {
   temp_slots = 0;
 }
 
-
 int alloc_local() {
   local_slots += 1;          // una nueva ranura de 8 bytes
   return -(local_slots * 8); // -8, -16, -24, ...
@@ -65,10 +64,6 @@ void gen_offsets(AST *root) {
   case TR_VAR_DECLARATION:
     root->info->offset = alloc_local();
     gen_offsets(root->childs[0]); // inicializador
-    break;
-
-  case TR_PARAM:
-    // Ya se asignó arriba en METHOD_DECLARATION
     break;
 
   case TR_ASSIGN:
@@ -188,7 +183,7 @@ void gen_assembly_code(TAC *head) {
 
   bool in_function = false;
 
-  fprintf(asm_out, "  .data\n");
+  fprintf(asm_out, "  .data");
   TAC *q;
 
   for (q = head; q && !in_function; q = q->next) {
@@ -457,7 +452,7 @@ void gen_assembly_code(TAC *head) {
       fprintf(asm_out, "  .globl %s\n", t->result->nombre);
       fprintf(asm_out, "%s:\n", t->result->nombre);
       // Si t->result->offset representa cantidad a reservar, se mantiene.
-      fprintf(asm_out, "  enter $(8 * %d), $0\n", t->result->offset);
+      fprintf(asm_out, "  enter $(8 * %d), $0\n", -t->result->offset);
       break;
 
     case TAC_LABEL_END:
@@ -496,23 +491,28 @@ void gen_assembly_code(TAC *head) {
       break;
     }
 
-    case TAC_ARG:
-      // push desde el slot local del argumento
+    case TAC_ARG: {
+      // preparar argumento (registros o stack) -> usar get_arg_register() UNA
+      // vez
+      const char *where = get_arg_register();
       if (t->op1->offset == 0) {
-        const char *where = get_arg_register();
+        /* inmediato */
         if (where[0] == '%')
-          fprintf(asm_out, "  mov  $%d, %s\n", t->op1->offset, where);
+          fprintf(asm_out, "  mov $%d, %s\n", t->op1->valor, where);
         else
-          fprintf(asm_out, "  movq  $%d, %s\n", t->op1->offset, where);
-
+          fprintf(asm_out, "  movq $%d, %s\n", t->op1->valor, where);
       } else {
-        const char *where = get_arg_register();
-        if (where[0] == '%')
-          fprintf(asm_out, "  mov  %d(%%rbp), %s\n", t->op1->offset, where);
-        else
-          fprintf(asm_out, "  movq  %d(%%rbp), %s\n", t->op1->offset, where);
+        /* valor en memoria local/temporal */
+        if (where[0] == '%') {
+          fprintf(asm_out, "  mov %d(%%rbp), %s\n", t->op1->offset, where);
+        } else {
+          /* memoria -> memoria no es permitido; usar registro temporal */
+          fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
+          fprintf(asm_out, "  movq %%r10, %s\n", where);
+        }
       }
       break;
+    }
 
     case TAC_CALL:
       reset_arg_registers();

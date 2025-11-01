@@ -4,24 +4,25 @@ int return_found = 0;
 int endCounts = 0;
 int elseCounts = 0;
 
-
 void tac_var_dec_module(AST *root, Symbol *exp) {
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_ASSIGN, exp, NULL, root->info);
 }
 
-char *get_if_name_labels(OpCode type){
-  if(type == TAC_LABEL_IF){ 
+char *get_if_name_labels(OpCode type) {
+  if (type == TAC_LABEL_IF) {
 
     char *mensaje = malloc(50);
-    if (mensaje == NULL) return NULL;
-    sprintf(mensaje, "L_else%d",elseCounts++);
-    return mensaje;  
-  }else if (type == TAC_LABEL_END){
+    if (mensaje == NULL)
+      return NULL;
+    sprintf(mensaje, "L_else%d", elseCounts++);
+    return mensaje;
+  } else if (type == TAC_LABEL_END) {
     char *mensaje = malloc(50);
-    if (mensaje == NULL) return NULL;
-    sprintf(mensaje, "L_end%d",endCounts++);
-    return mensaje;  
+    if (mensaje == NULL)
+      return NULL;
+    sprintf(mensaje, "L_end%d", endCounts++);
+    return mensaje;
   }
   return NULL;
 }
@@ -71,6 +72,7 @@ void tac_invocation_module(AST *root) {
     char *temp = new_temp();
     Symbol *simbol = malloc(sizeof(Symbol));
     simbol->nombre = temp;
+    simbol->offset = root->info->offset;
     insert_tac(TAC_CALL, root->info, NULL, simbol);
   } else {
     insert_tac(TAC_CALL, root->info, NULL, NULL);
@@ -89,12 +91,12 @@ void tac_if_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
   // cuerpo del if
   gen_inter_code(root->childs[1]);
   gen_inter_code(root->childs[2]);
-  
+
   insert_tac(TAC_GOTO, NULL, NULL, L_end);
   // else (opcional)
   insert_tac(TAC_LABEL_IF, NULL, NULL, L_else);
 
-  gen_inter_code(root->childs[2]);
+  gen_inter_code(root->childs[3]);
   // fin
   insert_tac(TAC_LABEL_END, NULL, NULL, L_end);
 }

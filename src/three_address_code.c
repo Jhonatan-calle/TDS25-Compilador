@@ -206,6 +206,8 @@ void unary_operation_insert(OpCode opcode, AST *node) {
   Symbol *exp = get_operand(node->childs[0]);
   Symbol *temp = malloc(sizeof(Symbol));
   temp->nombre = new_temp();
+  temp->offset = node->info->offset;
+
   insert_tac(opcode, exp, NULL, temp);
 }
 
@@ -219,6 +221,7 @@ void binary_operation_insert(OpCode opcode, AST *node) {
 
   Symbol *temp = malloc(sizeof(Symbol));
   temp->nombre = new_temp();
+  temp->offset = node->info->offset;
 
   insert_tac(opcode, op1, op2, temp);
 }
