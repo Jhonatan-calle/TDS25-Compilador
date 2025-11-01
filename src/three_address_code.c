@@ -257,6 +257,10 @@ const char *opcode_to_string(OpCode op) {
     return "TAC_LABEL";
   case TAC_GOTO:
     return "TAC_GOTO";
+  case TAC_LABEL_IF:
+    return "TAC_LABEL_IF";
+  case TAC_LABEL_END:
+    return "TAC_LABEL_END";
   case TAC_IFZ:
     return "TAC_IFZ";
   case TAC_PARAM:

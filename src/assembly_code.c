@@ -345,13 +345,14 @@ void gen_assembly_code(TAC *head) {
         fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
       if (t->op2->offset == 0)
-        fprintf(asm_out, "  cmp $%d, %%r10\n", t->op2->valor);
+        fprintf(asm_out, "  mov $%d, %%r11\n", t->op2->valor);
       else
-        fprintf(asm_out, "  cmp %d(%%rbp), %%r10\n", t->op2->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r11\n", t->op2->offset);
 
+        fprintf(asm_out, "  cmp %%r10, %%r11\n");
       fprintf(asm_out, "  mov $0, %%r11\n");
       fprintf(asm_out, "  mov $1, %%r10\n");
-      fprintf(asm_out, "  cmp %%r10, %%r11\n");
+      fprintf(asm_out, "  cmove %%r10, %%r11\n");
       fprintf(asm_out, "  mov %%r11, %d(%%rbp)\n", t->result->offset);
       break;
     }
@@ -471,10 +472,11 @@ void gen_assembly_code(TAC *head) {
       if (t->op1->offset == 0)
         fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->valor);
       else
-        fprintf(asm_out, "  mov %d(%%rbp), %%r11\n", t->op1->offset);
+        fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
 
+      fprintf(asm_out, "  mov $1, %%r11\n");
       fprintf(asm_out, "  cmp %%r10, %%r11\n");
-      fprintf(asm_out, "  je %s\n", t->result->nombre);
+      fprintf(asm_out, "  jne %s\n", t->result->nombre);
       break;
 
     // --- Funciones ---

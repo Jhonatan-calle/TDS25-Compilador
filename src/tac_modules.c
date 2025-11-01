@@ -34,6 +34,7 @@ void tac_method_dec_module(AST *root) {
   } else {
 
     insert_tac(TAC_LABEL, NULL, NULL, root->info);
+    return_found = 0;
     // parametros de metodo
     gen_inter_code(root->childs[0]);
     // cuerpo del metodo
@@ -82,8 +83,8 @@ void tac_if_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
   // crecion de labels
   Symbol *L_else = malloc(sizeof(Symbol));
   L_end = malloc(sizeof(Symbol));
-  L_else->nombre = get_if_name_labels(TAC_LABEL_END);
-  L_end->nombre = get_if_name_labels(TAC_LABEL_IF);
+  L_else->nombre = get_if_name_labels(TAC_LABEL_IF);
+  L_end->nombre = get_if_name_labels(TAC_LABEL_END);
   // este if diferencia entre condicion compuesta o simple
   exp = get_operand(root->childs[0]);
   insert_tac(TAC_IFZ, exp, NULL, L_else);
