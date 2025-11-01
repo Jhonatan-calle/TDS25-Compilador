@@ -31,7 +31,6 @@ typedef enum {
   TAC_ARG,
   TAC_CALL,
   TAC_RETURN,
-  TAC_PRINT,
   TAC_NOT,
   TAC_NEG,
   TAC_EXTERN

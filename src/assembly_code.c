@@ -525,28 +525,19 @@ void gen_assembly_code(TAC *head) {
 
     case TAC_RETURN:
       reset_arg_registers();
-      fprintf(asm_out, "  leave\n");
-      fprintf(asm_out, "  ret\n");
       if (t->result) {
         if (t->result->offset == 0)
           fprintf(asm_out, "  mov $%d, %%rax\n", t->result->valor);
         else
           fprintf(asm_out, "  mov %d(%%rbp), %%rax\n", t->result->offset);
       }
+      fprintf(asm_out, "  leave\n");
+      fprintf(asm_out, "  ret\n");
 
-      break;
-
-    // --- I/O y externos ---
-    case TAC_PRINT:
-      if (t->op1->offset == 0)
-        fprintf(asm_out, "  mov $%d, %%rdi\n", t->op1->valor);
-      else
-        fprintf(asm_out, "  mov %d(%%rbp), %%rdi\n", t->op1->offset);
-      fprintf(asm_out, "  call print_int\n");
       break;
 
     case TAC_EXTERN:
-      // no se sabía qué extern imprimir; dejar placeholder
+      fprintf(asm_out, ".extern %s\n", t->op1->nombre);
       break;
 
     case TAC_UNKNOWN:

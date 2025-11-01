@@ -267,8 +267,6 @@ const char *opcode_to_string(OpCode op) {
     return "TAC_CALL";
   case TAC_RETURN:
     return "TAC_RETURN";
-  case TAC_PRINT:
-    return "TAC_PRINT";
   case TAC_NOT:
     return "TAC_NOT";
   case TAC_NEG:

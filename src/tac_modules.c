@@ -28,21 +28,20 @@ char *get_if_name_labels(OpCode type) {
 }
 
 void tac_method_dec_module(AST *root) {
-  insert_tac(TAC_LABEL, NULL, NULL, root->info);
-  // parametros de metodo
-  gen_inter_code(root->childs[0]);
-  // si el metodo el local y no externo
-  if (root->childs[1]->type == TR_BLOCK) {
-    gen_inter_code(root->childs[1]);
 
-    // si no tiene un return igual le pongo uno para marcar
-    //  el final del label
+  if (root->childs[1]->type == TR_EXTERN) {
+    insert_tac(TAC_EXTERN, root->info, NULL, NULL);
+  } else {
+
+    insert_tac(TAC_LABEL, NULL, NULL, root->info);
+    // parametros de metodo
+    gen_inter_code(root->childs[0]);
+    // cuerpo del metodo
+    gen_inter_code(root->childs[1]);
     if (root->info->tVar == T_VOID && !return_found) {
       insert_tac(TAC_RETURN, NULL, NULL, NULL);
       return_found = 0;
     }
-  } else {
-    insert_tac(TAC_EXTERN, NULL, NULL, NULL);
   }
 }
 
