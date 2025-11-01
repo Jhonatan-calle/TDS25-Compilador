@@ -525,7 +525,8 @@ void gen_assembly_code(TAC *head) {
 
     case TAC_RETURN:
       reset_arg_registers();
-
+      fprintf(asm_out, "  leave\n");
+      fprintf(asm_out, "  ret\n");
       if (t->result) {
         if (t->result->offset == 0)
           fprintf(asm_out, "  mov $%d, %%rax\n", t->result->valor);
@@ -554,8 +555,6 @@ void gen_assembly_code(TAC *head) {
       break;
     }
   }
-  fprintf(asm_out, "  leave\n");
-  fprintf(asm_out, "  ret\n");
   fprintf(asm_out, "  .section  .note.GNU-stack,\"\",@progbits\n");
   fprintf(asm_out, "\n");
 
