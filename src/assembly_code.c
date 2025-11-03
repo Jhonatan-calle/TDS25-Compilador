@@ -2,7 +2,7 @@
 
 /* --- Variables --- */
 // Global input filename provided by main/utils; used as output target here
-char *ctds_filename = "last_generated_assembly.s";
+char *assembly_filename = "last_generated_assembly.ass";
 // Local file handle to write assembly; fallback to stdout if not set
 static FILE *asm_out = NULL;
 // Counter of temporals
@@ -187,10 +187,10 @@ void gen_assembly_code(TAC *head) {
   if (!head)
     return;
 
-  // Open (or switch) output to the file indicated by ctds_filename.
+  // Open (or switch) output to the file indicated by assembly_filename.
   // If unavailable or failing to open, we fallback to stdout.
-  if (ctds_filename && *ctds_filename) {
-    asm_out = fopen(ctds_filename, "w");
+  if (assembly_filename && *assembly_filename) {
+    asm_out = fopen(assembly_filename, "w");
     if (!asm_out) {
       perror("Error opening assembly output file");
     }
@@ -569,7 +569,7 @@ void gen_assembly_code(TAC *head) {
   if (asm_out) {
     fclose(asm_out);
     asm_out = NULL;
-    printf("Assembly generated at file: %s\n", ctds_filename);
+    printf("Assembly generated at file: %s\n", assembly_filename);
     print_generated_assembly_if_debug_flag();
   }
 }
@@ -583,7 +583,7 @@ void print_generated_assembly_if_debug_flag() {
     printf("[DEBUG] Generated Assembly\n");
     FILE *f;
     int c;
-    if ((f = fopen(ctds_filename, "r")) == NULL) {
+    if ((f = fopen(assembly_filename, "r")) == NULL) {
       printf("error in opening a file");
       exit(1);
     }
