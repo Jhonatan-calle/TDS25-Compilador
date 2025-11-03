@@ -36,9 +36,15 @@ void set_info_value_depending_operator(AST *node, AST *first_operand,
   } else if (strcmp(op, "<") == 0) {
     node->info->value =
         first_operand->info->value < second_operand->info->value;
+  } else if (strcmp(op, "<=") == 0) {
+    node->info->value =
+        first_operand->info->value <= second_operand->info->value;
   } else if (strcmp(op, ">") == 0) {
     node->info->value =
         first_operand->info->value > second_operand->info->value;
+  } else if (strcmp(op, ">=") == 0) {
+    node->info->value =
+        first_operand->info->value >= second_operand->info->value;
   } else if (strcmp(op, "+") == 0) {
     node->info->value =
         first_operand->info->value + second_operand->info->value;
@@ -375,10 +381,30 @@ void module_switch_case_less_than(AST *node, va_list args) {
   allocate_binary_boolean_node(node, first_operand, second_operand, op);
 }
 
+void module_switch_case_less_eq_than(AST *node, va_list args) {
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
+  char *op = "<=";
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
+
+  allocate_binary_boolean_node(node, first_operand, second_operand, op);
+}
+
 void module_switch_case_greater_than(AST *node, va_list args) {
   AST *first_operand = va_arg(args, AST *);
   AST *second_operand = va_arg(args, AST *);
   char *op = ">";
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
+
+  allocate_binary_boolean_node(node, first_operand, second_operand, op);
+}
+
+void module_switch_case_greater_eq_than(AST *node, va_list args) {
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
+  char *op = ">=";
   exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
                                                     second_operand, op);
 

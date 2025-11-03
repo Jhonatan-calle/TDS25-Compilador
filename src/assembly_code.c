@@ -111,7 +111,9 @@ void gen_offsets(AST *root) {
   case TR_DIVITION:
   case TR_MODULO:
   case TR_LESS_THAN:
+  case TR_LESS_EQ_THAN:
   case TR_GREATER_THAN:
+  case TR_GREATER_EQ_THAN:
   case TR_LOGIC_EQUAL:
   case TR_AND:
   case TR_OR:
@@ -246,8 +248,16 @@ void gen_assembly_code(TAC *head) {
       assembly_module_less(asm_out, t);
       break;
 
+    case TAC_LESS_EQ:
+      assembly_module_less_eq(asm_out, t);
+      break;
+
     case TAC_GR:
       assembly_module_gr(asm_out, t);
+      break;
+
+    case TAC_GREATER_EQ:
+      assembly_module_greater_eq(asm_out, t);
       break;
 
     case TAC_EQ:

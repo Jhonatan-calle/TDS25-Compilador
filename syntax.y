@@ -38,10 +38,13 @@
 %token R_EXTERN R_RETURN R_PROGRAM
 %token R_IF R_THEN R_ELSE R_WHILE
 %token OP_AND OP_OR OP_EQ
+%token OP_LESS_EQ OP_GREATER_EQ
 
 %left OP_AND
 %left OP_OR
 %left OP_EQ
+%left OP_LESS_EQ
+%left OP_GREATER_EQ
 %left '<' '>'
 %left '+' '-'
 %left '*' '/' '%'
@@ -240,8 +243,14 @@ expr
   | expr '<' expr {
     $$ = new_node(TR_LESS_THAN, 2, $1, $3);
   }
+  | expr OP_LESS_EQ expr {
+    $$ = new_node(TR_LESS_EQ_THAN, 2, $1, $3);
+  }
   | expr '>' expr {
     $$ = new_node(TR_GREATER_THAN, 2, $1, $3);
+  }
+  | expr OP_GREATER_EQ expr {
+    $$ = new_node(TR_GREATER_EQ_THAN, 2, $1, $3);
   }
   | expr OP_EQ expr {
     $$ = new_node(TR_LOGIC_EQUAL, 2, $1, $3);

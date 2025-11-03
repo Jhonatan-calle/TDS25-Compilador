@@ -94,8 +94,16 @@ void gen_inter_code(AST *root) {
     binary_operation_insert(TAC_LESS, root);
     break;
 
+  case TR_LESS_EQ_THAN:
+    binary_operation_insert(TAC_LESS_EQ, root);
+    break;
+
   case TR_GREATER_THAN:
     binary_operation_insert(TAC_GR, root);
+    break;
+
+  case TR_GREATER_EQ_THAN:
+    binary_operation_insert(TAC_GREATER_EQ, root);
     break;
 
   case TR_LOGIC_EQUAL:
@@ -300,8 +308,12 @@ const char *opcode_to_string(OpCode op) {
     return "TAC_MOD";
   case TAC_LESS:
     return "TAC_LESS";
+  case TAC_LESS_EQ:
+    return "TAC_LESS_EQ";
   case TAC_GR:
     return "TAC_GR";
+  case TAC_GREATER_EQ:
+    return "TAC_GREATER_EQ";
   case TAC_EQ:
     return "TAC_EQ";
   case TAC_AND:
