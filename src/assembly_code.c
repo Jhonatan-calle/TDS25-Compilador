@@ -3,7 +3,7 @@
 /* --- Variables --- */
 // Output assembly filename
 char *assembly_filename = "last_generated_assembly.ass";
-// Local file handle to write assembly; fallback to stdout if not set
+// Local file handle to write assembly
 static FILE *asm_out = NULL;
 // Counter of temporals
 int temp_counter = 0;
