@@ -2,7 +2,7 @@
 
 // Output AST filename
 char *ast_filename = "last_generated_ast.sint";
-// Local file handle to write the AST; fallback to stdout if not set
+// Local file handle to write the AST
 static FILE *ast_out = NULL;
 
 AST *init_node(NodeType type, int child_count) {
@@ -203,7 +203,7 @@ void save_ast_in_file(AST *root) {
     perror("Error opening AST output file");
   }
   fprintf(ast_out, "\n===== ABSTRACT SYNTAX TREE =====\n");
-  print_ast(root, 0);
+  write_ast_in_file(root, 0);
   fprintf(ast_out, "\n================================\n");
   // Close the output file if we opened one
   if (ast_out) {
@@ -236,7 +236,10 @@ void print_generated_ast_if_debug_flag() {
   }
 }
 
-void print_ast(AST *node, int depth) {
+/**
+ * Write the AST into the global var filename
+ */
+void write_ast_in_file(AST *node, int depth) {
   if (node == NULL)
     return;
 
@@ -270,6 +273,6 @@ void print_ast(AST *node, int depth) {
 
   // Recursion in the children
   for (int i = 0; i < node->child_count; i++) {
-    print_ast(node->children[i], depth + 1);
+    write_ast_in_file(node->children[i], depth + 1);
   }
 }
