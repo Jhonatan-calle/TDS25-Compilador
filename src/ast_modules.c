@@ -1,171 +1,177 @@
 #include "../headers/ast_modules.h"
-#include <stdlib.h>
 
-void allocate_binary_boolean_node(AST *node, AST *operando1, AST *operando2,
-                                  char *op) {
+void allocate_binary_boolean_node(AST *node, AST *first_operand,
+                                  AST *second_operand, char *op) {
   node->info = malloc(sizeof(Symbol));
-  node->info->tVar = T_BOOL;
-  set_info_value_depending_operator(node, operando1, operando2, op);
+  node->info->t_var = T_BOOL;
+  set_info_value_depending_operator(node, first_operand, second_operand, op);
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = operando1;
-  node->childs[1] = operando2;
+  node->children = malloc(sizeof(AST *) * 2);
+  node->children[0] = first_operand;
+  node->children[1] = second_operand;
 }
 
-void allocate_binary_integer_node(AST *node, AST *operando1, AST *operando2,
-                                  char *op) {
+void allocate_binary_integer_node(AST *node, AST *first_operand,
+                                  AST *second_operand, char *op) {
   node->info = malloc(sizeof(Symbol));
-  node->info->tVar = T_INT;
-  set_info_value_depending_operator(node, operando1, operando2, op);
+  node->info->t_var = T_INT;
+  set_info_value_depending_operator(node, first_operand, second_operand, op);
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = operando1;
-  node->childs[1] = operando2;
+  node->children = malloc(sizeof(AST *) * 2);
+  node->children[0] = first_operand;
+  node->children[1] = second_operand;
 }
 
-void set_info_value_depending_operator(AST *node, AST *operando1,
-                                       AST *operando2, char *op) {
+void set_info_value_depending_operator(AST *node, AST *first_operand,
+                                       AST *second_operand, char *op) {
   if (strcmp(op, "==") == 0) {
-    node->info->valor = operando1->info->valor == operando2->info->valor;
+    node->info->value =
+        first_operand->info->value == second_operand->info->value;
   } else if (strcmp(op, "&&") == 0) {
-    node->info->valor = operando1->info->valor && operando2->info->valor;
+    node->info->value =
+        first_operand->info->value && second_operand->info->value;
   } else if (strcmp(op, "||") == 0) {
-    node->info->valor = operando1->info->valor || operando2->info->valor;
+    node->info->value =
+        first_operand->info->value || second_operand->info->value;
   } else if (strcmp(op, "<") == 0) {
-    node->info->valor = operando1->info->valor < operando2->info->valor;
+    node->info->value =
+        first_operand->info->value < second_operand->info->value;
   } else if (strcmp(op, ">") == 0) {
-    node->info->valor = operando1->info->valor > operando2->info->valor;
+    node->info->value =
+        first_operand->info->value > second_operand->info->value;
   } else if (strcmp(op, "+") == 0) {
-    node->info->valor = operando1->info->valor + operando2->info->valor;
+    node->info->value =
+        first_operand->info->value + second_operand->info->value;
   } else if (strcmp(op, "-") == 0) {
-    node->info->valor = operando1->info->valor - operando2->info->valor;
+    node->info->value =
+        first_operand->info->value - second_operand->info->value;
   } else if (strcmp(op, "*") == 0) {
-    node->info->valor = operando1->info->valor * operando2->info->valor;
+    node->info->value =
+        first_operand->info->value * second_operand->info->value;
   } else if (strcmp(op, "/") == 0) {
-    node->info->valor = operando1->info->valor / operando2->info->valor;
+    node->info->value =
+        first_operand->info->value / second_operand->info->value;
   } else if (strcmp(op, "%") == 0) {
-    node->info->valor = operando1->info->valor % operando2->info->valor;
+    node->info->value =
+        first_operand->info->value % second_operand->info->value;
   } else {
     exit(EXIT_FAILURE);
   }
 }
 
-void module_switch_case_programa(AST *node, va_list args) {
+void module_switch_case_program(AST *node, va_list args) {
   node->child_count = 1;
-  node->childs = malloc(sizeof(AST *));
-  node->childs[0] = va_arg(args, AST *); // $1: declaration_list, de tipo AST*
+  node->children = malloc(sizeof(AST *));
+  node->children[0] = va_arg(args, AST *); // $1: declaration_list, of type AST*
 }
 
 void module_switch_case_var_declaration(AST *node, va_list args) {
-  int tipoIdentificador = va_arg(
-      args, int); // $1: tipos, el enum de los tipos (internamente un int)
-  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  exit_if_already_declared(nombre);
-  exit_if_already_declared_locally(nombre);
+  int type_identifier =
+      va_arg(args, int); // $1: types, the enum of types (internally a int)
+  char *name = va_arg(args, char *); // $2: ID, the declared var name
+  exit_if_already_declared(name);
 
   AST *exp = va_arg(args, AST *);
-  exit_if_types_invalid_at_declaration(exp, tipoIdentificador, nombre);
+  exit_if_types_invalid_at_declaration(exp, type_identifier, name);
 
-  Symbol *simbol = malloc(sizeof(Symbol));
-  simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
-  simbol->nombre = nombre;          // identificador
-  simbol->categoria = S_VAR;
-  simbol->valor = exp->info->valor;
-  insert_symbol(simbol);
-  node->info = simbol;
+  Symbol *symbol = malloc(sizeof(Symbol));
+  symbol->t_var = type_identifier; // type (enum Types)
+  symbol->name = name;             // identifier
+  symbol->category = S_VAR;
+  symbol->value = exp->info->value;
+  insert_symbol(symbol);
+  node->info = symbol;
   node->child_count = 1;
-  node->childs = malloc(sizeof(AST *));
-  node->childs[0] = exp;
+  node->children = malloc(sizeof(AST *));
+  node->children[0] = exp;
 }
 
 void module_switch_case_method_declaration(AST *node, va_list args) {
-  int tipoIdentificador = va_arg(args, int);
-  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  exit_if_already_declared(nombre);
-  exit_if_already_declared_locally(nombre);
+  int type_identifier = va_arg(args, int);
+  char *name = va_arg(args, char *); // $2: ID, the declared var name
+  exit_if_already_declared(name);
 
-  Symbol *simbol = malloc(sizeof(Symbol));
-  simbol->tVar = tipoIdentificador; // tipo (enum Tipos)
-  simbol->nombre = nombre;          // identificador
-  simbol->categoria = S_FUNC;
+  Symbol *symbol = malloc(sizeof(Symbol));
+  symbol->t_var = type_identifier; // type (enum Types)
+  symbol->name = name;             // identifier
+  symbol->category = S_FUNC;
   AST *params = va_arg(args, AST *);
   if (params) {
-    simbol->num_params = params->child_count;
-    simbol->param_tipos = malloc(sizeof(Tipos) * simbol->num_params);
+    symbol->num_params = params->child_count;
+    symbol->parameter_types = malloc(sizeof(Types) * symbol->num_params);
 
-    for (int i = 0; i < simbol->num_params; i++) {
-      simbol->param_tipos[i] = params->childs[i]->info->tVar;
-      insert_symbol(params->childs[i]->info);
+    for (int i = 0; i < symbol->num_params; i++) {
+      symbol->parameter_types[i] = params->children[i]->info->t_var;
+      insert_symbol(params->children[i]->info);
     }
   }
-  AST *cuerpo = va_arg(args, AST *);
-  // TR_METHOD_DECLARATION que no tiene sentencia reservada Extern
-  if (cuerpo->type == TR_BLOCK && tipoIdentificador != T_VOID) {
+  AST *body = va_arg(args, AST *);
+  // TR_METHOD_DECLARATION that does not have Extern reserved keyword
+  if (body->type == TR_BLOCK && type_identifier != T_VOID) {
+    int sentences_count = body->children[1]->child_count;
+    int return_found = 0;
 
-    int sentencesCount = cuerpo->childs[1]->child_count;
-    int returnFound = 0;
+    for (int i = 0; i < sentences_count; i++) {
+      AST *sentence = body->children[1]->children[i];
 
-    for (int i = 0; i < sentencesCount; i++) {
-      AST *sentencia = cuerpo->childs[1]->childs[i];
+      if (sentence->type == TR_RETURN) {
+        return_found = 1;
+        exit_if_return_with_no_expression(sentence, name, i);
 
-      if (sentencia->type == TR_RETURN) {
-        returnFound = 1;
-        exit_if_return_with_no_expression(sentencia, nombre, i);
+        exit_if_invalid_return_type(sentence, type_identifier, name, i);
 
-        exit_if_invalid_return_type(sentencia, tipoIdentificador, nombre, i);
-
-        warning_if_unreachable_code(i, sentencesCount, nombre);
+        warning_if_unreachable_code(i, sentences_count, name);
       }
     }
 
-    exit_if_no_return_in_non_void_method(returnFound, nombre);
+    exit_if_no_return_in_non_void_method(return_found, name);
 
-    simbol->cuerpo = cuerpo;
+    symbol->body = body;
   }
-  insert_symbol(simbol);
-  node->info = simbol;
+  insert_symbol(symbol);
+  node->info = symbol;
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = params;
-  node->childs[1] = cuerpo;
+  node->children = malloc(sizeof(AST *) * 2);
+  node->children[0] = params;
+  node->children[1] = body;
 }
 
 void module_switch_case_param(AST *node, va_list args) {
-  int tipoIdentificador = va_arg(args, int);
-  char *nombre = va_arg(args, char *); // $2: ID, el nombre de la var declarada
-  Symbol *simbol = malloc(sizeof(Symbol));
-  simbol->tVar = tipoIdentificador;
-  simbol->nombre = nombre;
-  simbol->categoria = S_VAR;
-  simbol->valor = 0; // init value of 0 for params
-  insert_symbol(simbol);
-  node->info = simbol;
+  int type_identifier = va_arg(args, int);
+  char *name = va_arg(args, char *); // $2: ID, the declared var name
+  Symbol *symbol = malloc(sizeof(Symbol));
+  symbol->t_var = type_identifier;
+  symbol->name = name;
+  symbol->category = S_VAR;
+  symbol->value = 0; // init value of 0 for params
+  insert_symbol(symbol);
+  node->info = symbol;
 }
 
 void module_switch_case_param_list(AST *node, va_list args) {
   AST *param = va_arg(args, AST *);
   node->child_count = 1;
-  node->childs = malloc(sizeof(AST *));
-  node->childs[0] = param;
+  node->children = malloc(sizeof(AST *));
+  node->children[0] = param;
 }
 
 void module_switch_case_block(AST *node, va_list args) {
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
+  node->children = malloc(sizeof(AST *) * 2);
   // declaration list
-  node->childs[0] = va_arg(args, AST *);
-  // $3: statement_list, de tipo AST*
-  node->childs[1] = va_arg(args, AST *);
+  node->children[0] = va_arg(args, AST *);
+  // $3: statement_list, of type AST*
+  node->children[1] = va_arg(args, AST *);
 }
 
-void module_switch_case_asignacion(AST *node, va_list args) {
-  char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
-  exit_if_not_declared(nombre);
+void module_switch_case_assign(AST *node, va_list args) {
+  char *name = va_arg(args, char *); // $1: ID, the var name to assign
+  exit_if_not_declared(name);
 
-  // Intenta asignar local, si no lo encuentra lo busca global
-  Symbol *id = search_symbol_locally(nombre);
+  // Try to assign locally, if it doesn't found it, search globally
+  Symbol *id = search_symbol_locally(name);
   if (!id)
-    id = search_symbol_globally(nombre);
+    id = search_symbol_globally(name);
 
   node->info = id;
 
@@ -173,52 +179,52 @@ void module_switch_case_asignacion(AST *node, va_list args) {
 
   exit_if_invalid_types_at_assignment(exp, id);
 
-  id->valor = exp->info->valor;
+  id->value = exp->info->value;
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
+  node->children = malloc(sizeof(AST *) * 2);
 
   AST *id_ast = malloc(sizeof(AST));
   id_ast->type = TR_IDENTIFIER;
   id_ast->info = id;
   id_ast->child_count = 0;
-  id_ast->childs = NULL;
+  id_ast->children = NULL;
 
-  node->childs[0] = id_ast;
-  node->childs[1] = exp;
+  node->children[0] = id_ast;
+  node->children[1] = exp;
 }
 
 void module_switch_case_invocation(AST *node, va_list args) {
-  char *nombre = va_arg(args, char *); // $1: ID, el nombre de la var a asignar
+  char *name = va_arg(args, char *); // $1: ID, the var name to assign
 
-  exit_if_not_declared(nombre);
+  exit_if_not_declared(name);
 
-  // Intenta invocar local, si no lo encuentra lo busca global
-  Symbol *id = search_symbol_locally(nombre);
+  // Try to call locally, if it doesn't found it, search globally
+  Symbol *id = search_symbol_locally(name);
   if (!id)
-    id = search_symbol_globally(nombre);
+    id = search_symbol_globally(name);
 
   AST *args_invocation = va_arg(args, AST *);
   if (args_invocation != NULL) {
-    exit_if_invalid_amount_of_params(args_invocation, id, nombre);
+    exit_if_invalid_amount_of_params(args_invocation, id, name);
 
     for (int i = 0; i < id->num_params; i++) {
-      exit_if_missmatch_types_params_at_invocation(args_invocation, id, nombre,
+      exit_if_missmatch_types_params_at_invocation(args_invocation, id, name,
                                                    i);
     }
     node->child_count = 1;
-    node->childs = malloc(sizeof(AST *));
-    node->childs[0] = args_invocation;
+    node->children = malloc(sizeof(AST *));
+    node->children[0] = args_invocation;
   } else {
     node->child_count = 0;
-    node->childs = NULL;
+    node->children = NULL;
   }
   Symbol *info_invocation = malloc(sizeof(Symbol));
-  info_invocation->categoria = id->categoria;
-  info_invocation->cuerpo = id->cuerpo;
-  info_invocation->nombre = id->nombre;
+  info_invocation->category = id->category;
+  info_invocation->body = id->body;
+  info_invocation->name = id->name;
   info_invocation->num_params = id->num_params;
-  info_invocation->param_tipos = id->param_tipos;
-  info_invocation->tVar = id->tVar;
+  info_invocation->parameter_types = id->parameter_types;
+  info_invocation->t_var = id->t_var;
   node->info = info_invocation;
 }
 
@@ -226,191 +232,200 @@ void module_switch_case_if(AST *node, va_list args) {
   AST *condition = va_arg(args, AST *);
   exit_if_invalid_predicate_type(condition);
 
-  AST *cuerpo_declarations = va_arg(args, AST *);
-  AST *cuerpo_staments = va_arg(args, AST *);
-  AST *else_cuerpo = va_arg(args, AST *);
+  AST *body_declarations = va_arg(args, AST *);
+  AST *body_statements = va_arg(args, AST *);
+  AST *else_body = va_arg(args, AST *);
   node->child_count = 4;
-  node->childs = malloc(sizeof(AST *) * 3);
-  node->childs[0] = condition;
-  node->childs[1] = cuerpo_declarations;
-  node->childs[2] = cuerpo_staments;
-  node->childs[3] = else_cuerpo;
+  node->children = malloc(sizeof(AST *) * 3);
+  node->children[0] = condition;
+  node->children[1] = body_declarations;
+  node->children[2] = body_statements;
+  node->children[3] = else_body;
 }
 
-void module_switch_case_else_cuerpo(AST *node, va_list args) {
+void module_switch_case_else_body(AST *node, va_list args) {
   AST *declaration_list = va_arg(args, AST *);
-  AST *stament_list = va_arg(args, AST *);
+  AST *statement_list = va_arg(args, AST *);
 
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = declaration_list;
-  node->childs[1] = stament_list;
+  node->children = malloc(sizeof(AST *) * 2);
+  node->children[0] = declaration_list;
+  node->children[1] = statement_list;
 }
 
 void module_switch_case_while(AST *node, va_list args) {
   AST *condition = va_arg(args, AST *);
   exit_if_invalid_predicate_type(condition);
 
-  AST *cuerpo = va_arg(args, AST *);
+  AST *body = va_arg(args, AST *);
 
   node->child_count = 2;
-  node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = condition;
-  node->childs[1] = cuerpo;
+  node->children = malloc(sizeof(AST *) * 2);
+  node->children[0] = condition;
+  node->children[1] = body;
 }
 
 void module_switch_case_return(AST *node, va_list args) {
   if (node->child_count == 1) {
     AST *maybe_expr = va_arg(args, AST *);
-    node->childs = malloc(sizeof(AST *));
-    node->childs[0] = maybe_expr;
+    node->children = malloc(sizeof(AST *));
+    node->children[0] = maybe_expr;
   } else {
     node->child_count = 0;
-    node->childs = NULL;
+    node->children = NULL;
   }
 }
 
 void module_switch_case_id(AST *node, va_list args) {
-  char *nombre = va_arg(args, char *); // $1: ID, el nombre de la variable
-  exit_if_not_declared(nombre);
+  char *name = va_arg(args, char *); // $1: ID, the var name
+  exit_if_not_declared(name);
 
-  // Intenta buscar local, si no lo encuentra lo busca global
-  Symbol *id = search_symbol_locally(nombre);
+  // Try to search locally, if it doesn't found it, search globally
+  Symbol *id = search_symbol_locally(name);
   if (!id)
-    id = search_symbol_globally(nombre);
+    id = search_symbol_globally(name);
 
   node->info = id;
   node->child_count = 0;
-  node->childs = NULL;
+  node->children = NULL;
 }
 
-void module_switch_case_negacion_aritmetica(AST *node, va_list args) {
+void module_switch_case_arithmetic_negation(AST *node, va_list args) {
   AST *exp = va_arg(args, AST *);
   exit_if_unary_arithmetic_operator_mismatch_types(exp, "-");
 
   node->info = malloc(sizeof(Symbol));
-  node->info->tVar = T_INT;
-  node->info->valor = -(exp->info->valor);
+  node->info->t_var = T_INT;
+  node->info->value = -(exp->info->value);
   node->child_count = 1;
-  node->childs = malloc(sizeof(AST *));
-  node->childs[0] = exp;
+  node->children = malloc(sizeof(AST *));
+  node->children[0] = exp;
 }
 
-void module_switch_case_suma(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+void module_switch_case_addition(AST *node, va_list args) {
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "+";
-  exit_if_binary_arithmetic_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
 
-  allocate_binary_integer_node(node, operando1, operando2, op);
+  allocate_binary_integer_node(node, first_operand, second_operand, op);
 }
 
-void module_switch_case_resta(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+void module_switch_case_substraction(AST *node, va_list args) {
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "-";
-  exit_if_binary_arithmetic_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
 
-  allocate_binary_integer_node(node, operando1, operando2, op);
+  allocate_binary_integer_node(node, first_operand, second_operand, op);
 }
 
-void module_switch_case_multiplicacion(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+void module_switch_case_multiplication(AST *node, va_list args) {
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "*";
-  exit_if_binary_arithmetic_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
 
-  allocate_binary_integer_node(node, operando1, operando2, op);
+  allocate_binary_integer_node(node, first_operand, second_operand, op);
 }
 
 void module_switch_case_divition(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "/";
-  exit_if_binary_arithmetic_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
 
-  allocate_binary_integer_node(node, operando1, operando2, op);
+  allocate_binary_integer_node(node, first_operand, second_operand, op);
 }
 
 void module_switch_case_modulo(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "%";
-  exit_if_binary_arithmetic_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
 
-  allocate_binary_integer_node(node, operando1, operando2, op);
+  allocate_binary_integer_node(node, first_operand, second_operand, op);
 }
 
-void module_switch_case_negacion_logica(AST *node, va_list args) {
+void module_switch_case_logic_negation(AST *node, va_list args) {
   AST *exp = va_arg(args, AST *);
   exit_if_unary_boolean_operator_mismatch_types(exp, "!");
 
   node->info = malloc(sizeof(Symbol));
-  node->info->tVar = T_BOOL;
-  node->info->valor = !exp->info->valor;
-  node->info->categoria = exp->info->categoria;
+  node->info->t_var = T_BOOL;
+  node->info->value = !exp->info->value;
+  node->info->category = exp->info->category;
   node->child_count = 1;
-  node->childs = malloc(sizeof(AST *));
-  node->childs[0] = exp;
+  node->children = malloc(sizeof(AST *));
+  node->children[0] = exp;
 }
 
 void module_switch_case_less_than(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "<";
-  exit_if_binary_arithmetic_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
 
-  allocate_binary_boolean_node(node, operando1, operando2, op);
+  allocate_binary_boolean_node(node, first_operand, second_operand, op);
 }
 
 void module_switch_case_greater_than(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = ">";
-  exit_if_binary_arithmetic_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_arithmetic_operator_mismatch_types(first_operand,
+                                                    second_operand, op);
 
-  allocate_binary_boolean_node(node, operando1, operando2, op);
+  allocate_binary_boolean_node(node, first_operand, second_operand, op);
 }
 
 void module_switch_case_equal(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "==";
-  exit_if_operators_mismatch_types(operando1, operando2, op);
+  exit_if_operators_mismatch_types(first_operand, second_operand, op);
 
-  allocate_binary_boolean_node(node, operando1, operando2, op);
+  allocate_binary_boolean_node(node, first_operand, second_operand, op);
 }
 
 void module_switch_case_and(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "&&";
-  exit_if_binary_boolean_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_boolean_operator_mismatch_types(first_operand, second_operand,
+                                                 op);
 
-  allocate_binary_boolean_node(node, operando1, operando2, op);
+  allocate_binary_boolean_node(node, first_operand, second_operand, op);
 }
 
 void module_switch_case_or(AST *node, va_list args) {
-  AST *operando1 = va_arg(args, AST *);
-  AST *operando2 = va_arg(args, AST *);
+  AST *first_operand = va_arg(args, AST *);
+  AST *second_operand = va_arg(args, AST *);
   char *op = "||";
-  exit_if_binary_boolean_operator_mismatch_types(operando1, operando2, op);
+  exit_if_binary_boolean_operator_mismatch_types(first_operand, second_operand,
+                                                 op);
 
-  allocate_binary_boolean_node(node, operando1, operando2, op);
+  allocate_binary_boolean_node(node, first_operand, second_operand, op);
 }
 
 void module_switch_case_literal(AST *node, va_list args) {
   node->info = malloc(sizeof(Symbol));
-  node->info->tVar =
-      va_arg(args, int); // T_INT o T_BOOL, representado internamente como int
-  node->info->nombre = "TR_VALUE";
-  node->info->valor = va_arg(
-      args, int); // $1 si es valor numerico, 0 si es false o 1 si es true
+  node->info->t_var =
+      va_arg(args, int); // T_INT or T_BOOL, represented internally as a int
+  node->info->name = "TR_VALUE";
+  node->info->value = va_arg(
+      args, int); // $1 if its a numeric value, 0 if its false or 1 if its true
   node->child_count = 0;
 }
 
 void module_switch_case_arg_list(AST *node, va_list args) {
   node->child_count = 1;
-  node->childs = malloc(sizeof(AST *) * 2);
-  node->childs[0] = va_arg(args, AST *);
+  node->children = malloc(sizeof(AST *) * 2);
+  node->children[0] = va_arg(args, AST *);
 }

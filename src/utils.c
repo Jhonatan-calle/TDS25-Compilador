@@ -256,11 +256,11 @@ int create_output_file(const char *outfile) {
 }
 
 /**
- * "Tipos" Enum type to String
+ * "Types" Enum type to String
  *
  * Returns a string corresponding to the enum received.
  */
-const char *tipoDatoToStr(Tipos type) {
+const char *data_types_to_string(Types type) {
   switch (type) {
   case T_INT:
     return "INT";
@@ -274,11 +274,11 @@ const char *tipoDatoToStr(Tipos type) {
 }
 
 /**
- * "TipoNodo" Enum type to String
+ * "NodeType" Enum type to String
  *
  * Retuns a string corresponding to the enum received.
  */
-const char *tipoNodoToStr(TipoNodo t) {
+const char *node_type_to_string(NodeType t) {
   switch (t) {
   case TR_PROGRAM:
     return "TR_PROGRAM";

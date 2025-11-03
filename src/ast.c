@@ -1,13 +1,9 @@
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "../headers/ast.h"
 
-AST *init_node(TipoNodo type, int child_count) {
+AST *init_node(NodeType type, int child_count) {
   AST *node = malloc(sizeof(AST));
   if (!node) {
-    fprintf(stderr, "<<<<<Error: no se pudo reservar memoria para AST>>>>>\n");
+    fprintf(stderr, "<<<<<Error: could not allocate memory for AST>>>>>\n");
     exit(EXIT_FAILURE);
   }
 
@@ -15,42 +11,42 @@ AST *init_node(TipoNodo type, int child_count) {
   node->info = NULL;
   node->child_count = child_count;
   if (child_count > 0) {
-    node->childs = malloc(sizeof(AST *) * child_count);
-    if (!node->childs) {
+    node->children = malloc(sizeof(AST *) * child_count);
+    if (!node->children) {
       perror("malloc");
       exit(1);
     }
     for (int i = 0; i < child_count; i++)
-      node->childs[i] = NULL; // inicializar punteros
+      node->children[i] = NULL; // initialize pointers
   } else {
-    node->childs = NULL;
+    node->children = NULL;
   }
   return node;
 }
 
-AST *new_node(TipoNodo type, int child_count, ...) {
+AST *new_node(NodeType type, int child_count, ...) {
   AST *node = init_node(type, child_count);
 
   va_list args;
   va_start(args, child_count);
 
   switch (type) {
-  // Nodos de programa
+  // Program nodes
   case TR_PROGRAM:
-    module_switch_case_programa(node, args);
+    module_switch_case_program(node, args);
     break;
 
-  // Declaraciones de variables
+  // Variable declarations
   case TR_VAR_DECLARATION:
     module_switch_case_var_declaration(node, args);
     break;
 
-  // Declaraciones de métodos
+  // Method declarations
   case TR_METHOD_DECLARATION:
     module_switch_case_method_declaration(node, args);
     break;
 
-  // Parámetros
+  // Parameters
   case TR_PARAM:
     module_switch_case_param(node, args);
     break;
@@ -59,27 +55,27 @@ AST *new_node(TipoNodo type, int child_count, ...) {
     module_switch_case_param_list(node, args);
     break;
 
-  // Bloques de código
+  // Code blocks
   case TR_BLOCK:
     module_switch_case_block(node, args);
     break;
 
-  // Asignación e invocación
+  // Assignment and invocation
   case TR_ASSIGN:
-    module_switch_case_asignacion(node, args);
+    module_switch_case_assign(node, args);
     break;
 
   case TR_INVOCATION:
     module_switch_case_invocation(node, args);
     break;
 
-  // Control de flujo
+  // Flow control
   case TR_IF_STATEMENT:
     module_switch_case_if(node, args);
     break;
 
   case TR_ELSE_BODY:
-    module_switch_case_else_cuerpo(node, args);
+    module_switch_case_else_body(node, args);
     break;
 
   case TR_WHILE_STATEMENT:
@@ -90,25 +86,25 @@ AST *new_node(TipoNodo type, int child_count, ...) {
     module_switch_case_return(node, args);
     break;
 
-  // Operadores y expresiones
+  // Operators and expressions
   case TR_LOGIC_NEGATION:
-    module_switch_case_negacion_logica(node, args);
+    module_switch_case_logic_negation(node, args);
     break;
 
   case TR_ARITHMETIC_NEGATION:
-    module_switch_case_negacion_aritmetica(node, args);
+    module_switch_case_arithmetic_negation(node, args);
     break;
 
   case TR_ADDITION:
-    module_switch_case_suma(node, args);
+    module_switch_case_addition(node, args);
     break;
 
   case TR_SUBSTRACTION:
-    module_switch_case_resta(node, args);
+    module_switch_case_substraction(node, args);
     break;
 
   case TR_MULTIPLICATION:
-    module_switch_case_multiplicacion(node, args);
+    module_switch_case_multiplication(node, args);
     break;
 
   case TR_DIVITION:
@@ -152,33 +148,35 @@ AST *new_node(TipoNodo type, int child_count, ...) {
   case TR_SENTENCES_LIST:
   case TR_DECLARATION_LIST:
   case TR_EXTERN:
-    // char *str = strcat("Pass Case: ", tipoNodoToStr(type));
+    // char *str = strcat("Pass Case: ", node_type_to_string(type));
     // print_if_debug_flag(str);
     break;
   default:
-    fprintf(stderr, "Warning: Tipo de nodo no manejado en new_node: %s\n",
-            tipoNodoToStr(type));
-    node->childs = NULL;
+    fprintf(stderr, "Warning: Node type not handled in new_node: %s\n",
+            node_type_to_string(type));
+    node->children = NULL;
     break;
   }
 
   va_end(args);
 
   if (debug_flag) {
-    printf("[DEBUG NEW_NODE] Nodo %s finalizado\t\t nombre=%s\t child_count=%d\n",
-           tipoNodoToStr(type), (node->info) ? node->info->nombre : "_" , node->child_count);
+    printf("[DEBUG NEW_NODE] Node %s finalized\t\t name=%s\t child_count=%d\n",
+           node_type_to_string(type), (node->info) ? node->info->name : "_",
+           node->child_count);
   }
 
   return node;
 }
 
 AST *append_child(AST *list, AST *child) {
-  list->childs = realloc(list->childs, sizeof(AST *) * (list->child_count + 1));
-  if (!list->childs) {
-    fprintf(stderr, "Error realloc en append_child\n");
+  list->children =
+      realloc(list->children, sizeof(AST *) * (list->child_count + 1));
+  if (!list->children) {
+    fprintf(stderr, "Error realloc in append_child\n");
     exit(EXIT_FAILURE);
   }
-  list->childs[list->child_count] = child;
+  list->children[list->child_count] = child;
   list->child_count += 1;
 
   return list;
@@ -189,8 +187,8 @@ void free_ast(AST *node) {
     return;
 
   for (int i = 0; i < node->child_count; i++)
-    free_ast(node->childs[i]);
-  free(node->childs);
+    free_ast(node->children[i]);
+  free(node->children);
   free(node);
 }
 
@@ -206,13 +204,13 @@ void print_ast(AST *node, int depth) {
   if (node == NULL)
     return;
 
-  // Indentación visual
+  // Visual indentation
   for (int i = 0; i < depth; i++) {
     printf("  ");
   }
 
-  // Mostrar tipo de nodo
-  printf("%s", tipoNodoToStr(node->type));
+  // Print node type
+  printf("%s", node_type_to_string(node->type));
 
   if (node->child_count <= 0) {
     printf("\n");
@@ -224,18 +222,18 @@ void print_ast(AST *node, int depth) {
     return;
   }
 
-  // Si tiene información semántica, mostrarla
+  // If it has semantic information, print it
   if (node->info != NULL) {
-    printf(" [tVar=%s", tipoDatoToStr(node->info->tVar));
-    if (node->info->nombre != NULL)
-      printf(", nombre=%s", node->info->nombre);
-    printf(", valor=%d]", node->info->valor);
+    printf(" [t_var=%s", data_types_to_string(node->info->t_var));
+    if (node->info->name != NULL)
+      printf(", name=%s", node->info->name);
+    printf(", value=%d]", node->info->value);
   }
 
   printf("\n");
 
-  // Recursión sobre los hijos
+  // Recursion in the children
   for (int i = 0; i < node->child_count; i++) {
-    print_ast(node->childs[i], depth + 1);
+    print_ast(node->children[i], depth + 1);
   }
 }
