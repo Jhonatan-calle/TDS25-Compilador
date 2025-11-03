@@ -13,8 +13,11 @@ c-tds
 
 parser
 
-# File for assembly generated
-last_generated_assembly.ass
-
 # File for tokens generated
 last_generated_tokens.lex
+
+# File for ast generated
+last_generated_ast.sint
+
+# File for assembly generated
+last_generated_assembly.ass
