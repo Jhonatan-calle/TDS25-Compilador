@@ -110,6 +110,8 @@ void tac_while_statement_module(AST *root, Symbol *L_end, Symbol *exp) {
   L_end = malloc(sizeof(Symbol));
   L_start->name = "L_start";
   L_end->name = "L_end";
+  L_start->offset = 0;
+  L_end->offset = 0;
   insert_tac(TAC_LABEL, NULL, NULL, L_start); // 1. Label of start
   exp = get_operand(root->children[0]);       // 2. Condition (same to if)
   insert_tac(TAC_IFZ, exp, NULL, L_end);
