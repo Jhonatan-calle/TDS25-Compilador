@@ -19,21 +19,30 @@ if [ ! -f "$input_file" ]; then
     exit 1
 fi
 
-# Create a temporary .s file
-temp_file="$(mktemp /tmp/tmp_assembly_XXXXXX.s)"
+# Create an executable .s file
+assembly_file="${input_file%.ass}.s"
 
 # Copy contents from .ass to .s
-cp "$input_file" "$temp_file"
+cp "$input_file" "$assembly_file"
 
-echo "Compiling the assembly..."
-gcc "$temp_file" -o us_file || {
-    echo "Compilation failed."
-    rm -f "$temp_file"
+if [ ! -f "printInt.c" ]; then
+    echo "Error: Missing file printInt.c (needed for linking)"
+    exit 1
+fi
+
+echo "Compiling extern printInt..."
+gcc -c printInt.c -o printInt.o || {
+    echo "Error compiling printInt.c"
+    rm -f "$assembly_file"
     exit 1
 }
 
-# Remove temporary file
-rm -f "$temp_file"
+echo "Compiling and linking with extern printInt..."
+gcc "$assembly_file" printInt.o -o us_file.out || {
+    echo "Compilation failed."
+    rm -f "$assembly_file" printInt.o
+    exit 1
+}
 
 echo "Executing..."
-./us_file
+./us_file.out
