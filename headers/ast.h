@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "ast_modules.h"
@@ -10,19 +12,19 @@
 #include "utils.h"
 
 struct AST {
-  TipoNodo type;
-  Simbolo *info;
+  NodeType type;
+  Symbol *info;
   int child_count;
-  struct AST **childs;
+  struct AST **children;
 };
 
-// API del AST
-AST *new_node(TipoNodo type, int child_count, ...);
+// API of the AST
+AST *new_node(NodeType type, int child_count, ...);
 AST *append_child(AST *list, AST *child);
 void print_ast(AST *node, int depth);
-void print_ast_tree(AST *root);
+void print_ast_tree_if_debug_flag(AST *root);
 void free_ast(AST *node);
 
-const char *tipoDatoToStr(Tipos type);
-const char *tipoNodoToStr(TipoNodo t);
+const char *data_types_to_string(Types type);
+const char *node_type_to_string(NodeType t);
 #endif // AST_H

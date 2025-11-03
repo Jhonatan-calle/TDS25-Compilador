@@ -1,30 +1,34 @@
 #ifndef SYMBOLS_H
 #define SYMBOLS_H
 
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ast.h"
 #include "forward_declarations.h"
 #include "types.h"
 
-struct Simbolo {
-  MethodCategory categoria;
-  char *nombre; // identificador
-  Tipos tVar;   // tipo
-  int valor;    // valor ---SOLO VARIABLES
-  //-----SOLO METODOS
+struct Symbol {
+  int offset;
+  MethodCategory category;
+  char *name;  // name identifier
+  Types t_var; // type
+  int value;   // value --- Variables only
+  // --- Methods only
   int num_params;
-  Tipos *param_tipos;
-  AST *cuerpo;
+  Types *parameter_types;
+  AST *body;
 };
 
 struct ScopeNode {
-  Simbolo *info;
+  Symbol *info;
   ScopeNode *next;
   ScopeNode *prev;
 };
 
-// voy a usar ficiticio como frontera entre scopes
+// Using fictional as a border between scopes
 struct Scope {
   ScopeNode *head;
   ScopeNode *tail;
@@ -32,14 +36,11 @@ struct Scope {
 
 extern Scope *scope;
 
-void inicialize_scope();
-void insertar_simbolo(Simbolo *e);
-Simbolo *buscar_simbolo(char *nombre);
-Simbolo *crear_simbolo_variable(AST *node, AST *exp, Tipos tipoIdentificador,
-                                char *nombre);
-void liberar_tabla();
-void print_symtable();
-Simbolo *buscar_simbolo_local(char *nombre);
-void liberar_scope();
+void initialize_scope();
+void insert_symbol(Symbol *e);
+Symbol *search_symbol_globally(char *name);
+Symbol *search_symbol_locally(char *name);
+void free_scope();
+char *symbol_to_string(Symbol *s);
 
 #endif // SYMBOLS_H

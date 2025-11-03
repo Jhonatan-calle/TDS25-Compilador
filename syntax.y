@@ -17,7 +17,7 @@
 
 %union {
   struct AST *node;
-  Tipos tipo;
+  Types tipo;
   char *id;
   int val;
 }
@@ -28,7 +28,7 @@
 
 
 %type <node> program declaration_list declaration expr literal param  param_list_nonempty
-%type <node> statement_list arg_list statement param_list arg_list_nonempty cuerpo else_cuerpo
+%type <node> statement_list arg_list statement param_list arg_list_nonempty body else_body
 %token <id> ID
 %type <tipo> type
 %token T_EOS
@@ -54,9 +54,9 @@ program
   : R_PROGRAM '{' declaration_list '}' {
     $$ = new_node(TR_PROGRAM, 1, $3);
     root = $$;
-    print_ast_tree(root);
-    gen_assembly_if_assembly_flag(root);
+    print_ast_tree_if_debug_flag(root);
     gen_inter_code_if_inter_code_flag(root);
+    gen_assembly_if_assembly_flag(root);
     print_if_debug_flag("End of compilation.\n");
   }
   ;
@@ -75,14 +75,14 @@ declaration
     $$ = new_node(TR_VAR_DECLARATION, 1, $1, $2, $4);
   }
   | type ID '(' {
-    inicialize_scope();
-  } param_list ')' cuerpo {
-    liberar_scope();
+    initialize_scope();
+  } param_list ')' body {
+    free_scope();
     $$ = new_node(TR_METHOD_DECLARATION, 4, $1, $2, $5, $7);
   }
   ;
 
-cuerpo
+body
   :'{' declaration_list statement_list '}' {
     $$ = new_node(TR_BLOCK, 2, $2, $3);
   }
@@ -141,22 +141,22 @@ statement
     $$ = new_node(TR_ASSIGN, 2, $1, $3);
   }
   | ID '(' {
-    inicialize_scope();
+    initialize_scope();
   } arg_list ')' T_EOS {
     $$ = new_node(TR_INVOCATION, 2, $1, $4);
-    liberar_scope();
+    free_scope();
   }
   | R_IF '(' expr ')' R_THEN '{' {
-    inicialize_scope();
-  } declaration_list statement_list '}' else_cuerpo {
+    initialize_scope();
+  } declaration_list statement_list '}' else_body {
     $$ = new_node(TR_IF_STATEMENT, 4, $3, $8, $9, $11);
-    liberar_scope();
+    free_scope();
   }
   | R_WHILE '(' expr ')' '{' {
-    inicialize_scope();
+    initialize_scope();
   } declaration_list statement_list '}' {
     $$ = new_node(TR_WHILE_STATEMENT, 3, $3, $7, $8);
-    liberar_scope();
+    free_scope();
   }
   | R_RETURN expr T_EOS {
     $$ = new_node(TR_RETURN, 1, $2);
@@ -168,22 +168,22 @@ statement
     $$ = NULL;
   }
   | '{' {
-    inicialize_scope();
+    initialize_scope();
   } declaration_list statement_list '}' {
     $$ = new_node(TR_BLOCK, 2, $3, $4);
-    liberar_scope();
+    free_scope();
   }
   ;
 
-else_cuerpo
+else_body
   : %empty {
     $$ = NULL;
   }
   | R_ELSE '{' {
-    inicialize_scope();
+    initialize_scope();
   } declaration_list statement_list '}' {
     $$ = new_node(TR_ELSE_BODY, 2, $4, $5);
-    liberar_scope();
+    free_scope();
   }
 
 arg_list
@@ -209,9 +209,9 @@ expr
     $$ = new_node(TR_IDENTIFIER, 1, $1);
   }
   | ID '(' arg_list ')' {
-    inicialize_scope();
+    initialize_scope();
     $$ = new_node(TR_INVOCATION, 2, $1, $3);
-    liberar_scope();
+    free_scope();
   }
   | literal {
     $$ = $1;

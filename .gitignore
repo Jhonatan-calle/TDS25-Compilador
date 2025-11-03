@@ -12,3 +12,6 @@ c-tds
 *tab.h
 
 parser
+
+# Assembly generated for a file
+last_generated_assembly.s

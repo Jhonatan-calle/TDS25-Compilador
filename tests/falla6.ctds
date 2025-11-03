@@ -1,0 +1,9 @@
+program
+{
+  integer x = 4;
+  integer main(integer x)
+  {
+    integer x = 4;
+    return x;
+  }
+}

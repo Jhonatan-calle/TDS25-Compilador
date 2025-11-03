@@ -1,196 +1,190 @@
 #include "../headers/semantic_check.h"
 
-void exit_if_already_declared(char *nombre) {
-  Simbolo *id = buscar_simbolo_local(nombre);
+void exit_if_already_declared(char *name) {
+  Symbol *id = search_symbol_locally(name);
   if (id) {
-    fprintf(stderr, "<<<<<Error: identificador '%s' ya declarado>>>>>\n",
-            nombre);
+    fprintf(stderr, "[Semantic error]: Identifier '%s' already declared.\n",
+            name);
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_already_declared_locally(char *nombre) {
-  Simbolo *id = buscar_simbolo_local(nombre);
-  if (id) {
-    fprintf(stderr, "[Error semántico] Identificador '%s' ya declarado.\n",
-            nombre);
-    exit(EXIT_FAILURE);
-  }
-}
-
-void exit_if_not_declared(char *nombre) {
-  Simbolo *id = buscar_simbolo(nombre);
+void exit_if_not_declared(char *name) {
+  Symbol *id = search_symbol_globally(name);
   if (!id)
-    id = buscar_simbolo_local(nombre);
+    id = search_symbol_locally(name);
   if (!id) {
-    fprintf(stderr, "<<<<<Error: identificador '%s' no declarado>>>>>\n",
-            nombre);
+    fprintf(stderr, "[Semantic error]: Identifier '%s' not declared.\n", name);
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_types_invalid_at_declaration(AST *exp, Tipos tipoIdentificador,
-                                          char *nombre) {
-  if (exp->info->tVar != tipoIdentificador) {
+void exit_if_types_invalid_at_declaration(AST *exp, Types type_identifier,
+                                          char *name) {
+  if (exp->info->t_var != type_identifier) {
     fprintf(stderr,
-            "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
-            "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
-            nombre, tipoDatoToStr(tipoIdentificador),
-            tipoDatoToStr(exp->info->tVar));
+            "[Semantic error]: the identifier '%s' is of type '%s' "
+            "but a value of type '%s' is being assigned.\n",
+            name, data_types_to_string(type_identifier),
+            data_types_to_string(exp->info->t_var));
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_invalid_return_type(AST *sentencia, int tipoIdentificador,
-                                 char *nombre, int i) {
-  // Si no hay expresión en el return (info == NULL)
-  if (sentencia->child_count == 0) {
-    if (tipoIdentificador != T_VOID) {
+void exit_if_invalid_return_type(AST *sentence, int type_identifier, char *name,
+                                 int i) {
+  // If there is no expression in the return (info == NULL)
+  if (sentence->child_count == 0) {
+    if (type_identifier != T_VOID) {
       fprintf(stderr,
-              "Error semántico: la función '%s' (de tipo %s) tiene un `return` "
-              "sin expresión en la sentencia %d.\n",
-              nombre, tipoDatoToStr(tipoIdentificador), i + 1);
+              "[Semantic error]: the function '%s' (of type %s) has a `return` "
+              "without expression in the sentence %d.\n",
+              name, data_types_to_string(type_identifier), i + 1);
       exit(EXIT_FAILURE);
     } else {
-      // return sin expresión en función void -> válido
+      // return without expression in void function -> valid
       return;
     }
   }
 
-  if (sentencia->childs[0]->info->tVar != tipoIdentificador) {
+  if (sentence->children[0]->info->t_var != type_identifier) {
     fprintf(stderr,
-            "[Error semántico] En método '%s': "
-            "el 'return' #%d tiene "
-            "tipo '%s', "
-            "se esperaba '%s'.\n",
-            nombre, i + 1, tipoDatoToStr(sentencia->info->tVar),
-            tipoDatoToStr(tipoIdentificador));
+            "[Semantic error]: In method '%s': "
+            "the 'return' #%d has "
+            "type '%s', "
+            "expected '%s'.\n",
+            name, i + 1, data_types_to_string(sentence->info->t_var),
+            data_types_to_string(type_identifier));
     exit(EXIT_FAILURE);
   }
 }
 
-void warning_if_unreachable_code(int i, int sentencesCount, char *nombre) {
-  // Warning de código inalcanzable
-  if (i < sentencesCount - 1) {
+void warning_if_unreachable_code(int i, int sentences_count, char *name) {
+  // Warning of unreachable code
+  if (i < sentences_count - 1) {
     fprintf(stderr,
-            "[Warning semántico] En método '%s': código después del "
-            "'return' #%d es inalcanzable.\n",
-            nombre, i + 1);
+            "[Semantic warning]: In method '%s': code after "
+            "'return' #%d is unreachable.\n",
+            name, i + 1);
   }
 }
 
-void exit_if_no_return_in_non_void_method(int returnFound, char *nombre) {
-  // Error si no hay return en método no-void
-  if (!returnFound) {
+void exit_if_no_return_in_non_void_method(int return_found, char *name) {
+  // Error if there is no return in non-void method
+  if (!return_found) {
     fprintf(stderr,
-            "[Error semántico] Método '%s' no tiene un 'return' y es de "
-            "tipo no-void.\n",
-            nombre);
+            "[Semantic error]: Method '%s' does not have a 'return' and is of "
+            "non-void type.\n",
+            name);
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_invalid_types_at_assignment(AST *exp, Simbolo *id) {
-  if (exp->info->tVar != id->tVar) {
+void exit_if_invalid_types_at_assignment(AST *exp, Symbol *id) {
+  if (exp->info->t_var != id->t_var) {
     fprintf(stderr,
-            "<<<<<Error semántico: el identificador '%s' es de tipo '%s' "
-            "pero se intenta asignar un valor de tipo '%s'>>>>>\n",
-            id->nombre, tipoDatoToStr(id->tVar),
-            tipoDatoToStr(exp->info->tVar));
+            "[Semantic error]: the identifier '%s' is of type '%s' "
+            "but a value of type '%s' is being assigned.\n",
+            id->name, data_types_to_string(id->t_var),
+            data_types_to_string(exp->info->t_var));
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_invalid_amount_of_params(AST *params, Simbolo *id, char *nombre) {
+void exit_if_invalid_amount_of_params(AST *params, Symbol *id, char *name) {
   if (params->child_count != id->num_params) {
     fprintf(stderr,
-            "[Error semántico] El método '%s' espera %d parámetro(s), "
-            "pero se recibieron %d.\n",
-            nombre, id->num_params, params->child_count);
+            "[Semantic error]: The method '%s' expects %d parameter(s), "
+            "but %d were received.\n",
+            name, id->num_params, params->child_count);
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_missmatch_types_params_at_invocation(AST *params, Simbolo *id,
-                                                  char *nombre, int i) {
-  if (id->param_tipos[i] != params->childs[i]->info->tVar) {
+void exit_if_missmatch_types_params_at_invocation(AST *params, Symbol *id,
+                                                  char *name, int i) {
+  if (id->parameter_types[i] != params->children[i]->info->t_var) {
     fprintf(stderr,
-            "[Error semántico] En la llamada a '%s': "
-            "el parámetro #%d debería ser de tipo '%s', "
-            "pero se encontró '%s'.\n",
-            nombre, i + 1,
-            tipoDatoToStr(id->param_tipos[i]), // convierte enum Tipo a string
-            tipoDatoToStr(params->childs[i]->info->tVar));
+            "[Semantic error]: In the call to '%s': "
+            "parameter #%d should be of type '%s', "
+            "but '%s' was found.\n",
+            name, i + 1,
+            data_types_to_string(
+                id->parameter_types[i]), // converts enum Type to string
+            data_types_to_string(params->children[i]->info->t_var));
     exit(EXIT_FAILURE);
   }
 }
 
 void exit_if_invalid_predicate_type(AST *condition) {
-  if (condition->info->tVar != T_BOOL) {
+  if (condition->info->t_var != T_BOOL) {
     fprintf(stderr,
-            "[Error semántico] La condición debe ser de tipo "
-            "'boolean', pero se encontró '%s'.\n",
-            tipoDatoToStr(condition->info->tVar));
+            "[Semantic error]: The condition must be of type "
+            "'boolean', but '%s' was found.\n",
+            data_types_to_string(condition->info->t_var));
     exit(EXIT_FAILURE);
   }
 }
 
 void exit_if_unary_arithmetic_operator_mismatch_types(AST *exp, char *op) {
-  if (exp->info->tVar != T_INT) {
+  if (exp->info->t_var != T_INT) {
     fprintf(stderr,
-            "[Error semántico] el operador '%s' espera un entero "
-            "pero se encontró '%s'.\n",
-            op, tipoDatoToStr(exp->info->tVar));
+            "[Semantic error]: the operator '%s' expects an integer "
+            "but '%s' was found.\n",
+            op, data_types_to_string(exp->info->t_var));
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_binary_arithmetic_operator_mismatch_types(AST *operando1,
-                                                       AST *operando2,
+void exit_if_binary_arithmetic_operator_mismatch_types(AST *first_operand,
+                                                       AST *second_operand,
                                                        char *op) {
-  if (operando1->info->tVar != T_INT || operando2->info->tVar != T_INT) {
-    fprintf(stderr, "[Error semántico] el operador '%s' espera dos enteros",
+  if (first_operand->info->t_var != T_INT ||
+      second_operand->info->t_var != T_INT) {
+    fprintf(stderr, "[Semantic error]: the operator '%s' expects two integers",
             op);
     exit(EXIT_FAILURE);
   }
 }
 
 void exit_if_unary_boolean_operator_mismatch_types(AST *exp, char *op) {
-  if (exp->info->tVar != T_BOOL) {
+  if (exp->info->t_var != T_BOOL) {
     fprintf(stderr,
-            "[Error semántico] el operador '%s' espera una expresion boleana "
-            "pero se encontró '%s'.\n",
-            op, tipoDatoToStr(exp->info->tVar));
+            "[Semantic error]: the operator '%s' expects a boolean expression "
+            "but '%s' was found.\n",
+            op, data_types_to_string(exp->info->t_var));
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_binary_boolean_operator_mismatch_types(AST *operando1,
-                                                    AST *operando2, char *op) {
-  if (operando1->info->tVar != T_BOOL || operando2->info->tVar != T_BOOL) {
-    fprintf(stderr, "[Error semántico] el operador '%s' espera boleanos", op);
+void exit_if_binary_boolean_operator_mismatch_types(AST *first_operand,
+                                                    AST *second_operand,
+                                                    char *op) {
+  if (first_operand->info->t_var != T_BOOL ||
+      second_operand->info->t_var != T_BOOL) {
+    fprintf(stderr, "[Semantic error]: the operator '%s' expects booleans", op);
     exit(EXIT_FAILURE);
   }
 }
 
-void exit_if_operators_mismatch_types(AST *operando1, AST *operando2,
+void exit_if_operators_mismatch_types(AST *first_operand, AST *second_operand,
                                       char *op) {
-  if (operando1->info->tVar != operando2->info->tVar) {
+  if (first_operand->info->t_var != second_operand->info->t_var) {
     fprintf(
         stderr,
-        "[Error semántico] el operador '%s' espera operandos del mismo tipo",
+        "[Semantic error]: the operator '%s' expects operands of the same type",
         op);
     exit(EXIT_FAILURE);
   }
 }
 
-void  exit_if_return_with_no_expression(AST *sentencia, char *nombre, int i) {
-  if (sentencia->child_count <= 0 || sentencia->childs == NULL ||
-      sentencia->childs[0] == NULL) {
+void exit_if_return_with_no_expression(AST *sentence, char *name, int i) {
+  if (sentence->child_count <= 0 || sentence->children == NULL ||
+      sentence->children[0] == NULL) {
     fprintf(stderr,
-            "[Error semántico] En método '%s': 'return' #%d no tiene "
-            "expresión asociada.\n",
-            nombre, i + 1);
+            "[Semantic error]: In method '%s': 'return' #%d has no "
+            "associated expression.\n",
+            name, i + 1);
     exit(EXIT_FAILURE);
   }
 }

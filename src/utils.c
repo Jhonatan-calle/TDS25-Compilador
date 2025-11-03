@@ -18,9 +18,16 @@ void print_if_debug_flag(char *str) {
  * Calls gen_assembly_code function if global assembly flag is enabled
  */
 void gen_assembly_if_assembly_flag(AST *root) {
-  if (assembly_flag)
-    gen_assembly_code(root);
+  if (assembly_flag) {
+    init_tac_list();
+    gen_offsets(root);
+    gen_inter_code(root);
+    print_tac_list();
+    gen_assembly_code(tac_list->head);
+  }
 }
+
+
 
 /**
  * Generate the intermediate code
@@ -249,11 +256,11 @@ int create_output_file(const char *outfile) {
 }
 
 /**
- * "Tipos" Enum type to String
+ * "Types" Enum type to String
  *
  * Returns a string corresponding to the enum received.
  */
-const char *tipoDatoToStr(Tipos type) {
+const char *data_types_to_string(Types type) {
   switch (type) {
   case T_INT:
     return "INT";
@@ -267,11 +274,11 @@ const char *tipoDatoToStr(Tipos type) {
 }
 
 /**
- * "TipoNodo" Enum type to String
+ * "NodeType" Enum type to String
  *
  * Retuns a string corresponding to the enum received.
  */
-const char *tipoNodoToStr(TipoNodo t) {
+const char *node_type_to_string(NodeType t) {
   switch (t) {
   case TR_PROGRAM:
     return "TR_PROGRAM";

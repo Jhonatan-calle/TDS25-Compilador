@@ -4,6 +4,36 @@
 #include "ast.h"
 #include "symbols.h"
 #include "three_address_code.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/**
+ * Resets the global local and temp slots to zero
+ */
+void enter_function();
+
+/**
+ * Allocate a new local storage entry for the current function/frame.
+ * Return the new amount of local slots
+ */
+int alloc_local();
+
+/**
+ * Allocs a temp *after* the locals. Returns a unique negative offset
+ *    Stores the temp after the locals:
+ *    offset = -((local_slots + temp_index) * 8)
+ */
+int alloc_temp();
+
+/**
+ * Compute and assign memory offsets for AST declarations
+ *
+ * Go through the AST and compute the offsets for declarations,
+ * parameters and other entities that need storage.
+ */
+void gen_offsets(AST *root);
 
 /**
  * Assembly util function
@@ -15,10 +45,25 @@
 char *new_temp();
 
 /**
- * Assembly util function
- *
- * Called on the top level of the program
- * It constructs and prints a pseudo-assembly recursively
+ * Returns the next argument register available
  */
-char *gen_assembly_code(AST *node);
+const char *get_arg_register();
+
+/**
+ * Resets the use of argument registers (after a call)
+ */
+void reset_arg_registers();
+
+/**
+ * Assembly util function
+ * It generates the assembly code using the generated TAC List
+ */
+void gen_assembly_code(TAC *head);
+
+/**
+ * Assembly utility function
+ * Prints to the console the generated & saved assembly if the debug flag is set
+ */
+void print_generated_assembly_if_debug_flag();
+
 #endif
