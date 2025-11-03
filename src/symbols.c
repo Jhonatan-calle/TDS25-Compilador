@@ -1,21 +1,17 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "../headers/symbols.h"
 
 // Using extern variable defined in main.c
 extern Scope *scope;
 
 void initialize_scope() {
-  ScopeNode *frontera = malloc(sizeof(ScopeNode));
-  frontera->info = NULL; // marca de frontera
-  frontera->prev = scope->tail;
+  // border mark
+  ScopeNode *border = malloc(sizeof(ScopeNode));
+  border->info = NULL;
+  border->prev = scope->tail;
   if (scope->tail) {
-    scope->tail->next = frontera;
+    scope->tail->next = border;
   }
-  scope->tail = frontera;
+  scope->tail = border;
 }
 
 void insert_symbol(Symbol *e) {
@@ -30,27 +26,27 @@ void insert_symbol(Symbol *e) {
 }
 
 // Searchs in all the scope
-Symbol *search_symbol_globally(char *nombre) {
+Symbol *search_symbol_globally(char *name) {
   ScopeNode *aux = scope->tail;
   while (aux) {
-    if (aux->info && strcmp(aux->info->nombre, nombre) == 0) {
+    if (aux->info && strcmp(aux->info->name, name) == 0) {
       return aux->info;
     }
     aux = aux->prev;
   }
-  return NULL; // no encontrado
+  return NULL; // not found
 }
 
 // Searchs until the first boundary
-Symbol *search_symbol_locally(char *nombre) {
+Symbol *search_symbol_locally(char *name) {
   ScopeNode *aux = scope->tail;
   while (aux->info) {
-    if (strcmp(aux->info->nombre, nombre) == 0) {
+    if (strcmp(aux->info->name, name) == 0) {
       return aux->info;
     }
     aux = aux->prev;
   }
-  return NULL; // no encontrado
+  return NULL; // not found
 }
 
 void free_scope() {
@@ -61,7 +57,7 @@ void free_scope() {
     aux = scope->tail;
   }
   scope->tail = aux->prev;
-  free(aux); // elimino la frontera
+  free(aux); // free the border mark
 }
 
 char *symbol_to_string(Symbol *s) {
@@ -72,13 +68,13 @@ char *symbol_to_string(Symbol *s) {
   const char *cat_str = "UNKNOWN";
   // Heuristic/default names for category if enum values are available
   // Assume S_VAR / S_FUNC exist in MethodCategory (as in previous branches)
-  if (s->categoria == S_VAR)
+  if (s->category == S_VAR)
     cat_str = "VAR";
-  if (s->categoria == S_FUNC)
+  if (s->category == S_FUNC)
     cat_str = "FUNC";
 
-  const char *name = s->nombre ? s->nombre : "<anon>";
-  const char *type_str = tipoDatoToStr(s->tVar);
+  const char *name = s->name ? s->name : "<anon>";
+  const char *type_str = data_types_to_string(s->t_var);
 
   // Estimate capacity: base + per-parameter room
   int nparams = s->num_params;
@@ -97,7 +93,7 @@ char *symbol_to_string(Symbol *s) {
 
   size_t used = (size_t)written;
 
-  if (s->categoria == S_FUNC) {
+  if (s->category == S_FUNC) {
     // Function symbol description
     int w = snprintf(buf + used, cap - used, ", num_params=%d, param_types=[",
                      nparams);
@@ -105,8 +101,8 @@ char *symbol_to_string(Symbol *s) {
       used += (size_t)w;
 
     for (int i = 0; i < nparams; i++) {
-      const char *pt =
-          tipoDatoToStr(s->param_tipos ? s->param_tipos[i] : s->tVar);
+      const char *pt = data_types_to_string(
+          s->parameter_types ? s->parameter_types[i] : s->t_var);
       w = snprintf(buf + used, cap - used, "%s%s", (i == 0 ? "" : ","), pt);
       if (w > 0)
         used += (size_t)w;
@@ -121,12 +117,12 @@ char *symbol_to_string(Symbol *s) {
         buf = nbuf;
       }
     }
-    w = snprintf(buf + used, cap - used, "], body=%p)", (void *)s->cuerpo);
+    w = snprintf(buf + used, cap - used, "], body=%p)", (void *)s->body);
     if (w > 0)
       used += (size_t)w;
   } else {
     // Variable symbol description
-    int w = snprintf(buf + used, cap - used, ", value=%d)", s->valor);
+    int w = snprintf(buf + used, cap - used, ", value=%d)", s->value);
     if (w > 0)
       used += (size_t)w;
   }

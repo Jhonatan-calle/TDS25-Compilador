@@ -15,11 +15,10 @@ number                [0-9]+
 literals              [-]?{number}
 ID 			              {letter}({letter}|{number}|_)*
 endOfStatement        ;
-operatorDelimiter     [-+*<(){}=!]
+operatorDelimiter     [-+*<(){}=!\,]
 opEquals              "=="
 opAnd                 "&&"
 opOr                  "||"
-comma                 ,
 
 
 /* reserved keywords */
@@ -69,7 +68,6 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 {ID}                    { yylval.id = strdup(yytext); return ID; }
 
 {operatorDelimiter}     { return *yytext; }
-{comma}                 { return ','; }
 
 
 {ignoredRegex}          { /* comments, spaces, newlines and tabs */ }

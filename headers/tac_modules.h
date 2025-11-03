@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+char *get_if_name_labels(OpCode type);
 void tac_var_dec_module(AST *root, Symbol *exp);
 void tac_method_dec_module(AST *root);
 void tac_param_module(AST *root);

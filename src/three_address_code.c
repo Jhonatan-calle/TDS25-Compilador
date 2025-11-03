@@ -13,8 +13,8 @@ void gen_inter_code(AST *root) {
 
   switch (type) {
   case TR_PROGRAM:
-    // codigo para la lista de declaraciones;
-    gen_inter_code(root->childs[0]);
+    // Code for list of declarations
+    gen_inter_code(root->children[0]);
     break;
 
   case TR_VAR_DECLARATION:
@@ -113,7 +113,7 @@ void gen_inter_code(AST *root) {
   case TR_PARAM_LIST:
   case TR_SENTENCES_LIST:
     for (int i = 0; i < root->child_count; i++)
-      gen_inter_code(root->childs[i]);
+      gen_inter_code(root->children[i]);
     break;
 
   default:
@@ -121,8 +121,8 @@ void gen_inter_code(AST *root) {
   }
 
   if (debug_flag) {
-    printf("[DEBUG Gen_Inter_Code] Nodo %s finalizado, child_count=%d\n",
-           tipoNodoToStr(type), root->child_count);
+    printf("[DEBUG Gen_Inter_Code] Node %s finalized, child_count=%d\n",
+           node_type_to_string(type), root->child_count);
   }
 
   return;
@@ -168,7 +168,9 @@ void insert_tac(OpCode op, Symbol *op1, Symbol *op2, Symbol *result) {
   tac_list->count++;
 }
 
-// auxiliar: asegura que devuelve el símbolo asociado a un nodo
+/**
+ * Aux method: ensures that returns the Symbol aliasing a Node
+ */
 Symbol *get_operand(AST *exp) {
   if (exp->type == TR_IDENTIFIER || exp->type == TR_VALUE) {
     return exp->info;
@@ -178,7 +180,9 @@ Symbol *get_operand(AST *exp) {
   }
 }
 
-// Function to print the list of TAC instructions
+/**
+ * Function to print the list of TAC instructions
+ */
 void print_tac_list() {
   printf("\n===== INTERMEDIATE CODE (TAC) =====\n");
 
@@ -187,10 +191,10 @@ void print_tac_list() {
   } else {
     TAC *current = tac_list->head;
     while (current) {
-      const char *op_name = opcode_to_string(current->op); // función auxiliar
-      const char *arg1 = current->op1 ? current->op1->nombre : "_";
-      const char *arg2 = current->op2 ? current->op2->nombre : "_";
-      const char *res = current->result ? current->result->nombre : "_";
+      const char *op_name = opcode_to_string(current->op);
+      const char *arg1 = current->op1 ? current->op1->name : "_";
+      const char *arg2 = current->op2 ? current->op2->name : "_";
+      const char *res = current->result ? current->result->name : "_";
 
       printf("%-10s %-10s %-10s %-10s\n", op_name, arg1, arg2, res);
 
@@ -201,32 +205,38 @@ void print_tac_list() {
   printf("\n===================================\n");
 }
 
-// Method to insert into the TAC List for Unary Operations
+/**
+ * Method to insert into the TAC List for Unary Operations
+ */
 void unary_operation_insert(OpCode opcode, AST *node) {
-  Symbol *exp = get_operand(node->childs[0]);
+  Symbol *exp = get_operand(node->children[0]);
   Symbol *temp = malloc(sizeof(Symbol));
-  temp->nombre = new_temp();
+  temp->name = new_temp();
   temp->offset = node->info->offset;
 
   insert_tac(opcode, exp, NULL, temp);
 }
 
-// Method to insert into the TAC List for Binary Operations
+/**
+ * Method to insert into the TAC List for Binary Operations
+ */
 void binary_operation_insert(OpCode opcode, AST *node) {
-  AST *exp1 = node->childs[0];
-  AST *exp2 = node->childs[1];
+  AST *exp1 = node->children[0];
+  AST *exp2 = node->children[1];
 
   Symbol *op1 = get_operand(exp1);
   Symbol *op2 = get_operand(exp2);
 
   Symbol *temp = malloc(sizeof(Symbol));
-  temp->nombre = new_temp();
+  temp->name = new_temp();
   temp->offset = node->info->offset;
 
   insert_tac(opcode, op1, op2, temp);
 }
 
-// Helper to get string for op
+/**
+ * Helper to get string for op
+ */
 const char *opcode_to_string(OpCode op) {
   switch (op) {
   case TAC_UNKNOWN:

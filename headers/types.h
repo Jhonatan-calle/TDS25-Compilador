@@ -30,12 +30,11 @@ typedef enum {
   TR_IDENTIFIER,
   TR_VALUE,
   TR_ARG_LIST,
-
   TR_DECLARATION_LIST,
   TR_SENTENCES_LIST
-} TipoNodo;
+} NodeType;
 
-typedef enum { T_INT, T_BOOL, T_VOID } Tipos;
+typedef enum { T_INT, T_BOOL, T_VOID } Types;
 
 typedef enum { S_VAR, S_FUNC } MethodCategory;
 

@@ -17,7 +17,7 @@
 
 %union {
   struct AST *node;
-  Tipos tipo;
+  Types tipo;
   char *id;
   int val;
 }
@@ -28,7 +28,7 @@
 
 
 %type <node> program declaration_list declaration expr literal param  param_list_nonempty
-%type <node> statement_list arg_list statement param_list arg_list_nonempty cuerpo else_cuerpo
+%type <node> statement_list arg_list statement param_list arg_list_nonempty body else_body
 %token <id> ID
 %type <tipo> type
 %token T_EOS
@@ -76,13 +76,13 @@ declaration
   }
   | type ID '(' {
     initialize_scope();
-  } param_list ')' cuerpo {
+  } param_list ')' body {
     free_scope();
     $$ = new_node(TR_METHOD_DECLARATION, 4, $1, $2, $5, $7);
   }
   ;
 
-cuerpo
+body
   :'{' declaration_list statement_list '}' {
     $$ = new_node(TR_BLOCK, 2, $2, $3);
   }
@@ -148,7 +148,7 @@ statement
   }
   | R_IF '(' expr ')' R_THEN '{' {
     initialize_scope();
-  } declaration_list statement_list '}' else_cuerpo {
+  } declaration_list statement_list '}' else_body {
     $$ = new_node(TR_IF_STATEMENT, 4, $3, $8, $9, $11);
     free_scope();
   }
@@ -175,7 +175,7 @@ statement
   }
   ;
 
-else_cuerpo
+else_body
   : %empty {
     $$ = NULL;
   }

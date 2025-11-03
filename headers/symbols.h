@@ -1,7 +1,10 @@
 #ifndef SYMBOLS_H
 #define SYMBOLS_H
 
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ast.h"
 #include "forward_declarations.h"
@@ -9,14 +12,14 @@
 
 struct Symbol {
   int offset;
-  MethodCategory categoria;
-  char *nombre; // identificador
-  Tipos tVar;   // tipo
-  int valor;    // valor ---SOLO VARIABLES
-  //-----SOLO METODOS
+  MethodCategory category;
+  char *name;  // name identifier
+  Types t_var; // type
+  int value;   // value --- Variables only
+  // --- Methods only
   int num_params;
-  Tipos *param_tipos;
-  AST *cuerpo;
+  Types *parameter_types;
+  AST *body;
 };
 
 struct ScopeNode {
@@ -25,7 +28,7 @@ struct ScopeNode {
   ScopeNode *prev;
 };
 
-// voy a usar ficiticio como frontera entre scopes
+// Using fictional as a border between scopes
 struct Scope {
   ScopeNode *head;
   ScopeNode *tail;
@@ -35,8 +38,8 @@ extern Scope *scope;
 
 void initialize_scope();
 void insert_symbol(Symbol *e);
-Symbol *search_symbol_globally(char *nombre);
-Symbol *search_symbol_locally(char *nombre);
+Symbol *search_symbol_globally(char *name);
+Symbol *search_symbol_locally(char *name);
 void free_scope();
 char *symbol_to_string(Symbol *s);
 
