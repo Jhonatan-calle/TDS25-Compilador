@@ -1,5 +1,10 @@
 #include "../headers/three_address_code.h"
 
+// Output intermediate code (TAC) filename
+char *codinter_filename = "last_generated_tac.ci";
+// Local file handle to write intermediate code
+static FILE *codinter_out = NULL;
+
 // Global TAC list
 TACList *tac_list = NULL;
 
@@ -181,13 +186,54 @@ Symbol *get_operand(AST *exp) {
 }
 
 /**
- * Function to print the list of TAC instructions
+ * Creates and write a file containing the generated AST
+ * It will print it if the debug flag is set
  */
-void print_tac_list() {
-  printf("\n===== INTERMEDIATE CODE (TAC) =====\n");
+void save_tac_in_file() {
+  codinter_out = fopen(codinter_filename, "w");
+  if (!codinter_out) {
+    perror("Error opening three address code output file");
+  }
+  write_tac_list_in_file();
+  if (codinter_out) {
+    fclose(codinter_out);
+    codinter_out = NULL;
+    printf("Three Address Code generated at file: %s\n", codinter_filename);
+    print_generated_tac_if_debug_flag();
+  }
+}
+
+/**
+ * TAC utility function
+ * Prints to the console the generated & saved TAC if the debug flag is set
+ */
+void print_generated_tac_if_debug_flag() {
+  if (debug_flag) {
+    printf("[DEBUG] Generated TAC\n");
+    FILE *f;
+    int c;
+    if ((f = fopen(codinter_filename, "r")) == NULL) {
+      printf("error in opening a file");
+      exit(1);
+    }
+
+    while ((c = fgetc(f)) != EOF) {
+      printf("%c", c); // printing to the console
+    }
+
+    fclose(f);
+  }
+}
+
+/**
+ * Write the TAC into the global var filename
+ * @pre: save_tac_in_file must be the invoker of this function
+ */
+void write_tac_list_in_file() {
+  fprintf(codinter_out, "\n===== INTERMEDIATE CODE (TAC) =====\n");
 
   if (!tac_list || !tac_list->head) {
-    printf("No TAC instructions generated.\n");
+    fprintf(codinter_out, "No TAC instructions generated.\n");
   } else {
     TAC *current = tac_list->head;
     while (current) {
@@ -196,13 +242,14 @@ void print_tac_list() {
       const char *arg2 = current->op2 ? current->op2->name : "_";
       const char *res = current->result ? current->result->name : "_";
 
-      printf("%-10s %-10s %-10s %-10s\n", op_name, arg1, arg2, res);
+      fprintf(codinter_out, "%-10s %-10s %-10s %-10s\n", op_name, arg1, arg2,
+              res);
 
       current = current->next;
     }
   }
 
-  printf("\n===================================\n");
+  fprintf(codinter_out, "\n===================================\n");
 }
 
 /**

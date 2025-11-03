@@ -4,7 +4,7 @@ extern char *yytext;
 
 // Output tokens filename
 char *tokens_filename = "last_generated_tokens.lex";
-// Local file handle to write tokens; fallback to stdout if not set
+// Local file handle to write tokens
 static FILE *tokens_out = NULL;
 
 /**
@@ -27,7 +27,7 @@ void gen_assembly_if_assembly_flag(AST *root) {
     init_tac_list();
     gen_offsets(root);
     gen_inter_code(root);
-    print_tac_list();
+    save_tac_in_file();
     gen_assembly_code(tac_list->head);
   }
 }
@@ -41,7 +41,7 @@ void gen_inter_code_if_inter_code_flag(AST *root) {
   if (inter_code_flag) {
     init_tac_list();
     gen_inter_code(root);
-    print_tac_list();
+    save_tac_in_file();
   }
 }
 
