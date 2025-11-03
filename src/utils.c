@@ -2,6 +2,11 @@
 
 extern char *yytext;
 
+// Output tokens filename
+char *tokens_filename = "last_generated_tokens.lex";
+// Local file handle to write tokens; fallback to stdout if not set
+static FILE *tokens_out = NULL;
+
 /**
  * Print util function
  *
@@ -27,15 +32,13 @@ void gen_assembly_if_assembly_flag(AST *root) {
   }
 }
 
-
-
 /**
  * Generate the intermediate code
  *
  * Calls gen_inter_code function if global inter code flag is enabled
  */
 void gen_inter_code_if_inter_code_flag(AST *root) {
-  if (inter_code_flag){
+  if (inter_code_flag) {
     init_tac_list();
     gen_inter_code(root);
     print_tac_list();
@@ -124,62 +127,77 @@ int process_target_stage(const char *target) {
   if (strcmp(target, "scan") == 0) {
     // Lexical analysis
     printf("Stage: Scan\n");
+
+    tokens_out = fopen(tokens_filename, "w");
+    if (!tokens_out) {
+      perror("Error opening tokens output file");
+    }
+
     int token;
     while ((token = yylex()) != 0) {
       switch (token) {
       case V_NUM:
-        printf("TOKEN V_NUM: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN V_NUM: '%s'\n", yytext);
         break;
       case V_TRUE:
-        printf("TOKEN V_TRUE: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN V_TRUE: '%s'\n", yytext);
         break;
       case V_FALSE:
-        printf("TOKEN V_FALSE: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN V_FALSE: '%s'\n", yytext);
         break;
       case R_EXTERN:
-        printf("TOKEN R_EXTERN: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_EXTERN: '%s'\n", yytext);
         break;
       case R_BOOL:
-        printf("TOKEN R_BOOL: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_BOOL: '%s'\n", yytext);
         break;
       case R_INTEGER:
-        printf("TOKEN R_INTEGER: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_INTEGER: '%s'\n", yytext);
         break;
       case R_VOID:
-        printf("TOKEN R_VOID: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_VOID: '%s'\n", yytext);
         break;
       case R_RETURN:
-        printf("TOKEN R_RETURN: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_RETURN: '%s'\n", yytext);
         break;
       case R_WHILE:
-        printf("TOKEN R_WHILE: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_WHILE: '%s'\n", yytext);
         break;
       case R_PROGRAM:
-        printf("TOKEN R_PROGRAM: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_PROGRAM: '%s'\n", yytext);
         break;
       case R_IF:
-        printf("TOKEN R_IF: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_IF: '%s'\n", yytext);
         break;
       case R_THEN:
-        printf("TOKEN R_THEN: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN R_THEN: '%s'\n", yytext);
         break;
       case OP_EQ:
-        printf("TOKEN OP_EQ: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN OP_EQ: '%s'\n", yytext);
         break;
       case OP_AND:
-        printf("TOKEN OP_AND: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN OP_AND: '%s'\n", yytext);
         break;
       case OP_OR:
-        printf("TOKEN OP_OR: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN OP_OR: '%s'\n", yytext);
         break;
       case ID:
-        printf("TOKEN ID: '%s'\n", yytext);
+        fprintf(tokens_out, "TOKEN ID: '%s'\n", yytext);
         break;
       default:
-        printf("operatorDelimiter %d: '%s'\n", token, yytext);
+        fprintf(tokens_out, "operatorDelimiter %d: '%s'\n", token, yytext);
       }
     }
-    printf("EOF\n");
+    fprintf(tokens_out, "EOF\n");
+
+    // Close the output file if we opened one
+    if (tokens_out) {
+      fclose(tokens_out);
+      tokens_out = NULL;
+      printf("Tokens generated at file: %s\n", tokens_filename);
+      print_generated_tokens_if_debug_flag();
+    }
+
     return 0;
   } else if (strcmp(target, "parse") == 0) {
     // Syntax analysis
@@ -253,6 +271,27 @@ int create_output_file(const char *outfile) {
   }
 
   return 0;
+}
+
+/**
+ * Prints to the console the generated & saved tokens if the debug flag is set
+ */
+void print_generated_tokens_if_debug_flag() {
+  if (debug_flag) {
+    printf("[DEBUG] Generated Tokens\n");
+    FILE *f;
+    int c;
+    if ((f = fopen(tokens_filename, "r")) == NULL) {
+      printf("error in opening a file");
+      exit(1);
+    }
+
+    while ((c = fgetc(f)) != EOF) {
+      printf("%c", c); // printing to the console
+    }
+
+    fclose(f);
+  }
 }
 
 /**
