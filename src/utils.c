@@ -369,8 +369,12 @@ const char *node_type_to_string(NodeType t) {
     return "TR_MODULO";
   case TR_LESS_THAN:
     return "TR_LESS_THAN";
+  case TR_LESS_EQ_THAN:
+    return "TR_LESS_EQ_THAN";
   case TR_GREATER_THAN:
     return "TR_GREATER_THAN";
+  case TR_GREATER_EQ_THAN:
+    return "TR_GREATER_EQ_THAN";
   case TR_LOGIC_EQUAL:
     return "TR_LOGIC_EQUAL";
   case TR_AND:

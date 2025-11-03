@@ -124,8 +124,16 @@ AST *new_node(NodeType type, int child_count, ...) {
     module_switch_case_less_than(node, args);
     break;
 
+  case TR_LESS_EQ_THAN:
+    module_switch_case_less_eq_than(node, args);
+    break;
+
   case TR_GREATER_THAN:
     module_switch_case_greater_than(node, args);
+    break;
+
+  case TR_GREATER_EQ_THAN:
+    module_switch_case_greater_eq_than(node, args);
     break;
 
   case TR_LOGIC_EQUAL:

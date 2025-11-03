@@ -19,6 +19,8 @@ operatorDelimiter     [-+*<(){}=!\,]
 opEquals              "=="
 opAnd                 "&&"
 opOr                  "||"
+opLessEq              "<="
+opGreaterEq           ">="
 
 
 /* reserved keywords */
@@ -64,6 +66,8 @@ ignoredRegex          {commentUniline}|{commentMultiline}|{spacesNewlinesTabs}
 {opEquals}              { return OP_EQ; }
 {opAnd}                 { return OP_AND; }
 {opOr}                  { return OP_OR; }
+{opLessEq}              { return OP_LESS_EQ; }
+{opGreaterEq}           { return OP_GREATER_EQ; }
 
 {ID}                    { yylval.id = strdup(yytext); return ID; }
 
