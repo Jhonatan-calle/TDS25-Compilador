@@ -24,5 +24,6 @@ last_generated_tac.ci
 
 # File for assembly generated (-t assembly)
 last_generated_assembly.ass
+last_generated_assembly.s
 # Assembly executable
 us_file
