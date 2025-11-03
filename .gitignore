@@ -13,11 +13,14 @@ c-tds
 
 parser
 
-# File for tokens generated
+# File for tokens generated (-t scan)
 last_generated_tokens.lex
 
-# File for ast generated
+# File for ast generated (-t parse || -t codinter || -t assembly)
 last_generated_ast.sint
 
-# File for assembly generated
+# File for tac generated (-t codinter || -t assembly)
+last_generated_tac.ci
+
+# File for assembly generated (-t assembly)
 last_generated_assembly.ass
