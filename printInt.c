@@ -1,5 +1,3 @@
 #include <stdio.h>
 
-void printInt(long x) {
-    printf("%ld\n", x);
-}
+void printInt(int x) { printf("%d\n", x); }

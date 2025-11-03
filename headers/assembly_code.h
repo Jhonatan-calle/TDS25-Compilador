@@ -4,6 +4,7 @@
 #include "ast.h"
 #include "symbols.h"
 #include "three_address_code.h"
+#include "assembly_modules.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
