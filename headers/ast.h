@@ -22,8 +22,9 @@ struct AST {
 AST *new_node(NodeType type, int child_count, ...);
 AST *append_child(AST *list, AST *child);
 void print_ast(AST *node, int depth);
-void print_ast_tree_if_debug_flag(AST *root);
+void save_ast_in_file(AST *root);
 void free_ast(AST *node);
+void print_generated_ast_if_debug_flag();
 
 const char *data_types_to_string(Types type);
 const char *node_type_to_string(NodeType t);
