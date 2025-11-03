@@ -1,5 +1,10 @@
 #include "../headers/ast.h"
 
+// Output AST filename
+char *ast_filename = "last_generated_ast.sint";
+// Local file handle to write the AST
+static FILE *ast_out = NULL;
+
 AST *init_node(NodeType type, int child_count) {
   AST *node = malloc(sizeof(AST));
   if (!node) {
@@ -192,48 +197,82 @@ void free_ast(AST *node) {
   free(node);
 }
 
-void print_ast_tree_if_debug_flag(AST *root) {
-  if (debug_flag) {
-    printf("\n===== ABSTRACT SYNTAX TREE =====\n");
-    print_ast(root, 0);
-    printf("\n================================\n");
+void save_ast_in_file(AST *root) {
+  ast_out = fopen(ast_filename, "w");
+  if (!ast_out) {
+    perror("Error opening AST output file");
+  }
+  fprintf(ast_out, "\n===== ABSTRACT SYNTAX TREE =====\n");
+  write_ast_in_file(root, 0);
+  fprintf(ast_out, "\n================================\n");
+  // Close the output file if we opened one
+  if (ast_out) {
+    fclose(ast_out);
+    ast_out = NULL;
+    printf("Abstract Syntax Tree generated at file: %s\n", ast_filename);
+    print_generated_ast_if_debug_flag();
   }
 }
 
-void print_ast(AST *node, int depth) {
+/**
+ * AST utility function
+ * Prints to the console the generated & saved AST if the debug flag is set
+ */
+void print_generated_ast_if_debug_flag() {
+  if (debug_flag) {
+    printf("[DEBUG] Generated AST\n");
+    FILE *f;
+    int c;
+    if ((f = fopen(ast_filename, "r")) == NULL) {
+      printf("error in opening a file");
+      exit(1);
+    }
+
+    while ((c = fgetc(f)) != EOF) {
+      printf("%c", c); // printing to the console
+    }
+
+    fclose(f);
+  }
+}
+
+/**
+ * Write the AST into the global var filename
+ */
+void write_ast_in_file(AST *node, int depth) {
   if (node == NULL)
     return;
 
   // Visual indentation
   for (int i = 0; i < depth; i++) {
-    printf("  ");
+    fprintf(ast_out, "  ");
   }
 
   // Print node type
-  printf("%s", node_type_to_string(node->type));
+  fprintf(ast_out, "%s", node_type_to_string(node->type));
 
   if (node->child_count <= 0) {
-    printf("\n");
+    fprintf(ast_out, "\n");
     return;
   }
 
   if (node < 0) {
-    printf("Invalid Node!\n");
+    fprintf(ast_out, "Invalid Node!\n");
     return;
   }
 
   // If it has semantic information, print it
   if (node->info != NULL) {
-    printf(" [t_var=%s", data_types_to_string(node->info->t_var));
+    fprintf(ast_out, " [t_var=%s", data_types_to_string(node->info->t_var));
     if (node->info->name != NULL)
-      printf(", name=%s", node->info->name);
-    printf(", value=%d]", node->info->value);
+      fprintf(ast_out, ", name=%s", node->info->name);
+    fprintf(ast_out, ", value=%d]", node->info->value);
   }
 
-  printf("\n");
+  fprintf(ast_out, "\n");
 
   // Recursion in the children
   for (int i = 0; i < node->child_count; i++) {
-    print_ast(node->children[i], depth + 1);
+    write_ast_in_file(node->children[i], depth + 1);
   }
 }

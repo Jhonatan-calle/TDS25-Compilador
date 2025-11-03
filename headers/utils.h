@@ -22,3 +22,4 @@ void parse_method();
 void usage_message(const char *prog);
 int process_target_stage(const char *target);
 int create_output_file(const char *outfile);
+void print_generated_tokens_if_debug_flag();
