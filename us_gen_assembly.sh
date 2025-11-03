@@ -10,8 +10,8 @@ fi
 # Store the input file path
 input_file="$1"
 
-if [[ "$input_file" != *.s ]]; then
-    input_file="${input_file}.s"
+if [[ "$input_file" != *.ass ]]; then
+    input_file="${input_file}.ass"
 fi
 
 if [ ! -f "$input_file" ]; then
@@ -19,11 +19,21 @@ if [ ! -f "$input_file" ]; then
     exit 1
 fi
 
-echo "Compiling the assembly..."
-gcc -c "$input_file" -o us_file.o || exit 1
+# Create a temporary .s file
+temp_file="$(mktemp /tmp/tmp_assembly_XXXXXX.s)"
 
-echo "Linking..."
-gcc us_file.o -o us_file
+# Copy contents from .ass to .s
+cp "$input_file" "$temp_file"
+
+echo "Compiling the assembly..."
+gcc "$temp_file" -o us_file || {
+    echo "Compilation failed."
+    rm -f "$temp_file"
+    exit 1
+}
+
+# Remove temporary file
+rm -f "$temp_file"
 
 echo "Executing..."
 ./us_file
