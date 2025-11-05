@@ -1,0 +1,15 @@
+program {
+  integer fib(integer a) {
+    if (a <= 1) then {
+      return a;
+    } else {
+      return (fib(a - 1) + fib(a - 2));
+    }
+    return -1;
+  }
+  integer eq_assert(integer e, integer r) extern;
+  integer main() {
+    integer r = fib(3);
+    return eq_assert(2, r);
+  }
+}
