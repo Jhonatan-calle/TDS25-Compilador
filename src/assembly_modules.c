@@ -104,6 +104,24 @@ void assembly_module_less(FILE *asm_out, TAC *t) {
   fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
 }
 
+void assembly_module_less_eq(FILE *asm_out, TAC *t) {
+  reset_arg_registers();
+  // result = op1 <= op2
+  if (t->op1->offset == 0)
+    fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->value);
+  else
+    fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
+
+  if (t->op2->offset == 0)
+    fprintf(asm_out, "  cmp $%d, %%r10\n", t->op2->value);
+  else
+    fprintf(asm_out, "  cmp %d(%%rbp), %%r10\n", t->op2->offset);
+
+  fprintf(asm_out, "  setle %%al\n"); // set if less or equal (signed)
+  fprintf(asm_out, "  movzbq %%al, %%r10\n");
+  fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
+}
+
 void assembly_module_gr(FILE *asm_out, TAC *t) {
   reset_arg_registers();
   // result = op1 > op2
@@ -118,6 +136,24 @@ void assembly_module_gr(FILE *asm_out, TAC *t) {
     fprintf(asm_out, "  cmp %d(%%rbp), %%r10\n", t->op2->offset);
 
   fprintf(asm_out, "  setg %%al\n");
+  fprintf(asm_out, "  movzbq %%al, %%r10\n");
+  fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
+}
+
+void assembly_module_greater_eq(FILE *asm_out, TAC *t) {
+  reset_arg_registers();
+  // result = op1 >= op2
+  if (t->op1->offset == 0)
+    fprintf(asm_out, "  mov $%d, %%r10\n", t->op1->value);
+  else
+    fprintf(asm_out, "  mov %d(%%rbp), %%r10\n", t->op1->offset);
+
+  if (t->op2->offset == 0)
+    fprintf(asm_out, "  cmp $%d, %%r10\n", t->op2->value);
+  else
+    fprintf(asm_out, "  cmp %d(%%rbp), %%r10\n", t->op2->offset);
+
+  fprintf(asm_out, "  setge %%al\n"); // set if greater or equal (signed)
   fprintf(asm_out, "  movzbq %%al, %%r10\n");
   fprintf(asm_out, "  mov %%r10, %d(%%rbp)\n", t->result->offset);
 }
