@@ -79,9 +79,11 @@ declaration
   }
   | type ID '(' {
     initialize_scope();
-  } param_list ')' body {
+  } param_list ')' {
+    new_node(TR_METHOD_DECLARATION, 3, $1, $2, $5);
+  } body {
     free_scope();
-    $$ = new_node(TR_METHOD_DECLARATION, 4, $1, $2, $5, $7);
+    $$ = new_node(TR_METHOD_DECLARATION, 4, $1, $2, $5, $8);
   }
   ;
 
@@ -284,4 +286,3 @@ int main(int argc, char *argv[])
 {
 	return compiler_main(argc, argv);
 }
-

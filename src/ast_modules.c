@@ -112,27 +112,29 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
     }
   }
   AST *body = va_arg(args, AST *);
-  // TR_METHOD_DECLARATION that does not have Extern reserved keyword
-  if (body->type == TR_BLOCK && type_identifier != T_VOID) {
-    int sentences_count = body->children[1]->child_count;
-    int return_found = 0;
+  if (body) {
+    // TR_METHOD_DECLARATION that does not have Extern reserved keyword
+    if (body->type == TR_BLOCK && type_identifier != T_VOID) {
+      int sentences_count = body->children[1]->child_count;
+      int return_found = 0;
 
-    for (int i = 0; i < sentences_count; i++) {
-      AST *sentence = body->children[1]->children[i];
+      for (int i = 0; i < sentences_count; i++) {
+        AST *sentence = body->children[1]->children[i];
 
-      if (sentence->type == TR_RETURN) {
-        return_found = 1;
-        exit_if_return_with_no_expression(sentence, name, i);
+        if (sentence->type == TR_RETURN) {
+          return_found = 1;
+          exit_if_return_with_no_expression(sentence, name, i);
 
-        exit_if_invalid_return_type(sentence, type_identifier, name, i);
+          exit_if_invalid_return_type(sentence, type_identifier, name, i);
 
-        warning_if_unreachable_code(i, sentences_count, name);
+          warning_if_unreachable_code(i, sentences_count, name);
+        }
       }
+
+      exit_if_no_return_in_non_void_method(return_found, name);
+
+      symbol->body = body;
     }
-
-    exit_if_no_return_in_non_void_method(return_found, name);
-
-    symbol->body = body;
   }
   insert_symbol(symbol);
   node->info = symbol;
