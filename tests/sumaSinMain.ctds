@@ -1,0 +1,16 @@
+program
+{
+  integer sum(integer a, integer b) {
+    if (true) then {
+      if (true) then {
+        integer c = a + b;
+        return c;
+      } else {
+        return 0;
+      }
+    } else {
+      return 1;
+    }
+    // return 2;
+  }
+}
