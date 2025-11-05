@@ -114,21 +114,10 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   AST *body = va_arg(args, AST *);
   // TR_METHOD_DECLARATION that does not have Extern reserved keyword
   if (body->type == TR_BLOCK && type_identifier != T_VOID) {
-    int sentences_count = body->children[1]->child_count;
+
     int return_found = 0;
 
-    for (int i = 0; i < sentences_count; i++) {
-      AST *sentence = body->children[1]->children[i];
-
-      if (sentence->type == TR_RETURN) {
-        return_found = 1;
-        exit_if_return_with_no_expression(sentence, name, i);
-
-        exit_if_invalid_return_type(sentence, type_identifier, name, i);
-
-        warning_if_unreachable_code(i, sentences_count, name);
-      }
-    }
+    return_found = checksReturns(body->children[1], name, type_identifier);
 
     exit_if_no_return_in_non_void_method(return_found, name);
 
@@ -140,6 +129,75 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   node->children = malloc(sizeof(AST *) * 2);
   node->children[0] = params;
   node->children[1] = body;
+}
+
+int checksReturns(AST *root, char *name, int type_identifier) {
+  if (!root) return 0;
+  int sentences_count = root->child_count;
+  for (int i = 0; i < sentences_count; i++) {
+    AST *sentence = root->children[i];
+    if (!sentence) continue;
+
+    switch (sentence->type) {
+
+    case TR_RETURN:
+      exit_if_return_with_no_expression(sentence, name, i);
+      exit_if_invalid_return_type(sentence, type_identifier, name, i);
+      warning_if_unreachable_code(i, sentences_count, name);
+      return 1;
+
+    case TR_IF_STATEMENT:
+      // asegurarse de que existen los children esperados
+      if (sentence->child_count < 3) return 0;
+      AST *if_stmt_list = sentence->children[2];
+      if (!if_stmt_list) return 0;
+      int if_count = if_stmt_list->child_count;
+
+      // número total: cláusula if + lo que viene después en el block
+      int tail_count = sentences_count - (i + 1);
+      int branch_if_count = if_count + tail_count;
+      AST *branch_if = init_node(TR_AUXILIAR_NODE, branch_if_count);
+      // reservar explícitamente el array de children
+      branch_if->children = malloc(sizeof(AST *) * branch_if_count);
+      if (!branch_if->children) { perror("malloc"); exit(EXIT_FAILURE); }
+
+      // copiar body del if al inicio
+      for (int k = 0; k < if_count; k++) {
+        branch_if->children[k] = if_stmt_list->children[k];
+      }
+      // copiar el resto de sentencias después del if (tail)
+      for (int k = 0; k < tail_count; k++) {
+        branch_if->children[if_count + k] = root->children[i + 1 + k];
+      }
+
+      // si hay else
+      if (sentence->child_count > 3 && sentence->children[3]) {
+        AST *else_block = sentence->children[3];
+        if (else_block->child_count < 2) return checksReturns(branch_if, name, type_identifier);
+        AST *else_stmt_list = else_block->children[1];
+        if (!else_stmt_list) return checksReturns(branch_if, name, type_identifier);
+        int else_count = else_stmt_list->child_count;
+        int branch_else_count = else_count + tail_count;
+        AST *branch_else = init_node(TR_AUXILIAR_NODE, branch_else_count);
+        branch_else->children = malloc(sizeof(AST *) * branch_else_count);
+        if (!branch_else->children) { perror("malloc"); exit(EXIT_FAILURE); }
+
+        for (int k = 0; k < else_count; k++)
+          branch_else->children[k] = else_stmt_list->children[k];
+        for (int k = 0; k < tail_count; k++)
+          branch_else->children[else_count + k] = root->children[i + 1 + k];
+
+        return checksReturns(branch_if, name, type_identifier) &&
+               checksReturns(branch_else, name, type_identifier);
+      }
+
+      return checksReturns(branch_if, name, type_identifier);
+
+    default:
+      break;
+    }
+  }
+  return 0;
 }
 
 void module_switch_case_param(AST *node, va_list args) {
@@ -242,7 +300,7 @@ void module_switch_case_if(AST *node, va_list args) {
   AST *body_statements = va_arg(args, AST *);
   AST *else_body = va_arg(args, AST *);
   node->child_count = 4;
-  node->children = malloc(sizeof(AST *) * 3);
+  node->children = malloc(sizeof(AST *) * 4);
   node->children[0] = condition;
   node->children[1] = body_declarations;
   node->children[2] = body_statements;
