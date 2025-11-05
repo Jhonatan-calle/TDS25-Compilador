@@ -1,0 +1,18 @@
+program
+{
+  integer facorial(integer n ){
+    if (n < 0) then
+    { 
+        return -1;
+    }
+    if (n == 0) then
+    {
+        return 1;
+    }
+    return -1
+  }
+  void main(integer x){
+    integer n = 5;
+    printInt(n);
+  }
+}
