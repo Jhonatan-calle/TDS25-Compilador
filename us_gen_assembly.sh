@@ -30,6 +30,11 @@ if [ ! -f "printInt.c" ]; then
     exit 1
 fi
 
+if [ ! -f "eq_assert.c" ]; then
+    echo "Error: Missing file eq_assert.c (needed for linking)"
+    exit 1
+fi
+
 echo "Compiling extern printInt..."
 gcc -c printInt.c -o printInt.o || {
     echo "Error compiling printInt.c"
@@ -37,10 +42,17 @@ gcc -c printInt.c -o printInt.o || {
     exit 1
 }
 
-echo "Compiling and linking with extern printInt..."
-gcc "$assembly_file" printInt.o -o us_file.out || {
+echo "Compiling extern eq_assert..."
+gcc -c eq_assert.c -o eq_assert.o || {
+    echo "Error compiling printInt.c"
+    rm -f "$assembly_file"
+    exit 1
+}
+
+echo "Compiling and linking with extern printInt & eq_assert..."
+gcc "$assembly_file" printInt.o eq_assert.o -o us_file.out || {
     echo "Compilation failed."
-    rm -f "$assembly_file" printInt.o
+    rm -f "$assembly_file" printInt.o eq_assert.o
     exit 1
 }
 
