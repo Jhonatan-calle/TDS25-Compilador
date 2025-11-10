@@ -1,0 +1,9 @@
+program
+{
+  integer bar = 5;
+  bool bar = true;
+  void main()
+  {
+    return;
+  }
+}

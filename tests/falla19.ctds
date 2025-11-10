@@ -1,0 +1,13 @@
+program
+{
+  integer foo()
+  {
+    return 0;
+  }
+
+  integer bar()
+  {
+    integer x = foo();
+    return foo;
+  }
+}

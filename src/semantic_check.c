@@ -118,6 +118,20 @@ void exit_if_invoking_a_variable(AST *exp) {
   }
 }
 
+void exit_if_not_invoking_a_function(AST *exp) {
+  if (exp->info == NULL) {
+    fprintf(stderr,
+            "[Semantic error]: invalid function call (unknown symbol)\n");
+    exit(EXIT_FAILURE);
+  }
+  if (exp->info->category == S_FUNC && exp->type != TR_INVOCATION) {
+    fprintf(stderr,
+            "[Semantic error]: tried to use the function '%s' without calling it.\n",
+            exp->info->name);
+    exit(EXIT_FAILURE);
+  }
+}
+
 void exit_if_invalid_amount_of_params(AST *params, Symbol *id, char *name) {
   if (params->child_count != id->num_params) {
     fprintf(stderr,
