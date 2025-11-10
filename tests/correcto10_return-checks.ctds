@@ -17,5 +17,7 @@ program
       return 1;
     }
     return 1;
+    ifelse = false;
+    ifelse = !ifelse;
   }
 }
