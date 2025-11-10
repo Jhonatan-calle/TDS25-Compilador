@@ -1,0 +1,8 @@
+program
+{
+  integer bar() extern;
+  integer main()
+  {
+    return bar();
+  }
+}
