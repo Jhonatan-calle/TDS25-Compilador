@@ -91,6 +91,33 @@ void exit_if_invalid_types_at_assignment(AST *exp, Symbol *id) {
   }
 }
 
+void exit_if_assigning_a_function(Symbol *id) {
+  if (id->category == S_FUNC) {
+    fprintf(stderr,
+            "[Semantic error]: the identifier '%s' is a Function "
+            "and cannot be assigned.\n",
+            id->name);
+    exit(EXIT_FAILURE);
+  }
+}
+
+void exit_if_invoking_a_variable(AST *exp) {
+  if (exp->type == TR_INVOCATION) {
+    if (exp->info == NULL) {
+      fprintf(stderr,
+              "[Semantic error]: invalid function call (unknown symbol)\n");
+      exit(EXIT_FAILURE);
+    }
+    if (exp->info->category != S_FUNC) {
+      fprintf(stderr,
+              "[Semantic error]: tried to call '%s' but it is a variable "
+              "and not a function.\n",
+              exp->info->name);
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
 void exit_if_invalid_amount_of_params(AST *params, Symbol *id, char *name) {
   if (params->child_count != id->num_params) {
     fprintf(stderr,
