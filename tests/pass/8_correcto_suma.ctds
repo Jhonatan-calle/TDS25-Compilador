@@ -1,5 +1,7 @@
 program
 {
+  integer eq_assert(integer expected, integer result) extern;
+  void printInt(integer x) extern;
   void main()
   {
     // integer x = 0;
@@ -10,6 +12,8 @@ program
     integer z = 2;  // 8*2
     integer w = 3;
     integer res = y + z + w;  // 8*3 el y + z me da otro offset
+    printInt(res);
+    eq_assert(res, 6);
     return;
   }
 }
