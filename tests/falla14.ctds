@@ -1,0 +1,9 @@
+program
+{
+  void main()
+  {
+    integer x = -1;
+    integer y = -2;
+    x = y();
+  }
+}
