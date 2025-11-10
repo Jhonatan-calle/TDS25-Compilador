@@ -1,0 +1,4 @@
+program
+{
+  void bar = 5;
+}
