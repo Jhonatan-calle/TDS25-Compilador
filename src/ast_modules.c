@@ -240,6 +240,8 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 void module_switch_case_param(AST *node, va_list args) {
   int type_identifier = va_arg(args, int);
   char *name = va_arg(args, char *); // $2: ID, the declared var name
+  exit_if_already_declared(name);
+
   Symbol *symbol = malloc(sizeof(Symbol));
   symbol->t_var = type_identifier;
   symbol->name = name;

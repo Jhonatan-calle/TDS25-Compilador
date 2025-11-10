@@ -1,0 +1,13 @@
+program
+{
+  integer bar = 5;
+  bool foo(integer bar, bool bar)
+  {
+    return true;
+  }
+  void main()
+  {
+    foo(bar, true);
+    return;
+  }
+}
