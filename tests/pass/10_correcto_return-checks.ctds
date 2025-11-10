@@ -12,7 +12,6 @@ program
     {
       integer x = -2;
       integer y = --3;
-
       integer elsethen = -x - -y;
       return 1;
     }

@@ -4,6 +4,7 @@ program
   void main()
   {
     bool ifelse = true;
+    integer eq_assert(integer expected, integer result) extern;
     if (ifelse) then
     {
       return;
@@ -14,6 +15,11 @@ program
       integer y = --3;
 
       integer elsethen = -x - -y;
+      // (-2) - -(--3)
+      // (-2) - -(3)
+      // (-2) + 3
+      // 3 - 2
+      eq_assert(1, elsethen)
       return;
     }
   }

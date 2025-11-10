@@ -1,0 +1,8 @@
+program
+{
+  integer fun() extern;
+  integer main()
+  {
+    return fun();
+  }
+}

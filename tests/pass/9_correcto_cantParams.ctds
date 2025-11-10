@@ -1,0 +1,36 @@
+program
+{
+  integer eq_assert(integer expected, integer result) extern;
+  void printInt(integer x) extern;
+  integer op(integer x ,
+              integer y ,
+              integer z,
+              integer a,
+              integer b,
+              integer c,
+              integer d) {
+      return 1+x;
+  }
+  integer op2(integer x , integer y , integer z) {
+      return (x + y)*z;
+  }
+  integer get_integer(){
+      return 1;
+  }
+  integer main() {
+      integer y = 0;
+      y = op(1,2,3,4,5,6,7);  // y == 2
+      y = op2(y,3,6);
+      // y == (2 + 3) * 6 == 30
+      printInt(op2(y,3,6));
+      printInt(y);
+      if (y == 1) then
+      {
+          printInt(1);
+      } else {
+          printInt(0);
+      }
+      eq_assert(30, y);
+      return -1;
+  }
+}

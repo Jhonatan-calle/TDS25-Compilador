@@ -1,6 +1,7 @@
 program
 {
   integer whiletrue = 1;
+  integer eq_assert(integer expected, integer result) extern;
   void main()
   {
     bool ifelse = true;
@@ -14,6 +15,7 @@ program
       integer y = 3;
 
       integer elsethen = x + y;
+      eq_assert(5, elsethen);
       return;
     }
   }
