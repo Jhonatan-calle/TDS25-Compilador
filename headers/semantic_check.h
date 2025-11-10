@@ -12,6 +12,7 @@ void exit_if_no_return_in_non_void_method(int return_found, char *name);
 void exit_if_invalid_types_at_assignment(AST *exp, Symbol *id);
 void exit_if_assigning_a_function(Symbol *id);
 void exit_if_invoking_a_variable(AST *exp);
+void exit_if_not_invoking_a_function(AST *exp);
 void exit_if_invalid_amount_of_params(AST *params, Symbol *id, char *name);
 void exit_if_missmatch_types_params_at_invocation(AST *params, Symbol *id,
                                                   char *name, int i);

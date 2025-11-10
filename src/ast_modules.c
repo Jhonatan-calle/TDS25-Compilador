@@ -184,6 +184,7 @@ void module_switch_case_var_declaration(AST *node, va_list args) {
   AST *exp = va_arg(args, AST *);
 
   exit_if_invoking_a_variable(exp);
+  exit_if_not_invoking_a_function(exp);
   exit_if_types_invalid_at_declaration(exp, type_identifier, name);
 
   Symbol *symbol = malloc(sizeof(Symbol));
@@ -282,6 +283,7 @@ void module_switch_case_assign(AST *node, va_list args) {
 
   exit_if_assigning_a_function(id);
   exit_if_invoking_a_variable(exp);
+  exit_if_not_invoking_a_function(exp);
   exit_if_invalid_types_at_assignment(exp, id);
 
   id->value = exp->info->value;
@@ -373,6 +375,8 @@ void module_switch_case_while(AST *node, va_list args) {
 void module_switch_case_return(AST *node, va_list args) {
   if (node->child_count == 1) {
     AST *maybe_expr = va_arg(args, AST *);
+    exit_if_invoking_a_variable(maybe_expr);
+    exit_if_not_invoking_a_function(maybe_expr);
     node->children = malloc(sizeof(AST *));
     node->children[0] = maybe_expr;
   } else {
