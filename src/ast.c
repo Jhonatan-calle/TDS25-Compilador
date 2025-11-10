@@ -5,30 +5,6 @@ char *ast_filename = "last_generated_ast.sint";
 // Local file handle to write the AST
 static FILE *ast_out = NULL;
 
-AST *init_node(NodeType type, int child_count) {
-  AST *node = malloc(sizeof(AST));
-  if (!node) {
-    fprintf(stderr, "<<<<<Error: could not allocate memory for AST>>>>>\n");
-    exit(EXIT_FAILURE);
-  }
-
-  node->type = type;
-  node->info = NULL;
-  node->child_count = child_count;
-  if (child_count > 0) {
-    node->children = malloc(sizeof(AST *) * child_count);
-    if (!node->children) {
-      perror("malloc");
-      exit(1);
-    }
-    for (int i = 0; i < child_count; i++)
-      node->children[i] = NULL; // initialize pointers
-  } else {
-    node->children = NULL;
-  }
-  return node;
-}
-
 AST *new_node(NodeType type, int child_count, ...) {
   AST *node = init_node(type, child_count);
 

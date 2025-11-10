@@ -33,7 +33,8 @@ typedef enum {
   TR_VALUE,
   TR_ARG_LIST,
   TR_DECLARATION_LIST,
-  TR_SENTENCES_LIST
+  TR_SENTENCES_LIST,
+  TR_AUXILIAR_NODE
 } NodeType;
 
 typedef enum { T_INT, T_BOOL, T_VOID } Types;

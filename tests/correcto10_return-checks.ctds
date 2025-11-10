@@ -1,0 +1,23 @@
+program
+{
+  integer whiletrue = 1;
+  integer main()
+  {
+    bool ifelse = true;
+    if (ifelse) then
+    {
+        ifelse = true;
+    }
+    else
+    {
+      integer x = -2;
+      integer y = --3;
+
+      integer elsethen = -x - -y;
+      return 1;
+    }
+    return 1;
+    ifelse = false;
+    ifelse = !ifelse;
+  }
+}

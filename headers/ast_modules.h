@@ -9,11 +9,12 @@
 
 void set_info_value_depending_operator(AST *node, AST *first_operand,
                                        AST *second_operand, char *op);
-void allocate_binary_boolean_node(AST *node, AST *first_operand, AST *second_operand,
-                                  char *op);
-void allocate_binary_integer_node(AST *node, AST *first_operand, AST *second_operand,
-                                  char *op);
-
+void allocate_binary_boolean_node(AST *node, AST *first_operand,
+                                  AST *second_operand, char *op);
+void allocate_binary_integer_node(AST *node, AST *first_operand,
+                                  AST *second_operand, char *op);
+AST *init_node(NodeType type, int child_count);
+int checks_returns(AST *root, char *name, int type_identifier);
 void module_switch_case_program(AST *node, va_list args);
 void module_switch_case_var_declaration(AST *node, va_list args);
 void module_switch_case_method_declaration(AST *node, va_list args);
