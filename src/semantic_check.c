@@ -91,6 +91,16 @@ void exit_if_invalid_types_at_assignment(AST *exp, Symbol *id) {
   }
 }
 
+void exit_if_assigning_a_function(Symbol *id) {
+  if (id->category == S_FUNC) {
+    fprintf(stderr,
+            "[Semantic error]: the identifier '%s' is a Function "
+            "and cannot be assigned.\n",
+            id->name);
+    exit(EXIT_FAILURE);
+  }
+}
+
 void exit_if_invalid_amount_of_params(AST *params, Symbol *id, char *name) {
   if (params->child_count != id->num_params) {
     fprintf(stderr,

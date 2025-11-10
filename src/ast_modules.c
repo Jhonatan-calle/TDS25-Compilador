@@ -276,6 +276,7 @@ void module_switch_case_assign(AST *node, va_list args) {
 
   AST *exp = va_arg(args, AST *);
 
+  exit_if_assigning_a_function(id);
   exit_if_invalid_types_at_assignment(exp, id);
 
   id->value = exp->info->value;
