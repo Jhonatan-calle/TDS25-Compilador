@@ -14,6 +14,7 @@ void allocate_binary_boolean_node(AST *node, AST *first_operand,
 void allocate_binary_integer_node(AST *node, AST *first_operand,
                                   AST *second_operand, char *op);
 AST *init_node(NodeType type, int child_count);
+int checks_returns(AST *root, char *name, int type_identifier);
 void module_switch_case_program(AST *node, va_list args);
 void module_switch_case_var_declaration(AST *node, va_list args);
 void module_switch_case_method_declaration(AST *node, va_list args);
@@ -43,4 +44,3 @@ void module_switch_case_and(AST *node, va_list args);
 void module_switch_case_or(AST *node, va_list args);
 void module_switch_case_literal(AST *node, va_list args);
 void module_switch_case_arg_list(AST *node, va_list args);
-int checksReturns(AST *root, char *name, int type_identifier);

@@ -22,6 +22,110 @@ void allocate_binary_integer_node(AST *node, AST *first_operand,
   node->children[1] = second_operand;
 }
 
+AST *init_node(NodeType type, int child_count) {
+  AST *node = malloc(sizeof(AST));
+  if (!node) {
+    fprintf(stderr, "<<<<<Error: could not allocate memory for AST>>>>>\n");
+    exit(EXIT_FAILURE);
+  }
+
+  node->type = type;
+  node->info = NULL;
+  node->child_count = child_count;
+  if (child_count > 0) {
+    node->children = malloc(sizeof(AST *) * child_count);
+    if (!node->children) {
+      perror("malloc");
+      exit(1);
+    }
+    for (int i = 0; i < child_count; i++)
+      node->children[i] = NULL; // initialize pointers
+  } else {
+    node->children = NULL;
+  }
+  return node;
+}
+
+int checks_returns(AST *root, char *name, int type_identifier) {
+  if (!root)
+    return 0;
+  int sentences_count = root->child_count;
+  for (int i = 0; i < sentences_count; i++) {
+    AST *sentence = root->children[i];
+    if (!sentence)
+      continue;
+
+    switch (sentence->type) {
+
+    case TR_RETURN:
+      exit_if_return_with_no_expression(sentence, name, i);
+      exit_if_invalid_return_type(sentence, type_identifier, name, i);
+      warning_if_unreachable_code(i, sentences_count, name);
+      return 1;
+
+    case TR_IF_STATEMENT:
+      // To make sure that the expected childrens exists
+      if (sentence->child_count < 3)
+        return 0;
+      AST *if_stmt_list = sentence->children[2];
+      if (!if_stmt_list)
+        return 0;
+      int if_count = if_stmt_list->child_count;
+
+      // total count: if guard + whatever comes after in the block
+      int tail_count = sentences_count - (i + 1);
+      int branch_if_count = if_count + tail_count;
+      AST *branch_if = init_node(TR_AUXILIAR_NODE, branch_if_count);
+      // Reserving memory for the array of children
+      branch_if->children = malloc(sizeof(AST *) * branch_if_count);
+      if (!branch_if->children) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+      }
+
+      // Copy body of the if at the beginning
+      for (int k = 0; k < if_count; k++)
+        branch_if->children[k] = if_stmt_list->children[k];
+
+      // Copy the rest of sentences after the if (tail)
+      for (int k = 0; k < tail_count; k++)
+        branch_if->children[if_count + k] = root->children[i + 1 + k];
+
+      // If there is an else statement
+      if (sentence->child_count > 3 && sentence->children[3]) {
+        AST *else_block = sentence->children[3];
+        if (else_block->child_count < 2)
+          return checks_returns(branch_if, name, type_identifier);
+        AST *else_stmt_list = else_block->children[1];
+        if (!else_stmt_list)
+          return checks_returns(branch_if, name, type_identifier);
+        int else_count = else_stmt_list->child_count;
+        int branch_else_count = else_count + tail_count;
+        AST *branch_else = init_node(TR_AUXILIAR_NODE, branch_else_count);
+        branch_else->children = malloc(sizeof(AST *) * branch_else_count);
+        if (!branch_else->children) {
+          perror("malloc");
+          exit(EXIT_FAILURE);
+        }
+
+        for (int k = 0; k < else_count; k++)
+          branch_else->children[k] = else_stmt_list->children[k];
+        for (int k = 0; k < tail_count; k++)
+          branch_else->children[else_count + k] = root->children[i + 1 + k];
+
+        return checks_returns(branch_if, name, type_identifier) &&
+               checks_returns(branch_else, name, type_identifier);
+      }
+
+      return checks_returns(branch_if, name, type_identifier);
+
+    default:
+      break;
+    }
+  }
+  return 0;
+}
+
 void set_info_value_depending_operator(AST *node, AST *first_operand,
                                        AST *second_operand, char *op) {
   if (strcmp(op, "==") == 0) {
@@ -117,7 +221,7 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
 
     int return_found = 0;
 
-    return_found = checksReturns(body->children[1], name, type_identifier);
+    return_found = checks_returns(body->children[1], name, type_identifier);
 
     exit_if_no_return_in_non_void_method(return_found, name);
 
@@ -129,75 +233,6 @@ void module_switch_case_method_declaration(AST *node, va_list args) {
   node->children = malloc(sizeof(AST *) * 2);
   node->children[0] = params;
   node->children[1] = body;
-}
-
-int checksReturns(AST *root, char *name, int type_identifier) {
-  if (!root) return 0;
-  int sentences_count = root->child_count;
-  for (int i = 0; i < sentences_count; i++) {
-    AST *sentence = root->children[i];
-    if (!sentence) continue;
-
-    switch (sentence->type) {
-
-    case TR_RETURN:
-      exit_if_return_with_no_expression(sentence, name, i);
-      exit_if_invalid_return_type(sentence, type_identifier, name, i);
-      warning_if_unreachable_code(i, sentences_count, name);
-      return 1;
-
-    case TR_IF_STATEMENT:
-      // asegurarse de que existen los children esperados
-      if (sentence->child_count < 3) return 0;
-      AST *if_stmt_list = sentence->children[2];
-      if (!if_stmt_list) return 0;
-      int if_count = if_stmt_list->child_count;
-
-      // número total: cláusula if + lo que viene después en el block
-      int tail_count = sentences_count - (i + 1);
-      int branch_if_count = if_count + tail_count;
-      AST *branch_if = init_node(TR_AUXILIAR_NODE, branch_if_count);
-      // reservar explícitamente el array de children
-      branch_if->children = malloc(sizeof(AST *) * branch_if_count);
-      if (!branch_if->children) { perror("malloc"); exit(EXIT_FAILURE); }
-
-      // copiar body del if al inicio
-      for (int k = 0; k < if_count; k++) {
-        branch_if->children[k] = if_stmt_list->children[k];
-      }
-      // copiar el resto de sentencias después del if (tail)
-      for (int k = 0; k < tail_count; k++) {
-        branch_if->children[if_count + k] = root->children[i + 1 + k];
-      }
-
-      // si hay else
-      if (sentence->child_count > 3 && sentence->children[3]) {
-        AST *else_block = sentence->children[3];
-        if (else_block->child_count < 2) return checksReturns(branch_if, name, type_identifier);
-        AST *else_stmt_list = else_block->children[1];
-        if (!else_stmt_list) return checksReturns(branch_if, name, type_identifier);
-        int else_count = else_stmt_list->child_count;
-        int branch_else_count = else_count + tail_count;
-        AST *branch_else = init_node(TR_AUXILIAR_NODE, branch_else_count);
-        branch_else->children = malloc(sizeof(AST *) * branch_else_count);
-        if (!branch_else->children) { perror("malloc"); exit(EXIT_FAILURE); }
-
-        for (int k = 0; k < else_count; k++)
-          branch_else->children[k] = else_stmt_list->children[k];
-        for (int k = 0; k < tail_count; k++)
-          branch_else->children[else_count + k] = root->children[i + 1 + k];
-
-        return checksReturns(branch_if, name, type_identifier) &&
-               checksReturns(branch_else, name, type_identifier);
-      }
-
-      return checksReturns(branch_if, name, type_identifier);
-
-    default:
-      break;
-    }
-  }
-  return 0;
 }
 
 void module_switch_case_param(AST *node, va_list args) {
