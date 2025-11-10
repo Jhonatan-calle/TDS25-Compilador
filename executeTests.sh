@@ -65,6 +65,7 @@ for driver in tests/pass/*_driver.ctds; do
             obj_correcto="$(compile_ctds_to_obj "$correcto")" || {
                 echo "Compilation failed for $correcto."
                 rm -f printInt.o
+                rm -f getInt.o
                 exit 1
             }
             [ -f "$obj_correcto" ] || { echo "Missing object: $obj_correcto" >&2; exit 1; }
@@ -73,15 +74,17 @@ for driver in tests/pass/*_driver.ctds; do
             obj_driver="$(compile_ctds_to_obj "$driver")" || {
                 echo "Compilation failed for $driver."
                 rm -f printInt.o
+                rm -f getInt.o
                 exit 1
             }
             [ -f "$obj_driver" ] || { echo "Missing object: $obj_driver" >&2; exit 1; }
 
             echo ""
             echo "Linking (driver first so its main is used)..."
-            gcc "$obj_driver" "$obj_correcto" printInt.o -o us_file.out || {
+            gcc "$obj_driver" "$obj_correcto" printInt.o getInt.o -o us_file.out || {
                 echo "Linking failed."
                 rm -f printInt.o
+                rm -f getInt.o
                 exit 1
             }
             echo "Executing (driver)..."
@@ -109,11 +112,12 @@ for file in tests/pass/*.ctds; do
     obj_file="$(compile_ctds_to_obj "$file")" && {
         [ -f "$obj_file" ] || { echo "Missing object: $obj_file" >&2; exit 1; }
         echo ""
-        echo "Compiling and linking with extern printInt..."
+        echo "Compiling and linking with extern printInt and getInt..."
         cp last_generated_assembly.ass last_generated_assembly.s
-        gcc "$obj_file" printInt.o -o us_file.out || {
+        gcc "$obj_file" printInt.o getInt.o -o us_file.out || {
             echo "Compilation failed."
             rm -f printInt.o
+            rm -f getInt.o
             exit 1
         }
         echo "Executing..."
