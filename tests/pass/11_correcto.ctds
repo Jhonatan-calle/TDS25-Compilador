@@ -1,13 +1,15 @@
 program
 {
-  integer bar = 5;
   bool foo(integer bar)
   {
     return true;
   }
+  void eq_assert(integer expected, integer result) extern;
   void main()
   {
-    foo(bar);
+    integer bar = 5;
+    bool b = foo(bar);
+    eq_assert(5, bar);
     return;
   }
 }

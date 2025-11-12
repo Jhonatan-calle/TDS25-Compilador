@@ -7,7 +7,7 @@ program
     }
     integer get_int() extern;
     void printInt(integer i) extern;
-    integer eq_assert(integer expected, integer result) extern;
+    void eq_assert(integer expected, integer result) extern;
     void main()
     {
         integer y = 0;
@@ -18,11 +18,10 @@ program
         }
         else
         {
-            integer r = eq_assert(42, y);
             printInt(inc(y));
             y = inc(y);
-            r = eq_assert(43, y);
-            return r;
+            eq_assert(43, y);
+            return;
         }
     }
 }

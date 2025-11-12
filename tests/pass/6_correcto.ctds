@@ -1,9 +1,10 @@
 program
 {
-  integer whiletrue = 1;
+  void eq_assert(integer expected, integer result) extern;
   void main()
   {
-    whiletrue = 2;
+    integer whiletrue = 1;
+    eq_assert(1, whiletrue);
     return;
   }
 }

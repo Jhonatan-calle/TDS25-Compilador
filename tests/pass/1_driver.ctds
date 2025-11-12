@@ -1,8 +1,8 @@
 program
 {
-  integer fun() extern;
-  integer main()
+  void fun() extern;
+  void main()
   {
-    return fun();
+    return;
   }
 }

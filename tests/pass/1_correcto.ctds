@@ -1,6 +1,6 @@
 program
 {
   void fun(){
-
-    }
+    return;
+  }
 }
