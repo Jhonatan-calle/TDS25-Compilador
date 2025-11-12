@@ -1,6 +1,6 @@
 program
 {
-  integer eq_assert(integer expected, integer result) extern;
+  void eq_assert(integer expected, integer result) extern;
   void printInt(integer x) extern;
   void main()
   {

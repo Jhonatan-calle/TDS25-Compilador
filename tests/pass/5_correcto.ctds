@@ -4,7 +4,7 @@ program
   void main()
   {
     bool ifelse = true;
-    integer eq_assert(integer expected, integer result) extern;
+    void eq_assert(integer expected, integer result) extern;
     if (ifelse) then
     {
       return;

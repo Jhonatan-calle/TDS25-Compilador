@@ -7,6 +7,7 @@ program
     return 1;
   }
   void printInt(integer x) extern;
+  void eq_assert(integer expected, integer result) extern;
   void main() {
     integer y = 0;
     y = inc(get_integer());
@@ -14,7 +15,7 @@ program
     {
       printInt(1);
     } else {
-      printInt(0);
+      eq_assert(10, y);
     }
   }
 }
